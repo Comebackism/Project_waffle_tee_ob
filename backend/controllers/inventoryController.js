@@ -1,44 +1,62 @@
 const db = require('../config/db');
+const fs = require('fs');
+const path = require('path');
+
+// Helper to save base64 image
+const saveBase64Image = (base64Str, prefix = 'product') => {
+  if (!base64Str || !base64Str.startsWith('data:image')) {
+    return base64Str; // Already a filename or URL
+  }
+  const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  if (matches && matches.length === 3) {
+    const type = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    const extension = type.split('/')[1] || 'jpg';
+    const filename = `${prefix}_${Date.now()}.${extension}`;
+    const filepath = path.join(__dirname, '../public/images', filename);
+    
+    if (!fs.existsSync(path.dirname(filepath))) {
+      fs.mkdirSync(path.dirname(filepath), { recursive: true });
+    }
+    fs.writeFileSync(filepath, buffer);
+    return filename;
+  }
+  return base64Str;
+};
 
 // Get all inventory
 exports.getInventory = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT s.stock_id, s."ProductID", p."ProductName", s.quantity, s.unit, s.last_update 
+      SELECT s.stock_id, s."ProductID", p."ProductName", p."Picture", p."category", s.quantity, s.unit, s.last_update 
       FROM "Stock" s 
       JOIN "Product" p ON s."ProductID" = p."ProductID"
       ORDER BY s."ProductID" ASC
     `);
 
-    // Mock data for categories and images
-    const MOCK_DATA = {
-      'P01': { category: 'วัตถุดิบหลัก', image: 'https://placehold.co/300x200?text=Flour' },
-      'P02': { category: 'วัตถุดิบหลัก', image: 'https://placehold.co/300x200?text=Eggs' },
-      'P03': { category: 'ท็อปปิ้ง', image: 'https://placehold.co/300x200?text=Choco' },
-      'P04': { category: 'ท็อปปิ้ง', image: 'https://placehold.co/300x200?text=Almond' },
-      'P05': { category: 'ท็อปปิ้ง', image: 'https://placehold.co/300x200?text=Raisin' },
-      'P06': { category: 'บรรจุภัณฑ์', image: 'https://placehold.co/300x200?text=Box' },
-      'P07': { category: 'บรรจุภัณฑ์', image: 'https://placehold.co/300x200?text=Paper' },
-    };
-
     const formattedResults = result.rows.map(item => {
-      const mock = MOCK_DATA[item.ProductID] || { category: 'อื่นๆ', image: 'https://placehold.co/300x200?text=Item' };
-      
+      let image = item.Picture;
+      if (!image) {
+        image = `https://placehold.co/300x200?text=${encodeURIComponent(item.ProductName)}`;
+      } else if (!image.startsWith('http')) {
+        image = `http://localhost:5000/images/${image}`;
+      }
+
       let status = 'Normal';
       let statusColor = '#22c55e';
       
-      if (item.quantity <= 0) {
+      if (Number(item.quantity) <= 0) {
         status = 'Out of Stock';
         statusColor = '#ef4444';
-      } else if (item.quantity < 5) {
+      } else if (Number(item.quantity) < 5) {
         status = 'Low Stock';
         statusColor = '#f59e0b';
       }
 
       return {
         ...item,
-        category: mock.category,
-        image: mock.image,
+        category: item.category || 'วัตถุดิบหลัก',
+        image: image,
         status,
         statusColor
       };
@@ -87,10 +105,10 @@ exports.setStock = async (req, res) => {
   }
 };
 
-// Add new product + stock
+// Add new product + stock + image
 exports.addProduct = async (req, res) => {
   try {
-    const { ProductName, quantity, unit, category } = req.body;
+    const { ProductName, quantity, unit, category, Picture } = req.body;
 
     // Auto generate ProductID
     const lastRes = await db.query('SELECT "ProductID" FROM "Product" ORDER BY "ProductID" DESC LIMIT 1');
@@ -101,10 +119,13 @@ exports.addProduct = async (req, res) => {
       nextId = 'P' + num.toString().padStart(2, '0');
     }
 
+    // Save image if base64 provided
+    const finalPicture = saveBase64Image(Picture, `product_${nextId}`);
+
     // Insert into Product table
     await db.query(
-      'INSERT INTO "Product" ("ProductID", "ProductName") VALUES ($1, $2)',
-      [nextId, ProductName]
+      'INSERT INTO "Product" ("ProductID", "ProductName", "Picture", "category") VALUES ($1, $2, $3, $4)',
+      [nextId, ProductName, finalPicture || null, category || 'วัตถุดิบหลัก']
     );
 
     // Auto generate stock_id
@@ -146,17 +167,29 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// Update product name + stock unit
+// Update product name + stock unit + category + picture
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { ProductName, unit } = req.body;
+    const { ProductName, unit, category, Picture } = req.body;
 
-    // Update product name
-    await db.query(
-      'UPDATE "Product" SET "ProductName" = $1 WHERE "ProductID" = $2',
-      [ProductName, id]
-    );
+    let finalPicture = null;
+    if (Picture) {
+      finalPicture = saveBase64Image(Picture, `product_${id}`);
+    }
+
+    // Update product name, category, and picture
+    if (finalPicture) {
+      await db.query(
+        'UPDATE "Product" SET "ProductName" = $1, "category" = $2, "Picture" = $3 WHERE "ProductID" = $4',
+        [ProductName, category || 'วัตถุดิบหลัก', finalPicture, id]
+      );
+    } else {
+      await db.query(
+        'UPDATE "Product" SET "ProductName" = $1, "category" = $2 WHERE "ProductID" = $3',
+        [ProductName, category || 'วัตถุดิบหลัก', id]
+      );
+    }
 
     // Update stock unit
     if (unit) {
@@ -169,6 +202,78 @@ exports.updateProduct = async (req, res) => {
     res.json({ message: 'Product updated successfully' });
   } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Withdraw stock (เบิกวัตถุดิบ) and save to Invoice table
+exports.withdrawStock = async (req, res) => {
+  try {
+    const { ProductID, Weight, InvDate } = req.body;
+
+    if (!ProductID || !Weight || Number(Weight) <= 0) {
+      return res.status(400).json({ message: 'กรุณาระบุวัตถุดิบและจำนวนที่ต้องการเบิก' });
+    }
+
+    const weightNum = parseFloat(Weight);
+
+    // Auto-generate InvoiceNo (e.g. INV-YYYYMMDD-0001 or INV-00001)
+    const countRes = await db.query('SELECT COUNT(*) FROM "Invoice"');
+    const invCount = parseInt(countRes.rows[0].count) + 1;
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+    const InvoiceNo = `INV-${dateStr}-${String(invCount).padStart(3, '0')}`.slice(0, 20);
+
+    // Start transaction
+    await db.query('BEGIN');
+
+    // 1. Insert into Invoice table
+    const invoiceDate = InvDate || today.toISOString().slice(0, 10);
+    await db.query(
+      `INSERT INTO "Invoice" ("InvoiceNo", "InvDate", "ProductId", "Weight") 
+       VALUES ($1, $2, $3, $4)`,
+      [InvoiceNo, invoiceDate, ProductID, weightNum]
+    );
+
+    // 2. Deduct from Stock table
+    await db.query(
+      `UPDATE "Stock" 
+       SET quantity = GREATEST(0, quantity - $1), last_update = CURRENT_TIMESTAMP 
+       WHERE "ProductID" = $2`,
+      [weightNum, ProductID]
+    );
+
+    await db.query('COMMIT');
+
+    res.status(201).json({
+      message: 'เบิกวัตถุดิบสำเร็จและบันทึกใบสำคัญเรียบร้อยแล้ว',
+      invoice: {
+        InvoiceNo,
+        InvDate: invoiceDate,
+        ProductId: ProductID,
+        Weight: weightNum
+      }
+    });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    console.error('Error withdrawing stock:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Get all invoices (ประวัติการเบิกวัตถุดิบ)
+exports.getInvoices = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT i."InvoiceNo", i."InvDate", i."ProductId", p."ProductName", i."Weight", s.unit
+      FROM "Invoice" i
+      LEFT JOIN "Product" p ON i."ProductId" = p."ProductID"
+      LEFT JOIN "Stock" s ON i."ProductId" = s."ProductID"
+      ORDER BY i."InvDate" DESC, i."InvoiceNo" DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error getting invoices:', err.message);
     res.status(500).send('Server Error');
   }
 };

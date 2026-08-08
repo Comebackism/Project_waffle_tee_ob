@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
+import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
 
 const STATUS_LABELS = {
@@ -18,6 +19,7 @@ export default function CashierOrders() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('S01'); // Filter by status
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
   const fetchOrders = () => {
     fetch(`${API_BASE}/api/orders/today`)
@@ -59,6 +61,16 @@ export default function CashierOrders() {
       setSelectedOrder(data);
     } catch (err) {
       console.error('Error:', err);
+    }
+  };
+
+  const openReceipt = async (orderId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}`);
+      const data = await res.json();
+      setReceiptOrder(data);
+    } catch (err) {
+      console.error('Error opening receipt:', err);
     }
   };
 
@@ -137,7 +149,10 @@ export default function CashierOrders() {
 
                 <div className="co-card-actions">
                   <button className="co-action-btn view" onClick={() => viewOrderDetail(order.order_id)}>
-                    <FaEye /> ดูรายละเอียด
+                    <FaEye /> ดู
+                  </button>
+                  <button className="co-action-btn receipt-action-btn" onClick={() => openReceipt(order.order_id)} title="พิมพ์สลิป/ใบเสร็จ">
+                    <FaReceipt /> สลิป
                   </button>
 
                   {order.Status_id === 'S01' && (
@@ -189,7 +204,10 @@ export default function CashierOrders() {
                   </div>
                 )}
                 
-                <div style={{marginTop: '20px'}}>
+                <div style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
+                  <button className="co-action-btn receipt-action-btn full" onClick={() => openReceipt(selectedOrder.order_id)}>
+                    <FaReceipt /> พิมพ์ใบเสร็จ / สลิป
+                  </button>
                   {selectedOrder.Status_id === 'S01' && (
                     <button className="co-action-btn approve full" onClick={() => updateStatus(selectedOrder.order_id, 'S02')}>
                       ยืนยันชำระเงิน
@@ -199,6 +217,11 @@ export default function CashierOrders() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Receipt Slip Modal */}
+        {receiptOrder && (
+          <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} />
         )}
       </div>
     </BackofficeLayout>

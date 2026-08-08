@@ -1,0 +1,356 @@
+/* Receipt Slip Modal & Thermal Print Styles */
+
+.receipt-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.receipt-modal-content {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 380px;
+  width: 100%;
+  animation: receiptSlideUp 0.3s ease-out;
+}
+
+@keyframes receiptSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Actions bar at top */
+.receipt-actions-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-status-notice {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.receipt-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.receipt-print-btn {
+  background-color: #1f2937;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.receipt-print-btn:hover {
+  background-color: #111827;
+  transform: translateY(-1px);
+}
+
+.receipt-close-btn {
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.receipt-close-btn:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+/* Thermal Paper Appearance */
+.receipt-thermal-paper {
+  background: #ffffff;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  font-family: 'Prompt', 'Kanit', 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a1a1a;
+  position: relative;
+}
+
+/* Shop Header */
+.receipt-shop-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.receipt-shop-name {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+
+.receipt-shop-branch {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Queue Box */
+.receipt-queue-box {
+  border: 2.5px solid #111827;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.receipt-queue-label {
+  display: block;
+  font-size: 13px;
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.receipt-queue-number {
+  display: block;
+  font-size: 38px;
+  font-weight: 900;
+  color: #000000;
+  line-height: 1.1;
+  letter-spacing: 1px;
+}
+
+/* Meta Info */
+.receipt-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: #374151;
+  margin-bottom: 14px;
+}
+
+.receipt-meta-row {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.receipt-meta-key {
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 65px;
+}
+
+.receipt-meta-val {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Separators */
+.receipt-dashed-line {
+  border-bottom: 2px dashed #9ca3af;
+  margin: 14px 0;
+  width: 100%;
+}
+
+.receipt-solid-line {
+  border-bottom: 1.5px solid #111827;
+  margin: 10px 0;
+  width: 100%;
+}
+
+/* Items List */
+.receipt-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.receipt-item-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.receipt-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.receipt-item-name {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.receipt-item-price {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.receipt-topping-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #4b5563;
+  padding-left: 14px;
+}
+
+.receipt-topping-price {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.receipt-note-row {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 6px;
+  padding-left: 4px;
+}
+
+/* Pricing Section */
+.receipt-pricing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.receipt-price-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 2px;
+}
+
+.receipt-total-label {
+  font-size: 18px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.receipt-total-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: #000000;
+}
+
+.receipt-pay-method-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #4b5563;
+  margin-top: 4px;
+}
+
+.receipt-pay-val {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Footer */
+.receipt-footer-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 6px;
+}
+
+/* =========================================================
+   🖨️ PRINT MEDIA STYLES
+   ========================================================= */
+@media print {
+  /* Hide everything on the page except the thermal paper */
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-thermal-paper,
+  .receipt-thermal-paper * {
+    visibility: visible;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .receipt-modal-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    background: transparent;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .receipt-modal-content {
+    max-width: 100%;
+    width: 80mm;
+    margin: 0 auto;
+  }
+
+  .receipt-thermal-paper {
+    box-shadow: none;
+    padding: 10mm 5mm;
+    width: 80mm;
+    border-radius: 0;
+    margin: 0;
+  }
+}

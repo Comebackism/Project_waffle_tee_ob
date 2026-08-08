@@ -43,11 +43,12 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // 3. Insert Order (Status: S01 = รอชำระเงิน)
+    // 3. Insert Order (Status: S01 = รอชำระเงิน, or set pay_time if paid)
+    const isPaid = pay_method === 'promptpay' && final_slip_picture;
     const orderResult = await db.query(
-      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0]
+      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null]
     );
 
     // 4. Insert Order Items
@@ -114,9 +115,11 @@ exports.getOrderById = async (req, res) => {
 
     // 1. Get order
     const orderResult = await db.query(`
-      SELECT o.*, s.statusname 
+      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, r."RoleName"
       FROM "Order" o 
       JOIN "Status" s ON o."Status_id" = s.status_id
+      LEFT JOIN "User" u ON o.user_id = u.user_id
+      LEFT JOIN "Role" r ON u."Role_id" = r."Role_id"
       WHERE o.order_id = $1
     `, [id]);
 
@@ -169,9 +172,10 @@ exports.getOrderById = async (req, res) => {
 exports.getOrdersToday = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT o.*, s.statusname
+      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username
       FROM "Order" o
       JOIN "Status" s ON o."Status_id" = s.status_id
+      LEFT JOIN "User" u ON o.user_id = u.user_id
       WHERE DATE(o.created_at) = CURRENT_DATE
       ORDER BY o.created_at DESC
     `);
@@ -186,9 +190,31 @@ exports.getOrdersToday = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status_id } = req.body;
+    const { status_id, user_id } = req.body;
 
-    await db.query('UPDATE "Order" SET "Status_id" = $1 WHERE order_id = $2', [status_id, id]);
+    // If changing to paid / confirmed (S02 or later), ensure pay_time is updated
+    if (status_id === 'S02' || status_id === 'S03' || status_id === 'S04' || status_id === 'S05') {
+      if (user_id) {
+        await db.query(
+          `UPDATE "Order" 
+           SET "Status_id" = $1, 
+               user_id = COALESCE(user_id, $2),
+               pay_time = COALESCE(pay_time, CURRENT_TIMESTAMP) 
+           WHERE order_id = $3`,
+          [status_id, user_id, id]
+        );
+      } else {
+        await db.query(
+          `UPDATE "Order" 
+           SET "Status_id" = $1, 
+               pay_time = COALESCE(pay_time, CURRENT_TIMESTAMP) 
+           WHERE order_id = $2`,
+          [status_id, id]
+        );
+      }
+    } else {
+      await db.query('UPDATE "Order" SET "Status_id" = $1 WHERE order_id = $2', [status_id, id]);
+    }
     
     // Return updated order with status name
     const result = await db.query(`

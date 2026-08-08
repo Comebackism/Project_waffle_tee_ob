@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCheck, FaFire } from 'react-icons/fa';
 import './ProductDetail.css';
 
@@ -20,6 +20,10 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedToppings, setSelectedToppings] = useState([]);
 
+  // Fly-to-cart animation
+  const [flyItems, setFlyItems] = useState([]);
+  const cartTargetRef = useRef(null);
+
   // ดึงข้อมูลรายละเอียดสินค้า + ท็อปปิ้งจาก API ตาม productId
   useEffect(() => {
     setLoading(true);
@@ -38,14 +42,45 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
       });
   }, [productId]);
 
-  // ฟังก์ชันสลับการเลือกท็อปปิ้ง (เลือก/ยกเลิก)
-  const toggleTopping = (id) => {
-    if (selectedToppings.includes(id)) {
-      setSelectedToppings(selectedToppings.filter((item) => item !== id));
-    } else {
+  // ฟังก์ชันสลับการเลือกท็อปปิ้ง (เลือก/ยกเลิก) + animation
+  const toggleTopping = (id, event) => {
+    const isAdding = !selectedToppings.includes(id);
+
+    if (isAdding) {
       setSelectedToppings([...selectedToppings, id]);
+      // Trigger fly animation
+      triggerFlyAnimation(event);
+    } else {
+      setSelectedToppings(selectedToppings.filter((item) => item !== id));
     }
   };
+
+  const triggerFlyAnimation = useCallback((event) => {
+    // Get the source element position
+    const sourceEl = event.currentTarget;
+    const sourceRect = sourceEl.getBoundingClientRect();
+
+    // Target: the cart button in the action bar
+    const cartEl = cartTargetRef.current;
+    if (!cartEl) return;
+    const cartRect = cartEl.getBoundingClientRect();
+
+    const flyId = Date.now() + Math.random();
+    const newFly = {
+      id: flyId,
+      startX: sourceRect.left + sourceRect.width / 2,
+      startY: sourceRect.top + sourceRect.height / 2,
+      endX: cartRect.left + cartRect.width / 2,
+      endY: cartRect.top + cartRect.height / 2,
+    };
+
+    setFlyItems(prev => [...prev, newFly]);
+
+    // Remove after animation ends
+    setTimeout(() => {
+      setFlyItems(prev => prev.filter(f => f.id !== flyId));
+    }, 700);
+  }, []);
 
   // 2. ฟังก์ชันเมื่อกดปุ่มเพิ่มลงตะกร้า 👈
   const handleAddToCartClick = () => {
@@ -165,7 +200,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
                     <div
                       key={item.topping_id}
                       className={`topping-item ${isSelected ? 'selected' : ''}`}
-                      onClick={() => toggleTopping(item.topping_id)}
+                      onClick={(e) => toggleTopping(item.topping_id, e)}
                     >
                       <div className="topping-info">
                         <span className="topping-name">{item.name}</span>
@@ -206,11 +241,27 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
         </div>
 
         {/* ปุ่มกดเพิ่มลงตะกร้า (ใส่ onClick แล้ว 👈) */}
-        <button className="add-to-cart-btn" onClick={handleAddToCartClick}>
+        <button className="add-to-cart-btn" onClick={handleAddToCartClick} ref={cartTargetRef}>
           <FaShoppingCart />
           <span>เพิ่มลงตะกร้า • ฿{totalPrice}</span>
         </button>
       </div>
+
+      {/* Fly-to-cart animation items */}
+      {flyItems.map(fly => (
+        <div
+          key={fly.id}
+          className="fly-to-cart-item"
+          style={{
+            '--fly-start-x': `${fly.startX}px`,
+            '--fly-start-y': `${fly.startY}px`,
+            '--fly-end-x': `${fly.endX}px`,
+            '--fly-end-y': `${fly.endY}px`,
+          }}
+        >
+          🔥
+        </div>
+      ))}
     </div>
   );
 }

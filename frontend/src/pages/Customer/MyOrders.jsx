@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaBoxOpen, FaChevronRight } from 'react-icons/fa';
+import { FaArrowLeft, FaBoxOpen, FaChevronRight, FaReceipt } from 'react-icons/fa';
+import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './MyOrders.css';
 
 const STATUS_MAP = {
@@ -15,6 +16,7 @@ const API_BASE = 'http://localhost:5000';
 export default function MyOrders({ onBack, onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
   useEffect(() => {
     const fetchMyOrders = async () => {
@@ -115,14 +117,24 @@ export default function MyOrders({ onBack, onViewOrder }) {
                 </div>
 
                 <div className="mo-card-footer">
-                  <span>ดูรายละเอียด</span>
-                  <FaChevronRight />
+                  <span onClick={(e) => { e.stopPropagation(); setReceiptOrder(order); }} style={{display: 'flex', alignItems: 'center', gap: '4px', color: '#1f2937', fontWeight: 600}}>
+                    <FaReceipt /> ใบเสร็จ/สลิป
+                  </span>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
+                    <span>ดูสถานะ</span>
+                    <FaChevronRight />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Receipt Slip Modal */}
+      {receiptOrder && (
+        <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} />
+      )}
     </div>
   );
 }

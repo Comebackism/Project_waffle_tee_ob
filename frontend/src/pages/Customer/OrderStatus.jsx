@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle, FaReceipt } from 'react-icons/fa';
+import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './OrderStatus.css';
 
 const API_BASE = 'http://localhost:5000';
@@ -21,6 +22,7 @@ const STATUS_MAP = {
 export default function OrderStatus({ orderId, queueNumber, onBack }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const fetchOrder = () => {
     if (!orderId) return;
@@ -166,10 +168,20 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
           <span className="os-total-price">฿{Number(order.total_amount).toFixed(2)}</span>
         </div>
 
+        {/* Receipt / Slip Button */}
+        <button className="os-receipt-btn" onClick={() => setShowReceipt(true)}>
+          <FaReceipt /> ดูใบเสร็จรับเงิน / สลิป
+        </button>
+
         {/* Back to home */}
         <button className="os-back-home-btn" onClick={onBack}>
           กลับหน้าหลัก
         </button>
+
+        {/* Receipt Modal */}
+        {showReceipt && (
+          <ReceiptSlip order={order} onClose={() => setShowReceipt(false)} />
+        )}
 
       </div>
     </div>

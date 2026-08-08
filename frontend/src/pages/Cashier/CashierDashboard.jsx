@@ -158,7 +158,6 @@ export default function CashierDashboard() {
                 <h3>สินค้าขายดี</h3>
                 <span className="cd-subtitle">ยอดจำหน่ายสะสมประจำเดือนนี้</span>
               </div>
-              <a href="#" className="cd-view-all-link">ดูรายงานทั้งหมด →</a>
             </div>
 
             <div className="cd-bs-grid">

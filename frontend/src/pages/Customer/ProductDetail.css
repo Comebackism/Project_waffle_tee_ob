@@ -341,3 +341,43 @@
     font-size: 15px;
   }
 }
+
+/* ===== Fly-to-cart animation ===== */
+.fly-to-cart-item {
+  position: fixed;
+  z-index: 9999;
+  font-size: 28px;
+  pointer-events: none;
+  left: var(--fly-start-x);
+  top: var(--fly-start-y);
+  animation: flyToCart 0.65s cubic-bezier(0.2, 0.6, 0.35, 1) forwards;
+  filter: drop-shadow(0 2px 8px rgba(255, 107, 0, 0.5));
+}
+
+@keyframes flyToCart {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(
+      calc((var(--fly-end-x) - var(--fly-start-x)) * 0.15 - 50%),
+      calc((var(--fly-end-y) - var(--fly-start-y)) * 0.05 - 120px)
+    ) scale(1.4);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(
+      calc((var(--fly-end-x) - var(--fly-start-x)) * 0.7 - 50%),
+      calc((var(--fly-end-y) - var(--fly-start-y)) * 0.6 - 50%)
+    ) scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(
+      calc(var(--fly-end-x) - var(--fly-start-x) - 50%),
+      calc(var(--fly-end-y) - var(--fly-start-y) - 50%)
+    ) scale(0.2);
+    opacity: 0;
+  }
+}

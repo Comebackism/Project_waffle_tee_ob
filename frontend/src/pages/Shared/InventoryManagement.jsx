@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaExclamationTriangle, FaTimes, FaTrash, FaEdit, FaSyncAlt } from 'react-icons/fa';
+import { 
+  FaPlus, 
+  FaSearch, 
+  FaExclamationTriangle, 
+  FaTimes, 
+  FaTrash, 
+  FaEdit, 
+  FaSyncAlt, 
+  FaDolly, 
+  FaHistory, 
+  FaCamera, 
+  FaUpload, 
+  FaImage 
+} from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './InventoryManagement.css';
 
@@ -25,16 +38,36 @@ export default function InventoryManagement({ role }) {
     ProductName: '',
     quantity: '',
     unit: 'กิโลกรัม',
-    category: 'วัตถุดิบหลัก'
+    category: 'วัตถุดิบหลัก',
+    Picture: ''
   });
+  const [addImagePreview, setAddImagePreview] = useState(null);
 
-  // Delete confirm
+  // Delete confirm modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
 
   // Edit product modal
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editProduct, setEditProduct] = useState({ ProductID: '', ProductName: '', unit: '', category: '' });
+  const [editProduct, setEditProduct] = useState({ 
+    ProductID: '', 
+    ProductName: '', 
+    unit: '', 
+    category: '', 
+    Picture: '', 
+    imagePreview: '' 
+  });
+
+  // Withdraw (เบิกวัตถุดิบ) modal
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawItem, setWithdrawItem] = useState(null);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawDate, setWithdrawDate] = useState(new Date().toISOString().slice(0, 10));
+
+  // Invoice History modal
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
 
   useEffect(() => {
     fetchInventory();
@@ -51,6 +84,16 @@ export default function InventoryManagement({ role }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // === Image handling helpers ===
+  const handleImageFileChange = (file, callback) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      callback(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   // === Restock ===
@@ -99,7 +142,8 @@ export default function InventoryManagement({ role }) {
         body: JSON.stringify(newProduct)
       });
       setShowAddModal(false);
-      setNewProduct({ ProductName: '', quantity: '', unit: 'กิโลกรัม', category: 'วัตถุดิบหลัก' });
+      setNewProduct({ ProductName: '', quantity: '', unit: 'กิโลกรัม', category: 'วัตถุดิบหลัก', Picture: '' });
+      setAddImagePreview(null);
       fetchInventory();
     } catch (err) {
       console.error('Error adding product:', err);
@@ -130,7 +174,9 @@ export default function InventoryManagement({ role }) {
       ProductID: item.ProductID,
       ProductName: item.ProductName,
       unit: item.unit,
-      category: item.category
+      category: item.category || 'วัตถุดิบหลัก',
+      Picture: '',
+      imagePreview: item.image || ''
     });
     setShowEditModal(true);
   };
@@ -141,12 +187,73 @@ export default function InventoryManagement({ role }) {
       await fetch(`${API_BASE}/api/inventory/product/${editProduct.ProductID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ProductName: editProduct.ProductName, unit: editProduct.unit })
+        body: JSON.stringify({
+          ProductName: editProduct.ProductName,
+          unit: editProduct.unit,
+          category: editProduct.category,
+          Picture: editProduct.Picture || undefined
+        })
       });
       setShowEditModal(false);
       fetchInventory();
     } catch (err) {
-      console.error('Error updating product:', err);
+      console.error('Error editing product:', err);
+    }
+  };
+
+  // === Withdraw Stock (เบิกวัตถุดิบ) ===
+  const openWithdrawModal = (item = null) => {
+    const target = item || inventory[0] || null;
+    setWithdrawItem(target);
+    setWithdrawAmount('');
+    setWithdrawDate(new Date().toISOString().slice(0, 10));
+    setShowWithdrawModal(true);
+  };
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    if (!withdrawItem) return;
+    const amount = Number(withdrawAmount);
+    if (!amount || amount <= 0) {
+      alert('กรุณาระบุปริมาณน้ำหนักที่ต้องการเบิก');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/inventory/withdraw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ProductID: withdrawItem.ProductID,
+          Weight: amount,
+          InvDate: withdrawDate
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to withdraw stock');
+
+      const data = await res.json();
+      alert(`✅ ${data.message} (เลขที่: ${data.invoice?.InvoiceNo})`);
+      setShowWithdrawModal(false);
+      fetchInventory();
+    } catch (err) {
+      console.error('Error withdrawing stock:', err);
+      alert('เกิดข้อผิดพลาดในการเบิกวัตถุดิบ');
+    }
+  };
+
+  // === Invoice History ===
+  const openInvoiceModal = async () => {
+    setShowInvoiceModal(true);
+    setLoadingInvoices(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/inventory/invoices`);
+      const data = await res.json();
+      setInvoices(data);
+    } catch (err) {
+      console.error('Error fetching invoices:', err);
+    } finally {
+      setLoadingInvoices(false);
     }
   };
 
@@ -181,6 +288,12 @@ export default function InventoryManagement({ role }) {
             <button className="im-btn-outline" onClick={fetchInventory} title="รีเฟรช">
               <FaSyncAlt />
             </button>
+            <button className="im-btn-withdraw-header" onClick={() => openWithdrawModal()} title="เบิกวัตถุดิบ">
+              <FaDolly /> เบิกวัตถุดิบ
+            </button>
+            <button className="im-btn-invoice-header" onClick={openInvoiceModal} title="ดูประวัติการเบิก (Invoice)">
+              <FaHistory /> ประวัติการเบิก
+            </button>
             <button className="im-btn-primary" onClick={() => setShowAddModal(true)}>
               <FaPlus /> เพิ่มสินค้าใหม่
             </button>
@@ -201,7 +314,7 @@ export default function InventoryManagement({ role }) {
             <div className="im-sc-value" style={{color: '#f59e0b'}}>{lowStockItems}</div>
             {lowStockItems > 0 && (
               <div className="im-sc-alert" style={{color: '#f59e0b'}}>
-                <FaExclamationTriangle /> ต้องการความสนใจ
+                <FaExclamationTriangle /> ระวัง
               </div>
             )}
           </div>
@@ -244,6 +357,16 @@ export default function InventoryManagement({ role }) {
                 <div className="im-card-image-wrapper">
                   <img src={item.image} alt={item.ProductName} className="im-card-img" />
                   <span className="im-category-badge">{item.category}</span>
+                  
+                  {/* Quick Change Picture Button on Image */}
+                  <button 
+                    className="im-card-camera-btn"
+                    onClick={() => openEditModal(item)}
+                    title="เปลี่ยนรูปภาพสินค้า"
+                  >
+                    <FaCamera />
+                  </button>
+
                   {/* Delete button on top-left */}
                   <button className="im-card-delete-btn" onClick={() => openDeleteModal(item)} title="ลบสินค้า">
                     <FaTrash />
@@ -283,32 +406,29 @@ export default function InventoryManagement({ role }) {
                     ></div>
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons (Icons) */}
                   <div className="im-card-actions">
-                    {item.status === 'Out of Stock' ? (
-                      <button 
-                        className="im-action-btn danger"
-                        onClick={() => openRestockModal(item, 'set')}
-                      >
-                        สั่งซื้อด่วน
-                      </button>
-                    ) : (
-                      <>
-                        <button 
-                          className="im-action-btn outline"
-                          onClick={() => openRestockModal(item, 'add')}
-                        >
-                          เติมสต็อก
-                        </button>
-                        <button 
-                          className="im-action-btn edit-btn"
-                          onClick={() => openEditModal(item)}
-                          title="แก้ไขข้อมูลสินค้า"
-                        >
-                          <FaEdit />
-                        </button>
-                      </>
-                    )}
+                    <button 
+                      className={`im-action-icon-btn restock-btn ${item.status === 'Out of Stock' ? 'danger-pulse' : ''}`}
+                      onClick={() => openRestockModal(item, item.status === 'Out of Stock' ? 'set' : 'add')}
+                      title="เติมสต็อกสินค้า"
+                    >
+                      <FaPlus />
+                    </button>
+                    <button 
+                      className="im-action-icon-btn withdraw-btn"
+                      onClick={() => openWithdrawModal(item)}
+                      title="เบิกวัตถุดิบ"
+                    >
+                      <FaDolly />
+                    </button>
+                    <button 
+                      className="im-action-icon-btn edit-btn"
+                      onClick={() => openEditModal(item)}
+                      title="แก้ไขข้อมูลสินค้า"
+                    >
+                      <FaEdit />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -392,6 +512,56 @@ export default function InventoryManagement({ role }) {
               </div>
               <form onSubmit={handleAddProduct}>
                 <div className="im-modal-body">
+                  
+                  {/* Image Upload for New Product */}
+                  <div className="im-form-group">
+                    <label>รูปภาพสินค้า</label>
+                    <div className="im-image-upload-box">
+                      {addImagePreview ? (
+                        <div className="im-image-preview-card">
+                          <img src={addImagePreview} alt="Preview" className="im-image-preview-img" />
+                          <div className="im-image-preview-info">
+                            <span className="im-image-preview-tag">เลือกรูปภาพแล้ว</span>
+                            <button 
+                              type="button" 
+                              className="im-btn-remove-preview" 
+                              onClick={() => {
+                                setAddImagePreview(null);
+                                setNewProduct({...newProduct, Picture: ''});
+                              }}
+                            >
+                              <FaTimes /> ลบรูปภาพ
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="im-image-dropzone">
+                          <div className="im-dropzone-icon-circle">
+                            <FaUpload />
+                          </div>
+                          <div className="im-dropzone-texts">
+                            <span className="im-dropzone-title">คลิกเพื่ออัปโหลดรูปภาพสินค้า</span>
+                            <span className="im-dropzone-badge">รองรับไฟล์ PNG, JPG, JPEG</span>
+                          </div>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            style={{display: 'none'}}
+                            onChange={e => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                handleImageFileChange(file, (base64) => {
+                                  setAddImagePreview(base64);
+                                  setNewProduct({...newProduct, Picture: base64});
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="im-form-group">
                     <label>ชื่อสินค้า</label>
                     <input 
@@ -462,11 +632,7 @@ export default function InventoryManagement({ role }) {
                 <button className="im-modal-close" onClick={() => setShowDeleteModal(false)}><FaTimes /></button>
               </div>
               <div className="im-modal-body">
-                <div className="im-delete-warning">
-                  <FaExclamationTriangle className="im-delete-icon" />
-                  <p>คุณต้องการลบสินค้า <strong>"{deleteItem.ProductName}"</strong> ออกจากระบบใช่หรือไม่?</p>
-                  <p className="im-delete-sub">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
-                </div>
+                <p>คุณแน่ใจหรือไม่ว่าต้องการลบ <strong>{deleteItem.ProductName}</strong> ออกจากคลังสต็อก?</p>
               </div>
               <div className="im-modal-footer">
                 <button className="im-btn-cancel" onClick={() => setShowDeleteModal(false)}>ยกเลิก</button>
@@ -476,16 +642,56 @@ export default function InventoryManagement({ role }) {
           </div>
         )}
 
-        {/* ========== EDIT PRODUCT MODAL ========== */}
+        {/* ========== EDIT PRODUCT (AND CHANGE PICTURE) MODAL ========== */}
         {showEditModal && (
           <div className="im-modal-overlay" onClick={() => setShowEditModal(false)}>
             <div className="im-modal" onClick={e => e.stopPropagation()}>
               <div className="im-modal-header">
-                <h2>แก้ไขข้อมูลสินค้า</h2>
+                <h2>แก้ไขข้อมูลสินค้าและรูปภาพ</h2>
                 <button className="im-modal-close" onClick={() => setShowEditModal(false)}><FaTimes /></button>
               </div>
               <form onSubmit={handleEditProduct}>
                 <div className="im-modal-body">
+                  
+                  {/* Change Image in Edit Modal */}
+                  <div className="im-form-group">
+                    <label>รูปภาพสินค้า</label>
+                    <div className="im-edit-image-card">
+                      <div className="im-edit-image-frame">
+                        {editProduct.imagePreview ? (
+                          <img src={editProduct.imagePreview} alt={editProduct.ProductName} className="im-edit-img-preview" />
+                        ) : (
+                          <div className="im-edit-img-placeholder">
+                            <FaImage />
+                          </div>
+                        )}
+                      </div>
+                      <div className="im-edit-image-actions">
+                        <label className="im-btn-change-image-modern">
+                          <FaCamera /> เลือกรูปภาพใหม่
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            style={{display: 'none'}}
+                            onChange={e => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                handleImageFileChange(file, (base64) => {
+                                  setEditProduct({
+                                    ...editProduct,
+                                    Picture: base64,
+                                    imagePreview: base64
+                                  });
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                        <span className="im-edit-image-hint">รองรับไฟล์ PNG, JPG, JPEG</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="im-form-group">
                     <label>รหัสสินค้า</label>
                     <input type="text" value={editProduct.ProductID} disabled style={{background:'#f3f4f6', color:'#9ca3af'}} />
@@ -500,21 +706,34 @@ export default function InventoryManagement({ role }) {
                       required
                     />
                   </div>
-                  <div className="im-form-group">
-                    <label>หน่วย</label>
-                    <select 
-                      value={editProduct.unit}
-                      onChange={e => setEditProduct({...editProduct, unit: e.target.value})}
-                    >
-                      <option value="กิโลกรัม">กิโลกรัม</option>
-                      <option value="กรัม">กรัม</option>
-                      <option value="ชิ้น">ชิ้น</option>
-                      <option value="ฟอง">ฟอง</option>
-                      <option value="แพ็ค">แพ็ค</option>
-                      <option value="ถุง">ถุง</option>
-                      <option value="กล่อง">กล่อง</option>
-                      <option value="ขวด">ขวด</option>
-                    </select>
+                  <div className="im-form-row">
+                    <div className="im-form-group">
+                      <label>หน่วย</label>
+                      <select 
+                        value={editProduct.unit}
+                        onChange={e => setEditProduct({...editProduct, unit: e.target.value})}
+                      >
+                        <option value="กิโลกรัม">กิโลกรัม</option>
+                        <option value="กรัม">กรัม</option>
+                        <option value="ชิ้น">ชิ้น</option>
+                        <option value="ฟอง">ฟอง</option>
+                        <option value="แพ็ค">แพ็ค</option>
+                        <option value="ถุง">ถุง</option>
+                        <option value="กล่อง">กล่อง</option>
+                        <option value="ขวด">ขวด</option>
+                      </select>
+                    </div>
+                    <div className="im-form-group">
+                      <label>หมวดหมู่</label>
+                      <select 
+                        value={editProduct.category}
+                        onChange={e => setEditProduct({...editProduct, category: e.target.value})}
+                      >
+                        <option value="วัตถุดิบหลัก">วัตถุดิบหลัก</option>
+                        <option value="ท็อปปิ้ง">ท็อปปิ้ง</option>
+                        <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div className="im-modal-footer">
@@ -522,6 +741,145 @@ export default function InventoryManagement({ role }) {
                   <button type="submit" className="im-btn-confirm">บันทึกการแก้ไข</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========== WITHDRAW (เบิกวัตถุดิบ) MODAL ========== */}
+        {showWithdrawModal && withdrawItem && (
+          <div className="im-modal-overlay" onClick={() => setShowWithdrawModal(false)}>
+            <div className="im-modal" onClick={e => e.stopPropagation()}>
+              <div className="im-modal-header">
+                <h2>เบิกวัตถุดิบ (บันทึก Invoice)</h2>
+                <button className="im-modal-close" onClick={() => setShowWithdrawModal(false)}><FaTimes /></button>
+              </div>
+              <form onSubmit={handleWithdraw}>
+                <div className="im-modal-body">
+                  
+                  {/* Select Product */}
+                  <div className="im-form-group">
+                    <label>เลือกวัตถุดิบที่ต้องการเบิก</label>
+                    <select
+                      value={withdrawItem.ProductID}
+                      onChange={e => {
+                        const sel = inventory.find(i => i.ProductID === e.target.value);
+                        if (sel) setWithdrawItem(sel);
+                      }}
+                      className="im-select"
+                    >
+                      {inventory.map(item => (
+                        <option key={item.ProductID} value={item.ProductID}>
+                          [{item.ProductID}] {item.ProductName} (คงเหลือ: {Number(item.quantity).toFixed(1)} {item.unit})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="im-modal-product-info">
+                    <img src={withdrawItem.image} alt={withdrawItem.ProductName} />
+                    <div>
+                      <h3>{withdrawItem.ProductName}</h3>
+                      <p>รหัสวัตถุดิบ: <strong>{withdrawItem.ProductID}</strong></p>
+                      <p>คงเหลือในคลัง: <strong style={{color: Number(withdrawItem.quantity) <= 0 ? '#ef4444' : '#166534'}}>{Number(withdrawItem.quantity).toFixed(1)} {withdrawItem.unit}</strong></p>
+                    </div>
+                  </div>
+
+                  {/* Weight to Withdraw */}
+                  <div className="im-form-group">
+                    <label>ปริมาณน้ำหนักที่ต้องการเบิก (Weight in {withdrawItem.unit})</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      min="0.01"
+                      max={withdrawItem.quantity > 0 ? withdrawItem.quantity : undefined}
+                      autoFocus
+                      value={withdrawAmount}
+                      onChange={e => setWithdrawAmount(e.target.value)}
+                      placeholder={`ระบุปริมาณที่เบิก (${withdrawItem.unit})`}
+                      required
+                    />
+                    {withdrawAmount && (
+                      <p className="im-form-hint">
+                        คงเหลือหลังเบิก: <strong style={{color: (Number(withdrawItem.quantity) - Number(withdrawAmount)) < 0 ? '#ef4444' : '#111827'}}>
+                          {Math.max(0, Number(withdrawItem.quantity) - Number(withdrawAmount)).toFixed(1)} {withdrawItem.unit}
+                        </strong>
+                        {Number(withdrawAmount) > Number(withdrawItem.quantity) && (
+                          <span style={{color: '#ef4444', display: 'block', marginTop: '4px'}}>
+                            ⚠️ ปริมาณที่เบิกมากกว่าจำนวนคงเหลือในคลัง
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* InvDate */}
+                  <div className="im-form-group">
+                    <label>วันที่บันทึกความเคลื่อนไหว (InvDate)</label>
+                    <input 
+                      type="date"
+                      value={withdrawDate}
+                      onChange={e => setWithdrawDate(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                </div>
+                <div className="im-modal-footer">
+                  <button type="button" className="im-btn-cancel" onClick={() => setShowWithdrawModal(false)}>ยกเลิก</button>
+                  <button type="submit" className="im-btn-confirm" style={{backgroundColor: '#e11d48'}}>
+                    ยืนยันการเบิกวัตถุดิบ
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========== INVOICE HISTORY (ประวัติการเบิก) MODAL ========== */}
+        {showInvoiceModal && (
+          <div className="im-modal-overlay" onClick={() => setShowInvoiceModal(false)}>
+            <div className="im-modal im-modal-wide" onClick={e => e.stopPropagation()}>
+              <div className="im-modal-header">
+                <h2>ประวัติการเบิกและรับวัตถุดิบ (ตาราง Invoice)</h2>
+                <button className="im-modal-close" onClick={() => setShowInvoiceModal(false)}><FaTimes /></button>
+              </div>
+              <div className="im-modal-body">
+                {loadingInvoices ? (
+                  <div className="im-loading">กำลังโหลดข้อมูล...</div>
+                ) : invoices.length === 0 ? (
+                  <div className="im-loading">ยังไม่มีประวัติการเบิกวัตถุดิบ</div>
+                ) : (
+                  <div className="im-invoice-table-wrapper">
+                    <table className="im-invoice-table">
+                      <thead>
+                        <tr>
+                          <th>เลขที่ใบสำคัญ (InvoiceNo)</th>
+                          <th>วันที่ (InvDate)</th>
+                          <th>รหัสวัตถุดิบ (ProductId)</th>
+                          <th>ชื่อวัตถุดิบ (ProductName)</th>
+                          <th style={{textAlign: 'right'}}>ปริมาณน้ำหนัก (Weight)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invoices.map((inv, idx) => (
+                          <tr key={inv.InvoiceNo || idx}>
+                            <td className="im-inv-no">{inv.InvoiceNo}</td>
+                            <td>{new Date(inv.InvDate).toLocaleDateString('th-TH')}</td>
+                            <td><span className="im-inv-badge">{inv.ProductId}</span></td>
+                            <td className="im-inv-name">{inv.ProductName || '-'}</td>
+                            <td style={{textAlign: 'right', fontWeight: 'bold', color: '#dc2626'}}>
+                              -{Number(inv.Weight).toFixed(2)} {inv.unit || 'หน่วย'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <div className="im-modal-footer">
+                <button className="im-btn-cancel" onClick={() => setShowInvoiceModal(false)}>ปิด</button>
+              </div>
             </div>
           </div>
         )}

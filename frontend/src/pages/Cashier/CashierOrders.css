@@ -128,8 +128,14 @@
 
 .co-card-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.co-card-actions .approve,
+.co-card-actions .cooking,
+.co-card-actions .complete {
+  grid-column: span 2;
 }
 
 .co-action-btn {
@@ -143,9 +149,16 @@
   justify-content: center;
   gap: 8px;
   border: none;
+  transition: all 0.15s;
+}
+
+.co-action-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .co-action-btn.view { background: #f3f4f6; color: #4b5563; }
+.co-action-btn.receipt-action-btn { background: #1f2937; color: white; }
 .co-action-btn.approve { background: #22c55e; color: white; }
 .co-action-btn.cooking { background: #f97316; color: white; }
 .co-action-btn.complete { background: #3b82f6; color: white; }
