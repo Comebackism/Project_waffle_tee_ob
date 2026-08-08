@@ -1,0 +1,177 @@
+import React, { useState, useEffect } from 'react';
+import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import './OrderStatus.css';
+
+const API_BASE = 'http://localhost:5000';
+
+const resolveImage = (pic) => {
+  if (!pic) return 'https://via.placeholder.com/60';
+  if (pic.startsWith('http')) return pic;
+  return `${API_BASE}${pic}`;
+};
+
+const STATUS_MAP = {
+  'S01': { label: 'รอชำระเงิน', icon: <FaClock />, color: '#f59e0b', step: 1 },
+  'S02': { label: 'รอดำเนินการ', icon: <FaClock />, color: '#3b82f6', step: 2 },
+  'S03': { label: 'กำลังปรุง', icon: <FaFireAlt />, color: '#f97316', step: 3 },
+  'S04': { label: 'พร้อมรับ', icon: <FaCheckCircle />, color: '#22c55e', step: 4 },
+  'S05': { label: 'เสร็จสิ้น', icon: <FaCheckCircle />, color: '#6b7280', step: 5 },
+};
+
+export default function OrderStatus({ orderId, queueNumber, onBack }) {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchOrder = () => {
+    if (!orderId) return;
+    fetch(`http://localhost:5000/api/orders/${orderId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setOrder(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching order:', err);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchOrder();
+    // Poll every 5 seconds for status updates
+    const interval = setInterval(fetchOrder, 5000);
+    return () => clearInterval(interval);
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className="order-status-page">
+        <div className="os-loading">กำลังโหลดข้อมูลออเดอร์...</div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="order-status-page">
+        <div className="os-loading">ไม่พบข้อมูลออเดอร์</div>
+        <button className="os-back-home-btn" onClick={onBack}>กลับหน้าหลัก</button>
+      </div>
+    );
+  }
+
+  const currentStatus = STATUS_MAP[order.Status_id] || STATUS_MAP['S01'];
+  const steps = [
+    { id: 'S01', label: 'รอชำระเงิน' },
+    { id: 'S02', label: 'รอดำเนินการ' },
+    { id: 'S03', label: 'กำลังปรุง' },
+    { id: 'S04', label: 'พร้อมรับ' },
+  ];
+
+  return (
+    <div className="order-status-page">
+      <div className="os-wrapper">
+
+        {/* Header */}
+        <header className="os-header">
+          <button className="os-back-btn" onClick={onBack} aria-label="กลับ">
+            <FaArrowLeft />
+          </button>
+          <h1 className="os-title">สถานะคำสั่งซื้อ</h1>
+        </header>
+
+        {/* Queue Number Card */}
+        <div className="os-queue-card">
+          <span className="os-queue-label">หมายเลขคิว</span>
+          <span className="os-queue-number">{order.queue_number || queueNumber}</span>
+          <span className="os-order-id">{order.order_id}</span>
+        </div>
+
+        {/* Status Progress */}
+        <div className="os-progress-section">
+          <h2 className="os-section-title">ความคืบหน้า</h2>
+          <div className="os-steps">
+            {steps.map((step, index) => {
+              const stepStatus = STATUS_MAP[step.id];
+              const isActive = currentStatus.step >= stepStatus.step;
+              const isCurrent = order.Status_id === step.id;
+              return (
+                <div key={step.id} className="os-step-row">
+                  <div className={`os-step-dot ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''}`}>
+                    {isActive ? '✓' : index + 1}
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`os-step-line ${isActive ? 'active' : ''}`}></div>
+                  )}
+                  <span className={`os-step-label ${isCurrent ? 'current' : ''}`}>
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Current Status Big Badge */}
+        <div className="os-current-status" style={{ backgroundColor: currentStatus.color + '20', borderColor: currentStatus.color }}>
+          <span className="os-status-icon" style={{ color: currentStatus.color }}>{currentStatus.icon}</span>
+          <span className="os-status-text" style={{ color: currentStatus.color }}>{currentStatus.label}</span>
+        </div>
+
+        {/* Queue Ahead Card */}
+        {order.Status_id !== 'S04' && order.Status_id !== 'S05' && (
+          <div className="os-queue-ahead-card">
+            <div className="os-queue-ahead-info">
+              <span className="os-queue-ahead-title">ตำแหน่งคิว</span>
+              <span className="os-queue-ahead-subtitle">คิวก่อนหน้าคุณ</span>
+            </div>
+            <div className="os-queue-ahead-number">
+              {order.queue_ahead || 0}
+            </div>
+          </div>
+        )}
+
+        {/* Order Items */}
+        {order.items && order.items.length > 0 && (
+          <div className="os-items-section">
+            <h2 className="os-section-title">รายการสั่งซื้อ</h2>
+            {order.items.map((item, idx) => (
+              <div key={idx} className="os-item-card">
+                <img
+                  src={resolveImage(item.menu_picture)}
+                  alt={item.menu_name}
+                  className="os-item-img"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/60'; }}
+                />
+                <div className="os-item-info">
+                  <span className="os-item-name">{item.menu_name}</span>
+                  <span className="os-item-qty">x{item.quantity}</span>
+                  {item.toppings && item.toppings.length > 0 && (
+                    <div className="os-item-toppings">
+                      {item.toppings.map((t, i) => (
+                        <span key={i} className="os-topping-tag">+ {t.topping_name}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <span className="os-item-price">฿{Number(item.menu_price) * item.quantity}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Total */}
+        <div className="os-total-card">
+          <span>ยอดรวม</span>
+          <span className="os-total-price">฿{Number(order.total_amount).toFixed(2)}</span>
+        </div>
+
+        {/* Back to home */}
+        <button className="os-back-home-btn" onClick={onBack}>
+          กลับหน้าหลัก
+        </button>
+
+      </div>
+    </div>
+  );
+}

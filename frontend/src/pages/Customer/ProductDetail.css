@@ -1,0 +1,343 @@
+.product-detail-container {
+  width: 100%;
+  max-width: 1000px;
+  /* ความกว้างกำลังดีบนจอ Desktop */
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+/* --- Header ส่วนบน --- */
+.product-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-dark, #333333);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #f0f0f0;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dark, #333333);
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.header-placeholder {
+  width: 36px;
+  /* บาลานซ์พื้นที่ให้ชื่อตรงกลางเป๊ะ */
+}
+
+/* --- Layout หลักแบ่ง 2 คอลัมน์บน Desktop --- */
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* ซ้าย-ขวา เท่ากัน */
+  gap: 32px;
+  align-items: start;
+}
+
+/* --- ฝั่งซ้าย: รูปภาพสินค้า --- */
+.product-image-container {
+  background-color: var(--white, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-image {
+  border-radius: 20px;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* --- ฝั่งขวา: รายละเอียด & ท็อปปิ้ง --- */
+.product-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* การ์ดชื่อสินค้า + ราคา */
+.product-main-card {
+  background-color: var(--white, #ffffff);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.product-title-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.product-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dark, #1a1a1a);
+  margin: 0;
+}
+
+.product-price {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary-red, #B30021);
+}
+
+.product-description {
+  font-size: 14px;
+  color: var(--text-gray, #666666);
+  line-height: 1.6;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+/* การ์ดเลือกท็อปปิ้ง */
+.topping-card {
+  background-color: var(--white, #ffffff);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+}
+
+.topping-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.topping-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark, #1a1a1a);
+  margin: 0;
+}
+
+.topping-badge {
+  background-color: #f2f2f2;
+  color: #666666;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.topping-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ตัวเลือกท็อปปิ้งแต่ละตัว */
+.topping-item {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.topping-item.selected {
+  border-color: var(--primary-red, #B30021);
+  background-color: #fff9f9;
+}
+
+.topping-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.topping-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.topping-details {
+  font-size: 12px;
+  color: var(--primary-red, #B30021);
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+}
+
+.topping-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.topping-item.selected .topping-checkbox {
+  background-color: var(--primary-red, #B30021);
+  border-color: var(--primary-red, #B30021);
+  color: #ffffff;
+}
+
+/* --- แถบปุ่มกดด้านล่าง (Action Bar) --- */
+.action-bar-container {
+  margin-top: 24px;
+  bottom: 60px;
+  background-color: var(--white, #ffffff);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+/* ตัวปรับจำนวน + / - */
+.quantity-control {
+  display: flex;
+  align-items: center;
+  background-color: #f2f4f7;
+  border-radius: 30px;
+  padding: 4px 8px;
+}
+
+.quantity-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.quantity-btn:hover {
+  background-color: #e4e7ec;
+}
+
+.quantity-value {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 12px;
+  color: #1a1a1a;
+}
+
+/* ปุ่มเพิ่มลงตะกร้าสีแดง */
+.add-to-cart-btn {
+  flex: 1;
+  background-color: var(--primary-red, #B30021);
+  color: #ffffff;
+  border: none;
+  border-radius: 30px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(179, 0, 33, 0.3);
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #90001a;
+}
+
+.add-to-cart-btn:active {
+  transform: scale(0.99);
+}
+
+/* =========================================================
+   📱 RESPONSIVE MOBILE LAYOUT (จอมือถือ)
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .product-detail-container {
+    padding-bottom: 160px;
+    /* เว้นพื้นที่ด้านล่างไว้ให้ Fixed Action Bar */
+  }
+
+  /* ยุบกลับเป็น 1 คอลัมน์ตามรูปภาพเป๊ะๆ */
+  .product-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .product-image-container {
+    padding: 12px;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* .product-image {
+    max-width: 280px;
+  } */
+
+  /* ย้าย Action Bar ไปตรึงลอยอยู่ล่างสุดของจอมือถือ */
+  .action-bar-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 20px 20px 0 0;
+    margin-top: 0;
+    border: none;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    padding: 12px 16px 16px 16px;
+  }
+
+  .quantity-control {
+    padding: 2px 4px;
+  }
+
+  .quantity-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .add-to-cart-btn {
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+}

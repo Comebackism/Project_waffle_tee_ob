@@ -1,0 +1,407 @@
+/* ==========================================================================
+   DESKTOP STYLES (Default / Desktop First)
+   ========================================================================== */
+
+.checkout-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 30px 16px 60px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.checkout-wrapper {
+    width: 100%;
+    max-width: 520px;
+    /* ขนาดจำลองเหมือนหน้าจอมือถือ/การ์ดกึ่งกลางบนคอม */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header */
+.checkout-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkout-back-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #111827;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.checkout-back-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.checkout-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+/* รายการสินค้า */
+.checkout-items-section {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.checkout-item-card {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
+}
+
+.checkout-item-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.checkout-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.checkout-item-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkout-item-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.checkout-item-qty {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.checkout-item-price-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.checkout-price-main {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #c8102e;
+}
+
+.checkout-price-sub {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.checkout-item-toppings {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.checkout-topping-line {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* การ์ดสรุปยอดเงิน (กล่องสีเทาอ่อน) */
+.checkout-summary-card {
+    background-color: #f3f4f6;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.summary-val {
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-hr {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 8px 0;
+}
+
+.summary-total-label {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.summary-total-price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #c8102e;
+}
+
+/* เลือกวิธีการชำระเงิน */
+.payment-method-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.payment-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.payment-option-card {
+    background-color: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.payment-icon {
+    font-size: 1.8rem;
+    color: #6b7280;
+}
+
+.payment-option-card.active {
+    border-color: #c8102e;
+    color: #c8102e;
+}
+
+.payment-option-card.active .payment-icon {
+    color: #c8102e;
+}
+
+/* การ์ดสแกน QR Code พร้อมเพย์ */
+.qr-container-card {
+    background-color: #ffffff;
+    border: 1.5px solid #fecdd3;
+    /* กรอบสีชมพูอ่อนเหมือนต้นแบบ */
+    border-radius: 20px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.qr-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.qr-image-wrapper {
+    background-color: #4b5563;
+    /* สีพื้นเทาเข้มรอบ QR */
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-image-inner {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+}
+
+.qr-code-img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.account-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #c8102e;
+    margin: 0;
+}
+
+.account-pp {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 0;
+}
+
+/* ปุ่มอัปโหลดสลิป */
+.upload-slip-label {
+    width: 100%;
+    cursor: pointer;
+}
+
+.upload-slip-btn {
+    background-color: #c8102e;
+    color: #ffffff;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.upload-slip-btn:hover {
+    background-color: #a70d26;
+}
+
+.upload-slip-btn.uploaded {
+    background-color: #059669;
+}
+
+.slip-preview-container {
+    margin-top: 8px;
+    max-width: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.slip-preview-img {
+    width: 100%;
+    display: block;
+}
+
+.upload-note {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* ปุ่มแอ็กชันล่างสุด */
+.checkout-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.confirm-order-btn {
+    width: 100%;
+    background-color: #18181b;
+    /* สีดำเข้ม */
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    padding: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.confirm-order-btn:hover {
+    opacity: 0.9;
+}
+
+.cancel-order-btn {
+    width: 100%;
+    background-color: #ffffff;
+    color: #c8102e;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1.5px solid #c8102e;
+    border-radius: 50px;
+    padding: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-order-btn:hover {
+    background-color: #fff1f2;
+}
+
+.checkout-footer-brand {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 10px;
+}
+
+
+/* ==========================================================================
+   MOBILE RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    .checkout-page {
+        padding: 12px 12px 40px 12px;
+    }
+
+    .checkout-wrapper {
+        max-width: 100%;
+    }
+
+    .checkout-title {
+        font-size: 1.25rem;
+    }
+
+    .qr-code-img {
+        width: 130px;
+        height: 130px;
+    }
+}

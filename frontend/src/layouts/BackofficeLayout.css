@@ -1,0 +1,166 @@
+.backoffice-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f9fafb;
+  overflow: hidden;
+  font-family: 'Prompt', sans-serif;
+}
+
+/* Sidebar */
+.bo-sidebar {
+  width: 260px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.03);
+  z-index: 10;
+}
+
+.bo-brand {
+  margin-bottom: 40px;
+}
+
+.bo-brand-title {
+  color: #b91c1c;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 8px 0;
+}
+
+.bo-machine-id {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.bo-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.bo-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.bo-nav-item:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.bo-nav-item.active {
+  background-color: #b91c1c;
+  color: white;
+}
+
+.bo-nav-icon {
+  font-size: 18px;
+}
+
+/* User Profile */
+.bo-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  margin-top: auto;
+}
+
+.bo-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #b91c1c;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.bo-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.bo-user-role {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.bo-user-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  padding: 8px;
+  z-index: 50;
+  border: 1px solid #e5e7eb;
+}
+
+.bo-user-menu-title {
+  font-size: 11px;
+  color: #9ca3af;
+  padding: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.bo-user-menu-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-user-menu-item:hover {
+  background: #f3f4f6;
+}
+
+.bo-user-menu-item.active {
+  background: #fef2f2;
+}
+
+.bo-umi-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.bo-umi-role {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Main Content Area */
+.bo-main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+}

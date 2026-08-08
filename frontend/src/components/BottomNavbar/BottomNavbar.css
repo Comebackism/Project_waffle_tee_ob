@@ -1,0 +1,73 @@
+.bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%); /* จัดให้อยู่ตรงกลางหน้าจอ Desktop */
+  width: 100%;
+  max-width: 1200px; /* ความกว้างเท่ากับพื้นที่หลักบน Desktop */
+  background-color: var(--white, #ffffff);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0 12px 0;
+  
+  /* โค้งมุมบนตามรูปภาพ */
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  
+  /* เงาด้านบนและเส้นขอบลอย */
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(224, 224, 224, 0.6);
+  z-index: 1000;
+}
+
+.bottom-nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-gray, #888888);
+  cursor: pointer;
+  padding: 4px 16px;
+  transition: color 0.2s ease, transform 0.1s ease;
+  flex: 1;
+}
+
+.bottom-nav-icon {
+  font-size: 20px;
+}
+
+.bottom-nav-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 🔴 สไตล์สำหรับสถานะที่กำลังเปิดอยู่ (Active State) */
+.bottom-nav-item.active {
+  color: var(--primary-red, #B30021);
+  font-weight: bold;
+}
+
+.bottom-nav-item:hover {
+  color: var(--primary-red, #B30021);
+}
+
+/* 📱 Responsive สำหรับมือถือ */
+@media (max-width: 768px) {
+  .bottom-navbar {
+    max-width: 100%; /* เต็มจอพอดีบนมือถือ */
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 8px 0 10px 0;
+  }
+
+  .bottom-nav-icon {
+    font-size: 18px;
+  }
+
+  .bottom-nav-label {
+    font-size: 12px;
+  }
+}

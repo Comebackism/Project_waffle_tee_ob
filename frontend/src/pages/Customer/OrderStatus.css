@@ -1,0 +1,331 @@
+.order-status-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 50%, #fefce8 100%);
+  padding-bottom: 40px;
+}
+
+.os-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Header */
+.os-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.os-back-btn {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #374151;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.15s;
+}
+.os-back-btn:hover { transform: scale(1.05); }
+
+.os-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Queue Card */
+.os-queue-card {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  color: white;
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
+}
+
+.os-queue-label {
+  display: block;
+  font-size: 14px;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.os-queue-number {
+  display: block;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.os-order-id {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Progress Section */
+.os-progress-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.os-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.os-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.os-step-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 20px;
+}
+.os-step-row:last-child { padding-bottom: 0; }
+
+.os-step-dot {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: #e5e7eb;
+  color: #9ca3af;
+  z-index: 2;
+  transition: all 0.3s;
+}
+
+.os-step-dot.active {
+  background: #22c55e;
+  color: white;
+}
+
+.os-step-dot.current {
+  background: #dc2626;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.1); }
+}
+
+.os-step-line {
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  width: 2px;
+  height: 20px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+.os-step-line.active { background: #22c55e; }
+
+.os-step-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+.os-step-label.current {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* Current Status Badge */
+.os-current-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 2px solid;
+  margin-bottom: 20px;
+}
+
+.os-status-icon { font-size: 22px; }
+
+.os-status-text {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Queue Ahead Card */
+.os-queue-ahead-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid #f3f4f6;
+}
+
+.os-queue-ahead-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-queue-ahead-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.os-queue-ahead-subtitle {
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.os-queue-ahead-number {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fef2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #b91c1c;
+}
+
+/* Order Items */
+.os-items-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.os-item-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.os-item-card:last-child { border-bottom: none; }
+
+.os-item-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.os-item-info {
+  flex: 1;
+}
+
+.os-item-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.os-item-qty {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.os-item-toppings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.os-topping-tag {
+  font-size: 11px;
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.os-item-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+/* Total Card */
+.os-total-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.os-total-price {
+  color: #dc2626;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Back Home Button */
+.os-back-home-btn {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #dc2626;
+  background: white;
+  color: #dc2626;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.os-back-home-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.os-loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 16px;
+  color: #6b7280;
+}

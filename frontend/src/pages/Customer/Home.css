@@ -1,0 +1,38 @@
+.home-container {
+  width: 100%;
+}
+
+.category-badge-wrapper {
+  margin-bottom: 24px;
+}
+
+.category-badge {
+  background-color: var(--primary-red, #B30021);
+  color: var(--white, #ffffff);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+/* Desktop Grid Layout: แสดงการ์ด 3 คอลัมน์ */
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .food-grid {
+    grid-template-columns: repeat(2, 1fr); /* จอแท็บเล็ตเหลือ 2 คอลัมน์ */
+  }
+}
+
+@media (max-width: 640px) {
+  .food-grid {
+    grid-template-columns: 1fr; /* จอมือถือเหลือ 1 คอลัมน์ */
+    gap: 16px;
+  }
+}

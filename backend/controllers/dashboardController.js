@@ -1,0 +1,115 @@
+const db = require('../config/db');
+
+exports.getDashboardStats = async (req, res) => {
+  try {
+    // 1. Today's Sales
+    const todaySalesRes = await db.query(`
+      SELECT SUM(total_amount) as total
+      FROM "Order"
+      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05'
+    `);
+    const todaySales = parseFloat(todaySalesRes.rows[0].total || 0);
+
+    // 2. Today's Orders
+    const totalOrdersRes = await db.query(`
+      SELECT COUNT(*) as count
+      FROM "Order"
+      WHERE DATE(created_at) = CURRENT_DATE
+    `);
+    const totalOrders = parseInt(totalOrdersRes.rows[0].count || 0);
+
+    // 3. All-time Sales
+    const allTimeSalesRes = await db.query(`
+      SELECT SUM(total_amount) as total
+      FROM "Order"
+      WHERE "Status_id" = 'S05'
+    `);
+    const totalSales = parseFloat(allTimeSalesRes.rows[0].total || 0);
+
+    // 4. Sales Trend (Weekly or Monthly)
+    const range = req.query.range || 'week';
+    const intervalStr = range === 'month' ? '29 days' : '6 days';
+    
+    const weeklySalesRes = await db.query(`
+      WITH dates AS (
+        SELECT generate_series(
+          CURRENT_DATE - INTERVAL '${intervalStr}',
+          CURRENT_DATE,
+          '1 day'::interval
+        )::date AS date
+      )
+      SELECT 
+        TO_CHAR(d.date, 'Day') as day_name,
+        d.date,
+        COALESCE(SUM(o.total_amount), 0) as sales
+      FROM dates d
+      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05'
+      GROUP BY d.date
+      ORDER BY d.date ASC
+    `);
+
+    // Format for recharts
+    const thaiDays = {
+      'Monday   ': 'จ.', 'Tuesday  ': 'อ.', 'Wednesday': 'พ.', 'Thursday ': 'พฤ.', 'Friday   ': 'ศ.', 'Saturday ': 'ส.', 'Sunday   ': 'อา.'
+    };
+    const weeklySales = weeklySalesRes.rows.map(r => {
+      const d = new Date(r.date);
+      const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+      const fullDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+      const dayName = thaiDays[r.day_name] || r.day_name.trim().substring(0,2);
+      return {
+        name: `${dayName} ${shortDate}`,
+        fullDate: fullDate,
+        sales: parseFloat(r.sales)
+      };
+    });
+
+    // 5. Best Selling Products (Current Month)
+    const bestSellingRes = await db.query(`
+      SELECT 
+        m.name,
+        m."Picture" as image,
+        SUM(oi.quantity) as sold
+      FROM "Order_Item" oi
+      JOIN "Order" o ON oi.order_id = o.order_id
+      JOIN "Menu" m ON oi.menu_id = m.menu_id
+      WHERE o."Status_id" = 'S05'
+      GROUP BY m.menu_id, m.name, m."Picture"
+      ORDER BY sold DESC
+      LIMIT 3
+    `);
+    const bestSelling = bestSellingRes.rows;
+
+    // 6. Stock Alerts (Real data from Stock table)
+    const stockAlertsRes = await db.query(`
+      SELECT s.stock_id, s."ProductID", p."ProductName", s.quantity, s.unit
+      FROM "Stock" s
+      JOIN "Product" p ON s."ProductID" = p."ProductID"
+      WHERE s.quantity < 5
+      ORDER BY s.quantity ASC
+    `);
+    const stockAlerts = stockAlertsRes.rows.map(row => ({
+      id: row.stock_id,
+      productId: row.ProductID,
+      name: row.ProductName,
+      status: row.quantity <= 0 
+        ? `หมดแล้ว` 
+        : `ใกล้หมด (เหลือ ${Number(row.quantity).toFixed(row.unit === 'กิโลกรัม' || row.unit === 'กรัม' ? 1 : 0)}${row.unit})`,
+      quantity: row.quantity,
+      unit: row.unit
+    }));
+
+    res.json({
+      todaySales,
+      totalOrders,
+      totalSales,
+      weeklySales,
+      bestSelling,
+      stockAlerts
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
