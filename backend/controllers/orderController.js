@@ -231,12 +231,43 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// Clear all orders (Reset System for the day)
+// Clear today's orders only (Reset daily queue, keep historical data)
 exports.clearAllOrders = async (req, res) => {
   try {
-    await db.query('TRUNCATE TABLE "Order" CASCADE');
-    res.json({ message: 'ล้างข้อมูลออเดอร์ทั้งหมดเรียบร้อยแล้ว (รีเซ็ตคิวและรหัส)' });
+    await db.query('BEGIN');
+
+    // 1. Delete toppings of today's order items
+    await db.query(`
+      DELETE FROM "Order_Item_Topping" 
+      WHERE order_item_id IN (
+        SELECT oi.order_item_id FROM "Order_Item" oi
+        JOIN "Order" o ON oi.order_id = o.order_id
+        WHERE DATE(o.created_at) = CURRENT_DATE
+      )
+    `);
+
+    // 2. Delete today's order items
+    await db.query(`
+      DELETE FROM "Order_Item" 
+      WHERE order_id IN (
+        SELECT order_id FROM "Order" 
+        WHERE DATE(created_at) = CURRENT_DATE
+      )
+    `);
+
+    // 3. Delete today's orders
+    const result = await db.query(`
+      DELETE FROM "Order" 
+      WHERE DATE(created_at) = CURRENT_DATE
+    `);
+
+    await db.query('COMMIT');
+
+    res.json({ 
+      message: `ล้างออเดอร์วันนี้เรียบร้อยแล้ว (ลบ ${result.rowCount} รายการ) คิวจะเริ่มต้นใหม่` 
+    });
   } catch (err) {
+    await db.query('ROLLBACK');
     console.error(err.message);
     res.status(500).send('Server Error');
   }
