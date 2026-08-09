@@ -10,7 +10,7 @@ exports.getDashboardStats = async (req, res) => {
     `);
     const todaySales = parseFloat(todaySalesRes.rows[0].total || 0);
 
-    // 2. Today's Orders
+    // 2. Today's Orders (live from Order table)
     const totalOrdersRes = await db.query(`
       SELECT COUNT(*) as count
       FROM "Order"
@@ -18,13 +18,19 @@ exports.getDashboardStats = async (req, res) => {
     `);
     const totalOrders = parseInt(totalOrdersRes.rows[0].count || 0);
 
-    // 3. All-time Sales
+    // 3. All-time Sales (live orders + archived daily summaries)
     const allTimeSalesRes = await db.query(`
-      SELECT SUM(total_amount) as total
+      SELECT COALESCE(SUM(total_amount), 0) as total
       FROM "Order"
       WHERE "Status_id" = 'S05'
     `);
-    const totalSales = parseFloat(allTimeSalesRes.rows[0].total || 0);
+    const archivedSalesRes = await db.query(`
+      SELECT COALESCE(SUM(total_sales), 0) as total,
+             COALESCE(SUM(total_orders), 0) as orders
+      FROM "Daily_Summary"
+    `);
+    const totalSales = parseFloat(allTimeSalesRes.rows[0].total || 0) + parseFloat(archivedSalesRes.rows[0].total || 0);
+    const archivedOrders = parseInt(archivedSalesRes.rows[0].orders || 0);
 
     // 4. Sales Trend (Weekly or Monthly)
     const range = req.query.range || 'week';
@@ -41,10 +47,11 @@ exports.getDashboardStats = async (req, res) => {
       SELECT 
         TO_CHAR(d.date, 'Day') as day_name,
         d.date,
-        COALESCE(SUM(o.total_amount), 0) as sales
+        COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
       FROM dates d
       LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05'
-      GROUP BY d.date
+      LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
+      GROUP BY d.date, ds.total_sales
       ORDER BY d.date ASC
     `);
 
@@ -101,7 +108,7 @@ exports.getDashboardStats = async (req, res) => {
 
     res.json({
       todaySales,
-      totalOrders,
+      totalOrders: totalOrders + archivedOrders,
       totalSales,
       weeklySales,
       bestSelling,

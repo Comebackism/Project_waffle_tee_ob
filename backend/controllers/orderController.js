@@ -236,6 +236,28 @@ exports.clearAllOrders = async (req, res) => {
   try {
     await db.query('BEGIN');
 
+    // 0. Save today's summary BEFORE deleting (preserve sales history)
+    const summaryRes = await db.query(`
+      SELECT 
+        COUNT(*) as order_count,
+        COALESCE(SUM(total_amount), 0) as total_sales
+      FROM "Order"
+      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05'
+    `);
+    const todayOrderCount = parseInt(summaryRes.rows[0].order_count || 0);
+    const todaySales = parseFloat(summaryRes.rows[0].total_sales || 0);
+
+    if (todayOrderCount > 0 || todaySales > 0) {
+      await db.query(`
+        INSERT INTO "Daily_Summary" (summary_date, total_orders, total_sales)
+        VALUES (CURRENT_DATE, $1, $2)
+        ON CONFLICT (summary_date) 
+        DO UPDATE SET 
+          total_orders = "Daily_Summary".total_orders + $1,
+          total_sales = "Daily_Summary".total_sales + $2
+      `, [todayOrderCount, todaySales]);
+    }
+
     // 1. Delete toppings of today's order items
     await db.query(`
       DELETE FROM "Order_Item_Topping" 
@@ -264,7 +286,7 @@ exports.clearAllOrders = async (req, res) => {
     await db.query('COMMIT');
 
     res.json({ 
-      message: `ล้างออเดอร์วันนี้เรียบร้อยแล้ว (ลบ ${result.rowCount} รายการ) คิวจะเริ่มต้นใหม่` 
+      message: `ล้างออเดอร์วันนี้เรียบร้อยแล้ว (ลบ ${result.rowCount} รายการ) ยอดขาย ฿${todaySales.toFixed(2)} ถูกบันทึกไว้ในระบบ` 
     });
   } catch (err) {
     await db.query('ROLLBACK');
