@@ -180,7 +180,11 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
 
         {/* Receipt Modal */}
         {showReceipt && (
-          <ReceiptSlip order={order} onClose={() => setShowReceipt(false)} />
+          <ReceiptSlip 
+            order={order} 
+            onClose={() => setShowReceipt(false)} 
+            hidePrintButton={true}
+          />
         )}
 
       </div>

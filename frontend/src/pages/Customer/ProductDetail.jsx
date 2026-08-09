@@ -205,7 +205,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
                       <div className="topping-info">
                         <span className="topping-name">{item.name}</span>
                         <span className="topping-details">
-                          + {Number(item.price)} | <FaFire style={{ margin: 'auto 2px', color: '#ff6b00', fontSize: '12px', verticalAlign: 'middle' }} /> + {item.Calories} kcal
+                          + {Number(item.price)} บาท | <FaFire style={{ margin: 'auto 2px', color: '#ff6b00', fontSize: '12px', verticalAlign: 'middle' }} /> + {item.Calories} kcal
                         </span>
                       </div>
                       <div className="topping-checkbox">

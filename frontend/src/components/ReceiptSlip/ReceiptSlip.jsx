@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { FaPrint, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import './ReceiptSlip.css';
 
-export default function ReceiptSlip({ order, onClose, autoShow = false }) {
+export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrintButton = false }) {
   const receiptRef = useRef(null);
 
   if (!order) return null;
@@ -47,9 +47,11 @@ export default function ReceiptSlip({ order, onClose, autoShow = false }) {
             <span>ชำระเงินเรียบร้อยแล้ว</span>
           </div>
           <div className="receipt-btn-group">
-            <button className="receipt-print-btn" onClick={handlePrint}>
-              <FaPrint /> พิมพ์สลิป
-            </button>
+            {!hidePrintButton && (
+              <button className="receipt-print-btn" onClick={handlePrint}>
+                <FaPrint /> พิมพ์สลิป
+              </button>
+            )}
             {onClose && (
               <button className="receipt-close-btn" onClick={onClose}>
                 <FaTimes />

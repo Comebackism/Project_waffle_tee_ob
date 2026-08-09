@@ -133,7 +133,7 @@ export default function MyOrders({ onBack, onViewOrder }) {
 
       {/* Receipt Slip Modal */}
       {receiptOrder && (
-        <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} />
+        <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} hidePrintButton={true} />
       )}
     </div>
   );
