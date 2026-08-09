@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle } from 'react-icons/fa';
 import './Checkout.css';
 
-export default function Checkout({ cartItems = [], onBack, onConfirmOrder, onCancelOrder }) {
+export default function Checkout({ cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
     // State เลือกวิธีชำระเงิน ('promptpay' หรือ 'cash')
     const [paymentMethod, setPaymentMethod] = useState('promptpay');
 
@@ -118,6 +118,14 @@ export default function Checkout({ cartItems = [], onBack, onConfirmOrder, onCan
                         );
                     })}
                 </div>
+
+                {/* แสดงหมายเหตุ (ถ้ามี) */}
+                {cartNote && (
+                    <div className="checkout-note-card" style={{ background: '#fff', padding: '16px', borderRadius: '12px', marginTop: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        <span style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>หมายเหตุ:</span>
+                        <span style={{ fontSize: '14px', color: '#ef4444' }}>{cartNote}</span>
+                    </div>
+                )}
 
                 {/* การ์ดสรุปราคารวม & ภาษี */}
                 <div className="checkout-summary-card">

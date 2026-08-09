@@ -168,6 +168,14 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
           </div>
         )}
 
+        {/* Note */}
+        {order.note && (
+          <div className="os-note-card" style={{ background: '#fff', padding: '16px', borderRadius: '12px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <span style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>หมายเหตุ:</span>
+            <span style={{ fontSize: '14px', color: '#ef4444' }}>{order.note}</span>
+          </div>
+        )}
+
         {/* Total */}
         <div className="os-total-card">
           <span>ยอดรวม</span>

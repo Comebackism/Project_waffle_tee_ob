@@ -19,6 +19,7 @@ function CustomerApp() {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [cart, setCart] = useState([]);
+  const [cartNote, setCartNote] = useState('');
 
   // State for order tracking after checkout
   const [lastOrderId, setLastOrderId] = useState(null);
@@ -71,6 +72,8 @@ function CustomerApp() {
           <Cart
             cartItems={cart}
             setCartItems={setCart}
+            cartNote={cartNote}
+            setCartNote={setCartNote}
             onBack={() => setCurrentScreen('home')}
             onGoToCheckout={() => setCurrentScreen('checkout')}
           />
@@ -79,9 +82,11 @@ function CustomerApp() {
         return (
           <Checkout
             cartItems={cart}
+            cartNote={cartNote}
             onBack={() => setCurrentScreen('cart')}
             onCancelOrder={() => {
               setCart([]);
+              setCartNote('');
               setCurrentScreen('home');
             }}
             onConfirmOrder={async (orderData) => {
@@ -91,7 +96,7 @@ function CustomerApp() {
                   total_amount: orderData.grandTotal,
                   total_calories: orderData.totalCalories,
                   slip_picture: orderData.slipBase64 || null,
-                  note: '',
+                  note: cartNote || '',
                   items: orderData.cartItems.map(item => ({
                     menu_id: item.productId,
                     quantity: item.quantity,
@@ -121,6 +126,7 @@ function CustomerApp() {
                 setLastOrderId(result.order_id);
                 setLastQueueNumber(result.queue_number);
                 setCart([]);
+                setCartNote('');
                 setCurrentScreen('orderStatus');
               } catch (err) {
                 console.error(err);

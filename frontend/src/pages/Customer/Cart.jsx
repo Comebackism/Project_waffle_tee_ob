@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { FaArrowLeft, FaTrashAlt, FaPlus, FaMinus, FaArrowRight } from 'react-icons/fa';
 import './Cart.css';
 
-export default function Cart({ cartItems = [], setCartItems, onBack, onGoToCheckout }) {
-    const [note, setNote] = useState('');
-
+export default function Cart({ cartItems = [], setCartItems, cartNote = '', setCartNote, onBack, onGoToCheckout }) {
     // เพิ่มจำนวนสินค้า
     const increaseQuantity = (cartId) => {
         setCartItems(cartItems.map(item =>
@@ -138,8 +136,8 @@ export default function Cart({ cartItems = [], setCartItems, onBack, onGoToCheck
                                     className="cart-note-input"
                                     rows="2"
                                     placeholder="เช่น ขอช้อนส้อม, แยกน้ำหวาน"
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
+                                    value={cartNote}
+                                    onChange={(e) => setCartNote(e.target.value)}
                                 />
                             </div>
 

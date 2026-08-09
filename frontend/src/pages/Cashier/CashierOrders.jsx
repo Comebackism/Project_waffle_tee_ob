@@ -168,6 +168,11 @@ export default function CashierOrders() {
                   <div className="co-card-total">
                     ฿{Number(order.total_amount).toFixed(2)}
                   </div>
+                  {order.note && (
+                    <div className="co-card-note" style={{ marginTop: '8px', fontSize: '13px', color: '#ef4444', background: '#fee2e2', padding: '6px 10px', borderRadius: '6px' }}>
+                      หมายเหตุ: {order.note}
+                    </div>
+                  )}
                 </div>
 
                 <div className="co-card-actions">
@@ -211,6 +216,12 @@ export default function CashierOrders() {
               </div>
               <div className="co-modal-body">
                 <p><strong>ยอดรวม:</strong> ฿{Number(selectedOrder.total_amount).toFixed(2)}</p>
+                
+                {selectedOrder.note && (
+                  <p style={{ color: '#ef4444', background: '#fee2e2', padding: '8px 12px', borderRadius: '8px', marginTop: '8px' }}>
+                    <strong>หมายเหตุ:</strong> {selectedOrder.note}
+                  </p>
+                )}
                 
                 {selectedOrder.pay_method === 'promptpay' && selectedOrder.slip_picture && (
                   <div style={{marginTop: '16px', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', textAlign: 'center'}}>
