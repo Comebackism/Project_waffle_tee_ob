@@ -6,7 +6,7 @@ import ProductDetail from './pages/Customer/ProductDetail';
 import Cart from './pages/Customer/Cart';
 import Checkout from './pages/Customer/Checkout';
 import OrderStatus from './pages/Customer/OrderStatus';
-import CashierDashboard from './pages/Cashier/CashierDashboard';
+import CashierDashboard from './pages/Cashier/CashierDashboard';  // Now Admin-only dashboard
 import CashierOrders from './pages/Cashier/CashierOrders';
 import KitchenKDS from './pages/Kitchen/KitchenKDS';
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -168,12 +168,20 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<CustomerApp />} />
-      {/* Cashier Routes */}
-      <Route path="/cashier" element={
-        <ProtectedRoute allowedRoles={['R01', 'R02']}>
+
+      {/* Admin Routes — Admin (R01) can access everything */}
+      <Route path="/admin" element={
+        <ProtectedRoute allowedRoles={['R01']}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/dashboard" element={
+        <ProtectedRoute allowedRoles={['R01']}>
           <CashierDashboard />
         </ProtectedRoute>
       } />
+
+      {/* Cashier Routes — Cashier (R02) can access orders & inventory only */}
       <Route path="/cashier/orders" element={
         <ProtectedRoute allowedRoles={['R01', 'R02']}>
           <CashierOrders />
@@ -187,13 +195,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
-      {/* Admin Routes */}
-      <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={['R01']}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-      
+      {/* Shared Routes */}
       <Route path="/inventory" element={
         <ProtectedRoute allowedRoles={['R01', 'R02']}>
           <InventoryManagement role={userRole === 'R01' ? 'admin' : 'cashier'} />

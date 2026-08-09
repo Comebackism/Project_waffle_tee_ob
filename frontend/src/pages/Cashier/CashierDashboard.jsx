@@ -41,7 +41,7 @@ export default function CashierDashboard() {
   }, [timeRange]);
 
   return (
-    <BackofficeLayout role="cashier">
+    <BackofficeLayout role="admin">
       {loading || !stats ? (
         <div className="cd-loading">กำลังโหลดข้อมูล...</div>
       ) : (

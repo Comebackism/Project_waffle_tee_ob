@@ -63,7 +63,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
       
       // Redirect based on role
       if (pendingUser.Role_id === 'R01') navigate('/admin');
-      else if (pendingUser.Role_id === 'R02') navigate('/cashier');
+      else if (pendingUser.Role_id === 'R02') navigate('/cashier/orders');
       else if (pendingUser.Role_id === 'R03') navigate('/kitchen');
     } else {
       setPasswordError('รหัสผ่านไม่ถูกต้อง');
@@ -74,7 +74,9 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     if (role === 'admin') {
       return [
         { path: '/admin', label: 'จัดการพนักงาน', icon: <FaUsers /> },
-        { path: '/cashier', label: 'แดชบอร์ดแคชเชียร์', icon: <FaChartBar /> },
+        { path: '/admin/dashboard', label: 'แดชบอร์ด', icon: <FaChartBar /> },
+        { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
+        { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
         { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
       ];
     }
@@ -84,9 +86,8 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
         { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
       ];
     }
-    // Default to cashier
+    // Default to cashier — no dashboard, orders & inventory only
     return [
-      { path: '/cashier', label: 'แดชบอร์ด', icon: <FaChartBar /> },
       { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
       { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
     ];

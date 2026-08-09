@@ -98,8 +98,12 @@ export default function CashierOrders() {
     }
   };
 
+  // Determine layout role from logged-in user
+  const currentUserStr = localStorage.getItem('currentUser');
+  const layoutRole = currentUserStr ? (JSON.parse(currentUserStr).Role_id === 'R01' ? 'admin' : 'cashier') : 'cashier';
+
   return (
-    <BackofficeLayout role="cashier">
+    <BackofficeLayout role={layoutRole}>
       <div className="co-page">
         <header className="co-header">
           <div>

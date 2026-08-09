@@ -120,8 +120,12 @@ export default function KitchenKDS() {
     );
   };
 
+  // Determine layout role from logged-in user
+  const currentUserStr = localStorage.getItem('currentUser');
+  const layoutRole = currentUserStr ? (JSON.parse(currentUserStr).Role_id === 'R01' ? 'admin' : 'kitchen') : 'kitchen';
+
   return (
-    <BackofficeLayout role="kitchen">
+    <BackofficeLayout role={layoutRole}>
       <div className="kds-new-page">
         <header className="kds-new-header">
           <div>
