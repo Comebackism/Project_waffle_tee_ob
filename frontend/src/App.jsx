@@ -198,7 +198,7 @@ export default function App() {
       {/* Shared Routes */}
       <Route path="/inventory" element={
         <ProtectedRoute allowedRoles={['R01', 'R02']}>
-          <InventoryManagement role={userRole === 'R01' ? 'admin' : 'cashier'} />
+          <InventoryManagement />
         </ProtectedRoute>
       } />
     </Routes>

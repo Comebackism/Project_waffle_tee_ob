@@ -20,7 +20,11 @@ const API_BASE = 'http://localhost:5000';
 
 const CATEGORIES = ['ทั้งหมด', 'วัตถุดิบหลัก', 'ท็อปปิ้ง', 'บรรจุภัณฑ์'];
 
-export default function InventoryManagement({ role }) {
+export default function InventoryManagement() {
+
+  // Determine layout role from logged-in user
+  const currentUserStr = localStorage.getItem('currentUser');
+  const role = currentUserStr ? (JSON.parse(currentUserStr).Role_id === 'R01' ? 'admin' : 'cashier') : 'cashier';
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ทั้งหมด');
