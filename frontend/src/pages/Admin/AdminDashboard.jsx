@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserPlus, FaSyncAlt } from 'react-icons/fa';
+import { FaUserPlus, FaSyncAlt, FaTrash } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './AdminDashboard.css';
 
@@ -92,6 +92,19 @@ export default function AdminDashboard() {
     }
   };
 
+  const clearDailyOrders = async () => {
+    if (window.confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลออเดอร์ทั้งหมดเพื่อเริ่มวันใหม่? (คิวและรหัสออเดอร์จะถูกรีเซ็ต)')) {
+      try {
+        const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.message);
+      } catch (err) {
+        console.error('Error clearing orders:', err);
+        alert('เกิดข้อผิดพลาดในการล้างออเดอร์');
+      }
+    }
+  };
+
   return (
     <BackofficeLayout role="admin">
       <div className="admin-page">
@@ -101,6 +114,9 @@ export default function AdminDashboard() {
             <p className="admin-subtitle">รายชื่อพนักงานและสิทธิ์การเข้าใช้งาน</p>
           </div>
           <div className="admin-header-actions">
+            <button className="admin-btn" onClick={clearDailyOrders} style={{ background: '#ef4444', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+              <FaTrash /> ล้างออเดอร์รายวัน
+            </button>
             <button className="admin-btn outline" onClick={fetchEmployees}>
               <FaSyncAlt />
             </button>

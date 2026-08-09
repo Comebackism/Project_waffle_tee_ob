@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
@@ -84,6 +84,20 @@ export default function CashierOrders() {
     { id: 'S05', label: 'เสร็จสิ้น', count: orders.filter(o => o.Status_id === 'S05').length },
   ];
 
+  const clearDailyOrders = async () => {
+    if (window.confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลออเดอร์ทั้งหมดเพื่อเริ่มวันใหม่? (คิวและรหัสออเดอร์จะถูกรีเซ็ต)')) {
+      try {
+        const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.message);
+        fetchOrders();
+      } catch (err) {
+        console.error('Error clearing orders:', err);
+        alert('เกิดข้อผิดพลาดในการล้างออเดอร์');
+      }
+    }
+  };
+
   return (
     <BackofficeLayout role="cashier">
       <div className="co-page">
@@ -92,9 +106,14 @@ export default function CashierOrders() {
             <h1 className="co-title">จัดการออเดอร์</h1>
             <p className="co-subtitle">ระบบรับชำระเงินและจัดการสถานะ</p>
           </div>
-          <button className="co-refresh-btn" onClick={fetchOrders}>
-            <FaSyncAlt /> รีเฟรช
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="co-clear-btn" onClick={clearDailyOrders} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+              <FaTrash /> ล้างออเดอร์รายวัน
+            </button>
+            <button className="co-refresh-btn" onClick={fetchOrders}>
+              <FaSyncAlt /> รีเฟรช
+            </button>
+          </div>
         </header>
 
         {/* Custom Tabs inside layout */}

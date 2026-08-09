@@ -230,3 +230,14 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// Clear all orders (Reset System for the day)
+exports.clearAllOrders = async (req, res) => {
+  try {
+    await db.query('TRUNCATE TABLE "Order" CASCADE');
+    res.json({ message: 'ล้างข้อมูลออเดอร์ทั้งหมดเรียบร้อยแล้ว (รีเซ็ตคิวและรหัส)' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
