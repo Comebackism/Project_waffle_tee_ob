@@ -40,7 +40,11 @@ function CustomerApp() {
 
       if (existingIndex > -1) {
         const updatedCart = [...prevCart];
-        updatedCart[existingIndex].quantity += newItem.quantity;
+        // สร้าง object ใหม่แทนการแก้ค่าเดิม (ป้องกันบั๊กบวกซ้ำ 2 รอบจาก React Strict Mode)
+        updatedCart[existingIndex] = {
+          ...updatedCart[existingIndex],
+          quantity: updatedCart[existingIndex].quantity + newItem.quantity
+        };
         return updatedCart;
       }
       return [...prevCart, newItem];

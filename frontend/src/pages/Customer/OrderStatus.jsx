@@ -45,6 +45,12 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
     return () => clearInterval(interval);
   }, [orderId]);
 
+  const calculateItemTotal = (item) => {
+    const basePrice = Number(item.menu_price) || 0;
+    const toppingsPrice = (item.toppings || []).reduce((sum, t) => sum + (Number(t.topping_price) * (t.quantity || 1)), 0);
+    return (basePrice + toppingsPrice) * (item.quantity || 1);
+  };
+
   if (loading) {
     return (
       <div className="order-status-page">
@@ -156,7 +162,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
                     </div>
                   )}
                 </div>
-                <span className="os-item-price">฿{Number(item.menu_price) * item.quantity}</span>
+                <span className="os-item-price">฿{calculateItemTotal(item)}</span>
               </div>
             ))}
           </div>
@@ -168,10 +174,12 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
           <span className="os-total-price">฿{Number(order.total_amount).toFixed(2)}</span>
         </div>
 
-        {/* Receipt / Slip Button */}
-        <button className="os-receipt-btn" onClick={() => setShowReceipt(true)}>
-          <FaReceipt /> ดูใบเสร็จรับเงิน / สลิป
-        </button>
+        {/* Receipt / Slip Button - Only show if NOT waiting for payment */}
+        {order.Status_id !== 'S01' && (
+          <button className="os-receipt-btn" onClick={() => setShowReceipt(true)}>
+            <FaReceipt /> ดูใบเสร็จรับเงิน / สลิป
+          </button>
+        )}
 
         {/* Back to home */}
         <button className="os-back-home-btn" onClick={onBack}>
