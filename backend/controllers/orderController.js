@@ -258,6 +258,27 @@ exports.clearAllOrders = async (req, res) => {
       `, [todayOrderCount, todaySales]);
     }
 
+    // 0.5 Save today's menu summary BEFORE deleting (preserve best selling history)
+    const menuSummaryRes = await db.query(`
+      SELECT 
+        oi.menu_id,
+        SUM(oi.quantity) as sold
+      FROM "Order_Item" oi
+      JOIN "Order" o ON oi.order_id = o.order_id
+      WHERE DATE(o.created_at) = CURRENT_DATE AND o."Status_id" = 'S05'
+      GROUP BY oi.menu_id
+    `);
+
+    for (let row of menuSummaryRes.rows) {
+      await db.query(`
+        INSERT INTO "Daily_Menu_Summary" (summary_date, menu_id, quantity_sold)
+        VALUES (CURRENT_DATE, $1, $2)
+        ON CONFLICT (summary_date, menu_id) 
+        DO UPDATE SET 
+          quantity_sold = "Daily_Menu_Summary".quantity_sold + $2
+      `, [row.menu_id, row.sold]);
+    }
+
     // 1. Delete toppings of today's order items
     await db.query(`
       DELETE FROM "Order_Item_Topping" 
