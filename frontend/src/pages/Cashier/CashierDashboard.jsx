@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine } from 'react-icons/fa';
+import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './CashierDashboard.css';
 
@@ -144,7 +144,7 @@ export default function CashierDashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className="cd-alert-empty">สต็อกสินค้าทุกรายการอยู่ในระดับปกติ ✅</div>
+                  <div className="cd-alert-empty">สต็อกสินค้าทุกรายการอยู่ในระดับปกติ <FaCheckCircle style={{ color: '#10b981', marginLeft: '6px', fontSize: '1.1em' }} /></div>
                 )}
               </div>
               <button className="cd-alerts-view-all" onClick={() => navigate('/inventory')}>ดูคลังสินค้าทั้งหมด</button>
