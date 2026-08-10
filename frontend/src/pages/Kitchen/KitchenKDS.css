@@ -199,3 +199,58 @@
   border: 1px solid #e5e7eb;
 }
 .kds-task-btn.outline-muted:hover { background: #f9fafb; }
+
+/* =========================================================
+   📱 RESPONSIVE MOBILE (KDS)
+   ========================================================= */
+@media (max-width: 768px) {
+  .kds-new-header {
+    margin-bottom: 16px;
+  }
+
+  .kds-new-title {
+    font-size: 20px;
+  }
+
+  .kds-new-subtitle {
+    font-size: 12px;
+  }
+
+  /* Change 3-column kanban to horizontal scroll */
+  .kds-kanban-board {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .kds-column {
+    min-height: auto;
+  }
+
+  .kds-column-header {
+    padding: 12px;
+  }
+
+  .kds-col-title-group h3 {
+    font-size: 14px;
+  }
+
+  .kds-column-body {
+    padding: 12px;
+    gap: 12px;
+    max-height: 400px;
+  }
+
+  .kds-task-card {
+    padding: 12px;
+  }
+
+  .kds-task-id {
+    font-size: 16px;
+  }
+
+  .kds-task-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+

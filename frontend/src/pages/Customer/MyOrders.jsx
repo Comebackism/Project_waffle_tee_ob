@@ -117,9 +117,13 @@ export default function MyOrders({ onBack, onViewOrder }) {
                 </div>
 
                 <div className="mo-card-footer">
-                  <span onClick={(e) => { e.stopPropagation(); setReceiptOrder(order); }} style={{display: 'flex', alignItems: 'center', gap: '4px', color: '#1f2937', fontWeight: 600}}>
-                    <FaReceipt /> ใบเสร็จ/สลิป
-                  </span>
+                  {order.Status_id !== 'S01' ? (
+                    <span onClick={(e) => { e.stopPropagation(); setReceiptOrder(order); }} style={{display: 'flex', alignItems: 'center', gap: '4px', color: '#1f2937', fontWeight: 600}}>
+                      <FaReceipt /> ใบเสร็จ/สลิป
+                    </span>
+                  ) : (
+                    <span></span>
+                  )}
                   <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                     <span>ดูสถานะ</span>
                     <FaChevronRight />

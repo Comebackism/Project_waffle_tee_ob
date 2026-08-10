@@ -61,7 +61,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .admin-table {
@@ -211,3 +211,70 @@
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
 }
+
+/* =========================================================
+   📱 RESPONSIVE MOBILE (Admin)
+   ========================================================= */
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .admin-title {
+    font-size: 20px;
+  }
+
+  .admin-header-actions {
+    width: 100%;
+  }
+
+  .admin-header-actions .admin-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .admin-table-container {
+    margin: 0 -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .form-group-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .form-group-row .form-group {
+    width: 100%;
+  }
+
+  .admin-modal {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .admin-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .admin-modal-footer {
+    flex-direction: column;
+  }
+
+  .admin-modal-footer .admin-btn {
+    width: 100%;
+  }
+}
+

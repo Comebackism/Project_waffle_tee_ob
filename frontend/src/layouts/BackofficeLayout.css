@@ -164,3 +164,88 @@
   overflow-y: auto;
   padding: 30px;
 }
+
+/* Mobile Header (Hidden on Desktop) */
+.bo-mobile-header {
+  display: none;
+  background: white;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.bo-hamburger-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #1f2937;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.bo-mobile-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+/* Sidebar Overlay */
+.bo-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .backoffice-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .bo-mobile-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .bo-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+    width: 280px;
+    overflow-y: auto;
+  }
+
+  .bo-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .bo-sidebar-overlay {
+    display: block;
+  }
+
+  .bo-main-content {
+    padding: 16px;
+    overflow-y: visible;
+    height: auto;
+  }
+}
+

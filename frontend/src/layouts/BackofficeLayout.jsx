@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers } from 'react-icons/fa';
+import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars } from 'react-icons/fa';
 import './BackofficeLayout.css';
 
 export default function BackofficeLayout({ children, role = 'cashier' }) {
@@ -11,6 +11,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
   const [pendingUser, setPendingUser] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Fetch all users to populate the switch user menu
@@ -97,8 +98,21 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
 
   return (
     <div className="backoffice-layout">
+      {/* Mobile Header (Hidden on Desktop) */}
+      <div className="bo-mobile-header">
+        <button className="bo-hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
+          <FaBars />
+        </button>
+        <h2 className="bo-mobile-title">ตี๋อบ วาฟเฟิล</h2>
+      </div>
+
+      {/* Sidebar Overlay (Mobile Only) */}
+      {isSidebarOpen && (
+        <div className="bo-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="bo-sidebar">
+      <aside className={`bo-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="bo-brand">
           <h1 className="bo-brand-title">
             ตี๋อบ<br />วาฟเฟิล<br />HongKong
@@ -114,6 +128,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
               className={({ isActive }) => 
                 `bo-nav-item ${isActive && item.path !== '#' && location.pathname === item.path ? 'active' : ''}`
               }
+              onClick={() => setIsSidebarOpen(false)}
             >
               <span className="bo-nav-icon">{item.icon}</span>
               <span className="bo-nav-label">{item.label}</span>

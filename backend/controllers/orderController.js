@@ -20,7 +20,7 @@ exports.createOrder = async (req, res) => {
     // 2. Generate queue_number
     const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE');
     const queueCount = parseInt(queueCountResult.rows[0].count) + 1;
-    const queue_number = `#E${String(queueCount).padStart(3, '0')}`;
+    const queue_number = `#Q${String(queueCount).padStart(3, '0')}`;
 
     // Handle base64 slip_picture
     let final_slip_picture = slip_picture;

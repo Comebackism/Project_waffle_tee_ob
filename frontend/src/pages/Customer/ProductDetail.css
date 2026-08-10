@@ -187,11 +187,13 @@
 }
 
 .topping-details {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--primary-red, #B30021);
   font-weight: 500;
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
 }
 
 .topping-checkbox {

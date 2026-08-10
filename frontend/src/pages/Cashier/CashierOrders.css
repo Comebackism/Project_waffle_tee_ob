@@ -194,3 +194,67 @@
   align-items: center;
   margin-bottom: 20px;
 }
+
+/* =========================================================
+   📱 RESPONSIVE MOBILE (Cashier Orders)
+   ========================================================= */
+@media (max-width: 768px) {
+  .co-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .co-title {
+    font-size: 20px;
+  }
+
+  .co-tabs {
+    overflow-x: auto;
+    gap: 12px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .co-tab-btn {
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 10px 0;
+  }
+
+  .co-orders-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .co-order-card {
+    padding: 16px;
+  }
+
+  .co-queue {
+    font-size: 20px;
+  }
+
+  .co-card-total {
+    font-size: 18px;
+  }
+
+  .co-card-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .co-action-btn {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .co-modal {
+    width: 95%;
+    padding: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
