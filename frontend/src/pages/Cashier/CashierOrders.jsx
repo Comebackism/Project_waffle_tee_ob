@@ -223,6 +223,20 @@ export default function CashierOrders() {
                 </button>
               </div>
               <div className="co-modal-body">
+                <div style={{ marginBottom: '16px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
+                  {selectedOrder.items && selectedOrder.items.map((item, idx) => (
+                    <div key={idx} style={{ marginBottom: '8px' }}>
+                      <div style={{ fontWeight: '600', color: '#374151' }}>{item.quantity}x {item.menu_name}</div>
+                      {item.toppings && item.toppings.length > 0 && (
+                        <div style={{ paddingLeft: '20px', fontSize: '13px', color: '#6b7280' }}>
+                          {item.toppings.map((t, i) => (
+                            <div key={i}>+ {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
                 <p><strong>ยอดรวม:</strong> ฿{Number(selectedOrder.total_amount).toFixed(2)}</p>
                 
                 {selectedOrder.note && (

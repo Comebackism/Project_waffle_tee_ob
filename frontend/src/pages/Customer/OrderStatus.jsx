@@ -176,7 +176,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
                   {item.toppings && item.toppings.length > 0 && (
                     <div className="os-item-toppings">
                       {item.toppings.map((t, i) => (
-                        <span key={i} className="os-topping-tag">+ {t.topping_name}</span>
+                        <span key={i} className="os-topping-tag">+ {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</span>
                       ))}
                     </div>
                   )}

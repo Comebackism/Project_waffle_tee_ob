@@ -14,7 +14,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
     // คำนวณราคารวมสินค้า
     const calculateItemTotal = (item) => {
         const toppingsTotal = item.toppings
-            ? item.toppings.reduce((sum, top) => sum + Number(top.price || 0), 0)
+            ? item.toppings.reduce((sum, top) => sum + (Number(top.price || 0) * (top.quantity || 1)), 0)
             : 0;
         return (Number(item.basePrice || 0) + toppingsTotal) * item.quantity;
     };
@@ -26,7 +26,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
     // คำนวณแคลอรีรวม
     const calculateItemCalories = (item) => {
         const toppingsCal = item.toppings
-            ? item.toppings.reduce((sum, top) => sum + Number(top.Calories || top.calories || 0), 0)
+            ? item.toppings.reduce((sum, top) => sum + (Number(top.Calories || top.calories || 0) * (top.quantity || 1)), 0)
             : 0;
         return (Number(item.baseCalories || 0) + toppingsCal) * item.quantity;
     };
@@ -84,7 +84,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                     {cartItems.map((item, index) => {
                         const baseTotal = Number(item.basePrice || 0) * item.quantity;
                         const toppingsTotal = item.toppings
-                            ? item.toppings.reduce((sum, top) => sum + Number(top.price || 0), 0)
+                            ? item.toppings.reduce((sum, top) => sum + (Number(top.price || 0) * (top.quantity || 1)), 0)
                             : 0;
 
                         return (
@@ -99,7 +99,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                                             ฿{baseTotal} <span style={{fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginLeft: '4px'}}>{Number(item.baseCalories || 0) * item.quantity} kcal</span>
                                         </span>
                                         {toppingsTotal > 0 && (
-                                            <span className="checkout-price-sub">+ {toppingsTotal * item.quantity}</span>
+                                            <span className="checkout-price-sub">+ {toppingsTotal * item.quantity} บาท</span>
                                         )}
                                     </div>
                                 </div>
@@ -109,7 +109,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                                     <div className="checkout-item-toppings">
                                         {item.toppings.map((top, idx) => (
                                             <div key={idx} className="checkout-topping-line">
-                                                • {top.name} {Number(top.price) > 0 ? `+ ${Number(top.price)}` : ''} <span style={{color: '#9ca3af', fontSize: '12px', marginLeft: '4px'}}>({top.Calories || top.calories || 0} kcal)</span>
+                                                • {top.name} {top.quantity > 1 ? `x${top.quantity}` : ''} {Number(top.price) > 0 ? `+ ${Number(top.price) * (top.quantity || 1)} บาท` : ''} <span style={{color: '#9ca3af', fontSize: '12px', marginLeft: '4px'}}>({(top.Calories || top.calories || 0) * (top.quantity || 1)} kcal)</span>
                                             </div>
                                         ))}
                                     </div>

@@ -86,7 +86,7 @@ export default function KitchenKDS() {
                       {item.toppings && item.toppings.length > 0 && (
                         <div className="kds-t-toppings">
                           {item.toppings.map((t, i) => (
-                            <div key={i}>เพิ่ม {t.topping_name}</div>
+                            <div key={i}>เพิ่ม {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</div>
                           ))}
                         </div>
                       )}

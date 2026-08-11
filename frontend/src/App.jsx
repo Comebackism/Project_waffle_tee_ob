@@ -100,7 +100,7 @@ function CustomerApp() {
                   items: orderData.cartItems.map(item => ({
                     menu_id: item.productId,
                     quantity: item.quantity,
-                    toppings: item.toppings.map(t => ({ topping_id: t.topping_id || t.id, quantity: 1 }))
+                    toppings: item.toppings.map(t => ({ topping_id: t.topping_id || t.id, quantity: t.quantity || 1 }))
                   }))
                 };
 

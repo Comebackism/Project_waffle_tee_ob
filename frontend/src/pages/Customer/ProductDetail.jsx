@@ -18,7 +18,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
 
   // State สำหรับนับจำนวนสินค้า และเก็บท็อปปิ้งที่เลือก
   const [quantity, setQuantity] = useState(1);
-  const [selectedToppings, setSelectedToppings] = useState([]);
+  const [selectedToppings, setSelectedToppings] = useState({});
 
   // Fly-to-cart animation
   const [flyItems, setFlyItems] = useState([]);
@@ -42,16 +42,28 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
       });
   }, [productId]);
 
-  // ฟังก์ชันสลับการเลือกท็อปปิ้ง (เลือก/ยกเลิก) + animation
-  const toggleTopping = (id, event) => {
-    const isAdding = !selectedToppings.includes(id);
-
-    if (isAdding) {
-      setSelectedToppings([...selectedToppings, id]);
-      // Trigger fly animation
+  // ฟังก์ชันเพิ่ม/ลดจำนวนท็อปปิ้ง + animation
+  const updateToppingQuantity = (id, change, event) => {
+    event.stopPropagation();
+    const currentQty = selectedToppings[id] || 0;
+    const newQty = currentQty + change;
+    
+    // ตั้งลิมิตท็อปปิ้งแต่ละชนิดไม่เกิน 3
+    if (newQty > 3) {
+      alert('สามารถเพิ่มท็อปปิ้งแต่ละชนิดได้สูงสุด 3 หน่วยครับ');
+      return;
+    }
+    
+    if (change > 0 && event) {
       triggerFlyAnimation(event);
+    }
+    
+    if (newQty <= 0) {
+      const newToppings = { ...selectedToppings };
+      delete newToppings[id];
+      setSelectedToppings(newToppings);
     } else {
-      setSelectedToppings(selectedToppings.filter((item) => item !== id));
+      setSelectedToppings({ ...selectedToppings, [id]: newQty });
     }
   };
 
@@ -86,9 +98,11 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
   const handleAddToCartClick = () => {
     if (!product) return;
 
-    // ดึงวัตถุท็อปปิ้งฉบับเต็ม (มี id, name, price) ที่ผู้ใช้เลือก
+    // ดึงวัตถุท็อปปิ้งฉบับเต็ม (มี id, name, price, quantity) ที่ผู้ใช้เลือก
     const toppingList = product.toppings || [];
-    const chosenToppings = toppingList.filter((t) => selectedToppings.includes(t.topping_id));
+    const chosenToppings = toppingList
+      .filter((t) => selectedToppings[t.topping_id])
+      .map((t) => ({ ...t, quantity: selectedToppings[t.topping_id] }));
 
     // ตรวจสอบ URL รูปภาพ
     const imageUrl = resolveImage(product.Picture);
@@ -135,9 +149,9 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
   const basePrice = Number(product.price) || 0;
   const toppingList = product.toppings || [];
 
-  const toppingPriceTotal = selectedToppings.reduce((total, id) => {
+  const toppingPriceTotal = Object.entries(selectedToppings).reduce((total, [id, qty]) => {
     const item = toppingList.find((t) => t.topping_id === id);
-    return total + (item ? Number(item.price) : 0);
+    return total + (item ? Number(item.price) * qty : 0);
   }, 0);
 
   const totalPrice = (basePrice + toppingPriceTotal) * quantity;
@@ -195,12 +209,13 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
 
               <div className="topping-grid">
                 {toppingList.map((item) => {
-                  const isSelected = selectedToppings.includes(item.topping_id);
+                  const qty = selectedToppings[item.topping_id] || 0;
+                  const isSelected = qty > 0;
                   return (
                     <div
                       key={item.topping_id}
                       className={`topping-item ${isSelected ? 'selected' : ''}`}
-                      onClick={(e) => toggleTopping(item.topping_id, e)}
+                      onClick={(e) => updateToppingQuantity(item.topping_id, 1, e)}
                     >
                       <div className="topping-info">
                         <span className="topping-name">{item.name}</span>
@@ -210,8 +225,28 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
                           <span style={{color: '#f97316', whiteSpace: 'nowrap'}}>🔥 + {Number(item.Calories).toFixed(2)} kcal</span>
                         </span>
                       </div>
-                      <div className="topping-checkbox">
-                        {isSelected && <FaCheck style={{ fontSize: '11px' }} />}
+                      <div className="topping-qty-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {isSelected ? (
+                          <>
+                            <button 
+                              className="topping-qty-btn" 
+                              onClick={(e) => updateToppingQuantity(item.topping_id, -1, e)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: '#e5e7eb', color: '#4b5563', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <FaMinus style={{ fontSize: '12px' }} />
+                            </button>
+                            <span style={{ fontWeight: 'bold', fontSize: '15px', width: '20px', textAlign: 'center', color: '#333' }}>{qty}</span>
+                            <button 
+                              className="topping-qty-btn" 
+                              onClick={(e) => updateToppingQuantity(item.topping_id, 1, e)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: 'var(--primary-red, #B30021)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(179,0,33,0.3)' }}
+                            >
+                              <FaPlus style={{ fontSize: '12px' }} />
+                            </button>
+                          </>
+                        ) : (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '4px', border: '1.5px solid #d1d5db', background: '#fff' }}></div>
+                        )}
                       </div>
                     </div>
                   );

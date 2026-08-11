@@ -28,7 +28,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
 
   items.forEach(item => {
     const base = Number(item.menu_price || 0) * (item.quantity || 1);
-    const tops = (item.toppings || []).reduce((sum, t) => sum + (Number(t.topping_price || t.price || 0) * (item.quantity || 1)), 0);
+    const tops = (item.toppings || []).reduce((sum, t) => sum + (Number(t.topping_price || t.price || 0) * (t.quantity || 1) * (item.quantity || 1)), 0);
     calculatedSubtotal += (base + tops);
   });
 
@@ -42,10 +42,16 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
         
         {/* Actions Bar */}
         <div className="receipt-actions-bar no-print">
-          <div className="receipt-status-notice">
-            <FaCheckCircle style={{ color: '#22c55e', marginRight: '6px' }} />
-            <span>ชำระเงินเรียบร้อยแล้ว</span>
-          </div>
+          {order.Status_id !== 'S01' && order.Status_id !== 'S06' ? (
+            <div className="receipt-status-notice">
+              <FaCheckCircle style={{ color: '#22c55e', marginRight: '6px' }} />
+              <span>ชำระเงินเรียบร้อยแล้ว</span>
+            </div>
+          ) : (
+            <div className="receipt-status-notice" style={{ color: '#b91c1c' }}>
+              <span>ยังไม่ชำระเงิน</span>
+            </div>
+          )}
           <div className="receipt-btn-group">
             {!hidePrintButton && (
               <button className="receipt-print-btn" onClick={handlePrint}>
@@ -114,8 +120,8 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
                   {/* Toppings */}
                   {item.toppings && item.toppings.map((top, tIdx) => (
                     <div key={tIdx} className="receipt-topping-row">
-                      <span className="receipt-topping-name">+ {top.topping_name || top.name}</span>
-                      <span className="receipt-topping-price">+ {Number(top.topping_price || top.price || 0)}</span>
+                      <span className="receipt-topping-name">+ {top.topping_name || top.name} {top.quantity > 1 ? `x${top.quantity}` : ''}</span>
+                      <span className="receipt-topping-price">+ ฿{Number(top.topping_price || top.price || 0) * (top.quantity || 1) * (item.quantity || 1)}</span>
                     </div>
                   ))}
                 </div>

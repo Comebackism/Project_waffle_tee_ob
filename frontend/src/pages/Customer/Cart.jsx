@@ -25,7 +25,7 @@ export default function Cart({ cartItems = [], setCartItems, cartNote = '', setC
     // คำนวณราคาต่อ 1 ชิ้น (ราคาเมนูหลัก + ราคาท็อปปิ้งที่เลือก)
     const getItemUnitPrice = (item) => {
         const toppingsTotal = item.toppings
-            ? item.toppings.reduce((sum, top) => sum + Number(top.price || 0), 0)
+            ? item.toppings.reduce((sum, top) => sum + (Number(top.price || 0) * (top.quantity || 1)), 0)
             : 0;
         return Number(item.basePrice || 0) + toppingsTotal;
     };
@@ -33,7 +33,7 @@ export default function Cart({ cartItems = [], setCartItems, cartNote = '', setC
     // คำนวณแคลอรีต่อ 1 ชิ้น (เมนูหลัก + ท็อปปิ้ง)
     const getItemUnitCalories = (item) => {
         const toppingsCal = item.toppings
-            ? item.toppings.reduce((sum, top) => sum + Number(top.Calories || top.calories || 0), 0)
+            ? item.toppings.reduce((sum, top) => sum + (Number(top.Calories || top.calories || 0) * (top.quantity || 1)), 0)
             : 0;
         return Number(item.baseCalories || 0) + toppingsCal;
     };
@@ -96,7 +96,7 @@ export default function Cart({ cartItems = [], setCartItems, cartNote = '', setC
                                                 <div className="cart-item-toppings">
                                                     {item.toppings.map((top, idx) => (
                                                         <span key={idx} className="topping-tag">
-                                                            • {top.name} +{Number(top.price)}
+                                                            • {top.name} {top.quantity > 1 ? `x${top.quantity}` : ''} +{Number(top.price) * (top.quantity || 1)} บาท
                                                         </span>
                                                     ))}
                                                 </div>
