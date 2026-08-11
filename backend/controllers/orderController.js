@@ -18,7 +18,7 @@ exports.createOrder = async (req, res) => {
     const order_id = `ORD-${String(orderCount).padStart(5, '0')}`;
 
     // 2. Generate queue_number
-    const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE');
+    const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false');
     const queueCount = parseInt(queueCountResult.rows[0].count) + 1;
     const queue_number = `#Q${String(queueCount).padStart(3, '0')}`;
 
@@ -90,11 +90,12 @@ exports.getOrders = async (req, res) => {
       SELECT o.*, s.statusname 
       FROM "Order" o 
       JOIN "Status" s ON o."Status_id" = s.status_id
+      WHERE o.is_archived = false
     `;
     let params = [];
 
     if (status) {
-      query += ' WHERE o."Status_id" = $1';
+      query += ' AND o."Status_id" = $1';
       params.push(status);
     }
     
@@ -156,6 +157,7 @@ exports.getOrderById = async (req, res) => {
       WHERE DATE(created_at) = CURRENT_DATE 
       AND created_at < $1 
       AND "Status_id" IN ('S01', 'S02', 'S03')
+      AND is_archived = false
     `, [order.created_at]);
 
     order.queue_ahead = parseInt(queueAheadResult.rows[0].count);
@@ -176,7 +178,7 @@ exports.getOrdersToday = async (req, res) => {
       FROM "Order" o
       JOIN "Status" s ON o."Status_id" = s.status_id
       LEFT JOIN "User" u ON o.user_id = u.user_id
-      WHERE DATE(o.created_at) = CURRENT_DATE
+      WHERE DATE(o.created_at) = CURRENT_DATE AND o.is_archived = false
       ORDER BY o.created_at DESC
     `);
     res.json(result.rows);
@@ -242,7 +244,7 @@ exports.clearAllOrders = async (req, res) => {
         COUNT(*) as order_count,
         COALESCE(SUM(total_amount), 0) as total_sales
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05'
+      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05' AND is_archived = false
     `);
     const todayOrderCount = parseInt(summaryRes.rows[0].order_count || 0);
     const todaySales = parseFloat(summaryRes.rows[0].total_sales || 0);
@@ -265,7 +267,7 @@ exports.clearAllOrders = async (req, res) => {
         SUM(oi.quantity) as sold
       FROM "Order_Item" oi
       JOIN "Order" o ON oi.order_id = o.order_id
-      WHERE DATE(o.created_at) = CURRENT_DATE AND o."Status_id" = 'S05'
+      WHERE DATE(o.created_at) = CURRENT_DATE AND o."Status_id" = 'S05' AND o.is_archived = false
       GROUP BY oi.menu_id
     `);
 
@@ -279,29 +281,11 @@ exports.clearAllOrders = async (req, res) => {
       `, [row.menu_id, row.sold]);
     }
 
-    // 1. Delete toppings of today's order items
-    await db.query(`
-      DELETE FROM "Order_Item_Topping" 
-      WHERE order_item_id IN (
-        SELECT oi.order_item_id FROM "Order_Item" oi
-        JOIN "Order" o ON oi.order_id = o.order_id
-        WHERE DATE(o.created_at) = CURRENT_DATE
-      )
-    `);
-
-    // 2. Delete today's order items
-    await db.query(`
-      DELETE FROM "Order_Item" 
-      WHERE order_id IN (
-        SELECT order_id FROM "Order" 
-        WHERE DATE(created_at) = CURRENT_DATE
-      )
-    `);
-
-    // 3. Delete today's orders
+    // 1. Mark today's orders as archived
     const result = await db.query(`
-      DELETE FROM "Order" 
-      WHERE DATE(created_at) = CURRENT_DATE
+      UPDATE "Order" 
+      SET is_archived = true
+      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false
     `);
 
     await db.query('COMMIT');

@@ -10,6 +10,7 @@ const STATUS_LABELS = {
   'S03': { label: 'กำลังปรุง', color: '#f97316' },
   'S04': { label: 'พร้อมรับ', color: '#22c55e' },
   'S05': { label: 'เสร็จสิ้น', color: '#6b7280' },
+  'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
 const API_BASE = 'http://localhost:5000';
@@ -42,10 +43,14 @@ export default function CashierOrders() {
 
   const updateStatus = async (orderId, newStatusId) => {
     try {
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+      const userId = currentUser ? currentUser.user_id : null;
+
       await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status_id: newStatusId })
+        body: JSON.stringify({ status_id: newStatusId, user_id: userId })
       });
       fetchOrders();
       setSelectedOrder(null);
@@ -82,6 +87,7 @@ export default function CashierOrders() {
     { id: 'S03', label: 'กำลังปรุง', count: orders.filter(o => o.Status_id === 'S03').length },
     { id: 'S04', label: 'พร้อมรับ', count: orders.filter(o => o.Status_id === 'S04').length },
     { id: 'S05', label: 'เสร็จสิ้น', count: orders.filter(o => o.Status_id === 'S05').length },
+    { id: 'S06', label: 'ยกเลิก', count: orders.filter(o => o.Status_id === 'S06').length },
   ];
 
   const clearDailyOrders = async () => {
@@ -179,9 +185,11 @@ export default function CashierOrders() {
                   <button className="co-action-btn view" onClick={() => viewOrderDetail(order.order_id)}>
                     <FaEye /> ดู
                   </button>
-                  <button className="co-action-btn receipt-action-btn" onClick={() => openReceipt(order.order_id)} title="พิมพ์สลิป/ใบเสร็จ">
-                    <FaReceipt /> สลิป
-                  </button>
+                  {order.Status_id !== 'S06' && (
+                    <button className="co-action-btn receipt-action-btn" onClick={() => openReceipt(order.order_id)} title="พิมพ์สลิป/ใบเสร็จ">
+                      <FaReceipt /> สลิป
+                    </button>
+                  )}
 
                   {order.Status_id === 'S01' && (
                     <button className="co-action-btn approve" onClick={() => updateStatus(order.order_id, 'S02')}>
@@ -239,9 +247,11 @@ export default function CashierOrders() {
                 )}
                 
                 <div style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
-                  <button className="co-action-btn receipt-action-btn full" onClick={() => openReceipt(selectedOrder.order_id)}>
-                    <FaReceipt /> พิมพ์ใบเสร็จ / สลิป
-                  </button>
+                  {selectedOrder.Status_id !== 'S06' && (
+                    <button className="co-action-btn receipt-action-btn full" onClick={() => openReceipt(selectedOrder.order_id)}>
+                      <FaReceipt /> พิมพ์ใบเสร็จ / สลิป
+                    </button>
+                  )}
                   {selectedOrder.Status_id === 'S01' && (
                     <button className="co-action-btn approve full" onClick={() => updateStatus(selectedOrder.order_id, 'S02')}>
                       ยืนยันชำระเงิน

@@ -40,10 +40,14 @@ export default function KitchenKDS() {
 
   const updateStatus = async (orderId, newStatusId) => {
     try {
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+      const userId = currentUser ? currentUser.user_id : null;
+
       await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status_id: newStatusId })
+        body: JSON.stringify({ status_id: newStatusId, user_id: userId })
       });
       fetchOrders();
     } catch (err) {

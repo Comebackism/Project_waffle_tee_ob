@@ -17,6 +17,7 @@ const STATUS_MAP = {
   'S03': { label: 'กำลังปรุง', icon: <FaFireAlt />, color: '#f97316', step: 3 },
   'S04': { label: 'พร้อมรับ', icon: <FaCheckCircle />, color: '#22c55e', step: 4 },
   'S05': { label: 'เสร็จสิ้น', icon: <FaCheckCircle />, color: '#6b7280', step: 5 },
+  'S06': { label: 'ยกเลิก', icon: <FaTimesCircle />, color: '#ef4444', step: 0 },
 };
 
 export default function OrderStatus({ orderId, queueNumber, onBack }) {
@@ -49,6 +50,24 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
     const basePrice = Number(item.menu_price) || 0;
     const toppingsPrice = (item.toppings || []).reduce((sum, t) => sum + (Number(t.topping_price) * (t.quantity || 1)), 0);
     return (basePrice + toppingsPrice) * (item.quantity || 1);
+  };
+
+  const handleCancelOrder = () => {
+    if (window.confirm('คุณต้องการยกเลิกออเดอร์นี้ใช่หรือไม่?')) {
+      fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status_id: 'S06' })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to cancel order');
+        fetchOrder();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('เกิดข้อผิดพลาดในการยกเลิกออเดอร์');
+      });
+    }
   };
 
   if (loading) {
@@ -182,8 +201,8 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
           <span className="os-total-price">฿{Number(order.total_amount).toFixed(2)}</span>
         </div>
 
-        {/* Receipt / Slip Button - Only show if NOT waiting for payment */}
-        {order.Status_id !== 'S01' && (
+        {/* Receipt / Slip Button - Only show if NOT waiting for payment and NOT cancelled */}
+        {order.Status_id !== 'S01' && order.Status_id !== 'S06' && (
           <button className="os-receipt-btn" onClick={() => setShowReceipt(true)}>
             <FaReceipt /> ดูใบเสร็จรับเงิน / สลิป
           </button>
@@ -193,6 +212,29 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
         <button className="os-back-home-btn" onClick={onBack}>
           กลับหน้าหลัก
         </button>
+
+        {/* Cancel Button - Only show if S01 */}
+        {order.Status_id === 'S01' && (
+          <button 
+            className="os-cancel-btn" 
+            onClick={handleCancelOrder}
+            style={{
+              width: '100%',
+              padding: '16px',
+              backgroundColor: 'transparent',
+              color: '#ef4444',
+              border: '1px solid #ef4444',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              marginTop: '12px'
+            }}
+          >
+            <FaTimesCircle style={{ marginRight: '8px' }} />
+            ยกเลิกออเดอร์
+          </button>
+        )}
 
         {/* Receipt Modal */}
         {showReceipt && (

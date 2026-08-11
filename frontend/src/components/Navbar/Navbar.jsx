@@ -10,6 +10,7 @@ const STATUS_MAP = {
   'S03': { label: 'กำลังปรุง', color: '#f97316' },
   'S04': { label: 'พร้อมรับ', color: '#22c55e' },
   'S05': { label: 'เสร็จสิ้น', color: '#6b7280' },
+  'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
 export default function Navbar({ cartCount = 0, onCartClick, onOrderClick }) {
@@ -29,8 +30,8 @@ export default function Navbar({ cartCount = 0, onCartClick, onOrderClick }) {
         const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
         const results = await Promise.all(promises);
         
-        // Show active orders (not S05)
-        const active = results.filter(r => r !== null && r.Status_id !== 'S05').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        // Show active orders (not S05 and not S06)
+        const active = results.filter(r => r !== null && r.Status_id !== 'S05' && r.Status_id !== 'S06').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         setActiveOrders(active);
       } catch (err) {
         console.error('Error fetching notifications:', err);

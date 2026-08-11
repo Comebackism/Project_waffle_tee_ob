@@ -6,7 +6,7 @@ exports.getDashboardStats = async (req, res) => {
     const todaySalesRes = await db.query(`
       SELECT SUM(total_amount) as total
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05'
+      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05' AND is_archived = false
     `);
     const todaySales = parseFloat(todaySalesRes.rows[0].total || 0);
 
@@ -14,7 +14,7 @@ exports.getDashboardStats = async (req, res) => {
     const totalOrdersRes = await db.query(`
       SELECT COUNT(*) as count
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE
+      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false
     `);
     const totalOrders = parseInt(totalOrdersRes.rows[0].count || 0);
 
@@ -22,7 +22,7 @@ exports.getDashboardStats = async (req, res) => {
     const allTimeSalesRes = await db.query(`
       SELECT COALESCE(SUM(total_amount), 0) as total
       FROM "Order"
-      WHERE "Status_id" = 'S05'
+      WHERE "Status_id" = 'S05' AND is_archived = false
     `);
     const archivedSalesRes = await db.query(`
       SELECT COALESCE(SUM(total_sales), 0) as total,
@@ -49,7 +49,7 @@ exports.getDashboardStats = async (req, res) => {
         d.date,
         COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
       FROM dates d
-      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05'
+      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
       LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
       GROUP BY d.date, ds.total_sales
       ORDER BY d.date ASC
@@ -80,7 +80,7 @@ exports.getDashboardStats = async (req, res) => {
           SUM(oi.quantity) as sold
         FROM "Order_Item" oi
         JOIN "Order" o ON oi.order_id = o.order_id
-        WHERE o."Status_id" = 'S05' 
+        WHERE o."Status_id" = 'S05' AND o.is_archived = false
           AND EXTRACT(MONTH FROM o.created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
           AND EXTRACT(YEAR FROM o.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
         GROUP BY oi.menu_id
