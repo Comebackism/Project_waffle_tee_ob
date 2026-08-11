@@ -181,17 +181,18 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                         <div className="qr-image-wrapper">
                             <div className="qr-image-inner">
                                 <img
-                                    src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=081XXXXXXXX"
+                                    src={`https://promptpay.io/0828072613/${grandTotal}.png`}
                                     alt="PromptPay QR Code"
                                     className="qr-code-img"
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                 />
                             </div>
                         </div>
 
                         {/* รายละเอียดบัญชี */}
                         <div className="account-info">
-                            <p className="account-name">ชื่อบัญชี: ตี๋อบ วาฟเฟิล HongKong</p>
-                            <p className="account-pp">PromptPay: 081-XXX-XXXX</p>
+                            <p className="account-name">ชื่อบัญชี: นาย วรวัฒน์ บุญเรือง</p>
+                            <p className="account-pp">พร้อมเพย์ (เบอร์โทรศัพท์): 082-807-2613</p>
                         </div>
 
                         {/* ปุ่มอัปโหลดสลิป */}
