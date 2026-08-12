@@ -203,7 +203,17 @@ export default function AdminDashboard() {
                 <div className="form-group-row">
                   <div className="form-group">
                     <label>เบอร์โทรศัพท์</label>
-                    <input type="tel" name="phone" value={newEmployee.phone} onChange={handleInputChange} placeholder="08xxxxxxxx" />
+                    <input 
+                      type="tel" 
+                      name="phone" 
+                      value={newEmployee.phone} 
+                      onChange={(e) => {
+                        const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                        handleInputChange({ target: { name: 'phone', value: onlyNums } });
+                      }} 
+                      maxLength="10"
+                      placeholder="08xxxxxxxx" 
+                    />
                   </div>
                   <div className="form-group">
                     <label>อีเมล</label>
