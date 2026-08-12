@@ -39,6 +39,15 @@ export default function AdminDashboard() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Validate firstname and lastname to only accept Thai and English letters (and spaces)
+    if (name === 'firstname' || name === 'lastname') {
+      const regex = /^[a-zA-Zก-ฮะ-์\s]*$/;
+      if (!regex.test(value)) {
+        return; // Reject invalid characters
+      }
+    }
+
     setNewEmployee(prev => ({ ...prev, [name]: value }));
   };
 

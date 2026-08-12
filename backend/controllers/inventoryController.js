@@ -217,11 +217,22 @@ exports.withdrawStock = async (req, res) => {
 
     const weightNum = parseFloat(Weight);
 
-    // Auto-generate InvoiceNo (e.g. INV-YYYYMMDD-0001 or INV-00001)
-    const countRes = await db.query('SELECT COUNT(*) FROM "Invoice"');
-    const invCount = parseInt(countRes.rows[0].count) + 1;
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+    
+    // Auto-generate InvoiceNo (e.g. INV-YYYYMMDD-001)
+    const lastInvRes = await db.query(
+      'SELECT "InvoiceNo" FROM "Invoice" WHERE "InvoiceNo" LIKE $1 ORDER BY "InvoiceNo" DESC LIMIT 1',
+      [`INV-${dateStr}-%`]
+    );
+    let invCount = 1;
+    if (lastInvRes.rows.length > 0) {
+      const lastInv = lastInvRes.rows[0].InvoiceNo;
+      const parts = lastInv.split('-');
+      if (parts.length >= 3) {
+        invCount = parseInt(parts[2], 10) + 1;
+      }
+    }
     const InvoiceNo = `INV-${dateStr}-${String(invCount).padStart(3, '0')}`.slice(0, 20);
 
     // Start transaction

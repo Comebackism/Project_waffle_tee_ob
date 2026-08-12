@@ -34,8 +34,15 @@ function CustomerApp() {
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((item) => {
         if (item.productId !== newItem.productId) return false;
-        const currentToppings = item.toppings ? item.toppings.map(t => t.topping_id || t.id).sort().join(',') : '';
-        const newToppings = newItem.toppings ? newItem.toppings.map(t => t.topping_id || t.id).sort().join(',') : '';
+        
+        // เช็คว่าหน้า/ไส้ (Topping) เหมือนกัน 100% หรือไม่ (เช็คทั้งชนิดและจำนวน)
+        const currentToppings = item.toppings 
+          ? item.toppings.map(t => `${t.topping_id || t.id}-${t.quantity}`).sort().join(',') 
+          : '';
+        const newToppings = newItem.toppings 
+          ? newItem.toppings.map(t => `${t.topping_id || t.id}-${t.quantity}`).sort().join(',') 
+          : '';
+          
         return currentToppings === newToppings;
       });
 
