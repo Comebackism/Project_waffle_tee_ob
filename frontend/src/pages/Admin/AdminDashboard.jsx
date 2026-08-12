@@ -44,6 +44,10 @@ export default function AdminDashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (newEmployee.phone && newEmployee.phone.length !== 10) {
+      alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
+      return;
+    }
     try {
       if (editingEmployee) {
         // Edit mode
@@ -81,6 +85,24 @@ export default function AdminDashboard() {
       Role_id: emp.Role_id
     });
     setShowAddForm(true);
+  };
+
+  const handleDeleteClick = async (id, name) => {
+    if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบพนักงาน: ${name}?`)) {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          fetchEmployees();
+        } else {
+          const data = await res.json();
+          alert(data.message || 'เกิดข้อผิดพลาดในการลบพนักงาน');
+        }
+      } catch (err) {
+        console.error('Error deleting employee:', err);
+      }
+    }
   };
 
   const getRoleBadgeColor = (roleId) => {
@@ -162,6 +184,7 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       <button className="emp-action-btn edit" onClick={() => handleEditClick(emp)}>แก้ไข</button>
+                      <button className="emp-action-btn delete" onClick={() => handleDeleteClick(emp.user_id, emp.firstname)} style={{ marginLeft: '8px', backgroundColor: '#fee2e2', color: '#ef4444' }}>ลบ</button>
                     </td>
                   </tr>
                 ))}

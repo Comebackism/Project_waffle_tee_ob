@@ -73,3 +73,19 @@ exports.updateUser = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.query('DELETE FROM "User" WHERE user_id = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'ไม่พบพนักงานที่ต้องการลบ' });
+    }
+    
+    res.json({ message: 'ลบพนักงานสำเร็จ', deletedUser: result.rows[0] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
