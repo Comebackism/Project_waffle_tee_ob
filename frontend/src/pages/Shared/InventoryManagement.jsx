@@ -401,16 +401,7 @@ export default function InventoryManagement() {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="im-progress-bar">
-                    <div 
-                      className="im-progress-fill" 
-                      style={{
-                        width: `${Math.min(100, (item.quantity / (item.status === 'Normal' ? item.quantity * 2 : 10)) * 100)}%`,
-                        backgroundColor: item.statusColor
-                      }}
-                    ></div>
-                  </div>
+
 
                   {/* Action Buttons (Icons) */}
                   <div className="im-card-actions">
@@ -482,6 +473,7 @@ export default function InventoryManagement() {
                     <label>{restockMode === 'add' ? 'จำนวนที่ต้องการเพิ่ม' : 'จำนวนใหม่ที่ต้องการตั้ง'} ({restockItem.unit})</label>
                     <input 
                       type="number" 
+                      onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
                       step="0.1"
                       min="0"
                       autoFocus
@@ -584,6 +576,7 @@ export default function InventoryManagement() {
                       <label>จำนวนเริ่มต้น</label>
                       <input 
                         type="number" 
+                        onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
                         step="0.1"
                         min="0"
                         value={newProduct.quantity}
@@ -795,6 +788,7 @@ export default function InventoryManagement() {
                     <label>ปริมาณน้ำหนักที่ต้องการเบิก (Weight in {withdrawItem.unit})</label>
                     <input 
                       type="number" 
+                      onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
                       step="0.01"
                       min="0.01"
                       max={withdrawItem.quantity > 0 ? withdrawItem.quantity : undefined}
