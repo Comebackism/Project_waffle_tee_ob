@@ -226,18 +226,31 @@ export default function CashierOrders() {
                 <div style={{ marginBottom: '16px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
                   {selectedOrder.items && selectedOrder.items.map((item, idx) => (
                     <div key={idx} style={{ marginBottom: '8px' }}>
-                      <div style={{ fontWeight: '600', color: '#374151' }}>{item.quantity}x {item.menu_name}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#374151' }}>
+                        <span>{item.quantity}x {item.menu_name}</span>
+                        <span>฿{(Number(item.menu_price || 0) * item.quantity).toFixed(2)}</span>
+                      </div>
                       {item.toppings && item.toppings.length > 0 && (
                         <div style={{ paddingLeft: '20px', fontSize: '13px', color: '#6b7280' }}>
                           {item.toppings.map((t, i) => (
-                            <div key={i}>+ {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</div>
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>+ {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</span>
+                              {Number(t.topping_price || 0) > 0 && <span>+ ฿{(Number(t.topping_price || 0) * (t.quantity || 1)).toFixed(2)}</span>}
+                            </div>
                           ))}
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-                <p><strong>ยอดรวม:</strong> ฿{Number(selectedOrder.total_amount).toFixed(2)}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '15px' }}>
+                  <strong>ยอดรวมทั้งสิ้น:</strong>
+                  <strong style={{ color: '#e11d48' }}>฿{Number(selectedOrder.total_amount).toFixed(2)}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', color: '#4b5563' }}>
+                  <strong>วิธีชำระเงิน:</strong>
+                  <span>{selectedOrder.pay_method === 'promptpay' ? 'โอนเงิน / พร้อมเพย์' : 'เงินสด'}</span>
+                </div>
                 
                 {selectedOrder.note && (
                   <p style={{ color: '#ef4444', background: '#fee2e2', padding: '8px 12px', borderRadius: '8px', marginTop: '8px' }}>

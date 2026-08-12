@@ -209,7 +209,7 @@ exports.updateProduct = async (req, res) => {
 // Withdraw stock (เบิกวัตถุดิบ) and save to Invoice table
 exports.withdrawStock = async (req, res) => {
   try {
-    const { ProductID, Weight, InvDate } = req.body;
+    const { ProductID, Weight, InvDate, user_id } = req.body;
 
     if (!ProductID || !Weight || Number(Weight) <= 0) {
       return res.status(400).json({ message: 'กรุณาระบุวัตถุดิบและจำนวนที่ต้องการเบิก' });
@@ -230,9 +230,9 @@ exports.withdrawStock = async (req, res) => {
     // 1. Insert into Invoice table
     const invoiceDate = InvDate || today.toISOString().slice(0, 10);
     await db.query(
-      `INSERT INTO "Invoice" ("InvoiceNo", "InvDate", "ProductId", "Weight") 
-       VALUES ($1, $2, $3, $4)`,
-      [InvoiceNo, invoiceDate, ProductID, weightNum]
+      `INSERT INTO "Invoice" ("InvoiceNo", "InvDate", "ProductId", "Weight", withdrawn_by) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [InvoiceNo, invoiceDate, ProductID, weightNum, user_id || null]
     );
 
     // 2. Deduct from Stock table
@@ -265,10 +265,11 @@ exports.withdrawStock = async (req, res) => {
 exports.getInvoices = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT i."InvoiceNo", i."InvDate", i."ProductId", p."ProductName", i."Weight", s.unit
+      SELECT i."InvoiceNo", i."InvDate", i."ProductId", p."ProductName", i."Weight", s.unit, u.firstname, u.lastname
       FROM "Invoice" i
       LEFT JOIN "Product" p ON i."ProductId" = p."ProductID"
       LEFT JOIN "Stock" s ON i."ProductId" = s."ProductID"
+      LEFT JOIN "User" u ON i.withdrawn_by = u.user_id
       ORDER BY i."InvDate" DESC, i."InvoiceNo" DESC
     `);
     res.json(result.rows);

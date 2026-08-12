@@ -24,7 +24,8 @@ export default function InventoryManagement() {
 
   // Determine layout role from logged-in user
   const currentUserStr = localStorage.getItem('currentUser');
-  const role = currentUserStr ? (JSON.parse(currentUserStr).Role_id === 'R01' ? 'admin' : 'cashier') : 'cashier';
+  const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+  const role = currentUser ? (currentUser.Role_id === 'R01' ? 'admin' : 'cashier') : 'cashier';
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ทั้งหมด');
@@ -230,7 +231,8 @@ export default function InventoryManagement() {
         body: JSON.stringify({
           ProductID: withdrawItem.ProductID,
           Weight: amount,
-          InvDate: withdrawDate
+          InvDate: withdrawDate,
+          user_id: currentUser ? currentUser.user_id : null
         })
       });
 
@@ -823,6 +825,8 @@ export default function InventoryManagement() {
                       type="date"
                       value={withdrawDate}
                       onChange={e => setWithdrawDate(e.target.value)}
+                      min={new Date().toISOString().slice(0, 10)}
+                      max={new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}
                       required
                     />
                   </div>
@@ -862,6 +866,7 @@ export default function InventoryManagement() {
                           <th>รหัสวัตถุดิบ (ProductId)</th>
                           <th>ชื่อวัตถุดิบ (ProductName)</th>
                           <th style={{textAlign: 'right'}}>ปริมาณน้ำหนัก (Weight)</th>
+                          <th style={{textAlign: 'center'}}>ผู้ทำรายการ (By)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -873,6 +878,9 @@ export default function InventoryManagement() {
                             <td className="im-inv-name">{inv.ProductName || '-'}</td>
                             <td style={{textAlign: 'right', fontWeight: 'bold', color: '#dc2626'}}>
                               -{Number(inv.Weight).toFixed(2)} {inv.unit || 'หน่วย'}
+                            </td>
+                            <td style={{textAlign: 'center'}}>
+                              {inv.firstname ? `${inv.firstname} ${inv.lastname || ''}` : '-'}
                             </td>
                           </tr>
                         ))}
