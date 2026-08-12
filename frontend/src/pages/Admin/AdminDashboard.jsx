@@ -49,27 +49,36 @@ export default function AdminDashboard() {
       return;
     }
     try {
+      let res;
       if (editingEmployee) {
         // Edit mode
-        await fetch(`${API_BASE}/api/users/${editingEmployee}`, {
+        res = await fetch(`${API_BASE}/api/users/${editingEmployee}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newEmployee)
         });
       } else {
         // Add mode
-        await fetch(`${API_BASE}/api/users`, {
+        res = await fetch(`${API_BASE}/api/users`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newEmployee)
         });
       }
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        return;
+      }
+
       setShowAddForm(false);
       setEditingEmployee(null);
       setNewEmployee({ firstname: '', lastname: '', username: '', password: '', phone: '', email: '', Role_id: 'R02' });
       fetchEmployees();
     } catch (err) {
       console.error('Error saving employee:', err);
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
     }
   };
 

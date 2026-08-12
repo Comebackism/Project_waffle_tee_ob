@@ -21,6 +21,12 @@ exports.addUser = async (req, res) => {
   try {
     const { firstname, lastname, username, password, Role_id, phone, email } = req.body;
     
+    // Check if username exists
+    const checkUsername = await db.query('SELECT user_id FROM "User" WHERE username = $1', [username]);
+    if (checkUsername.rows.length > 0) {
+      return res.status(400).json({ message: 'Username นี้มีในระบบแล้ว กรุณาใช้ชื่ออื่น' });
+    }
+    
     // Auto generate user_id (e.g. U04)
     const lastUserRes = await db.query('SELECT user_id FROM "User" ORDER BY user_id DESC LIMIT 1');
     let nextId = 'U01';
@@ -52,6 +58,12 @@ exports.updateUser = async (req, res) => {
     const userRes = await db.query('SELECT * FROM "User" WHERE user_id = $1', [id]);
     if (userRes.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if new username conflicts with another user
+    const checkUsername = await db.query('SELECT user_id FROM "User" WHERE username = $1 AND user_id != $2', [username, id]);
+    if (checkUsername.rows.length > 0) {
+      return res.status(400).json({ message: 'Username นี้มีในระบบแล้ว กรุณาใช้ชื่ออื่น' });
     }
 
     // Update query

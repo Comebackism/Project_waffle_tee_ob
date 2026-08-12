@@ -12,9 +12,16 @@ exports.createOrder = async (req, res) => {
     // Start transaction
     await db.query('BEGIN');
 
-    // 1. Generate order_id
-    const orderCountResult = await db.query('SELECT COUNT(*) FROM "Order"');
-    const orderCount = parseInt(orderCountResult.rows[0].count) + 1;
+    // 1. Generate order_id using MAX instead of COUNT to prevent duplicates if rows are deleted
+    const lastOrderResult = await db.query('SELECT order_id FROM "Order" ORDER BY order_id DESC LIMIT 1');
+    let orderCount = 1;
+    if (lastOrderResult.rows.length > 0) {
+      const lastId = lastOrderResult.rows[0].order_id;
+      const match = lastId.match(/ORD-(\d+)/);
+      if (match) {
+        orderCount = parseInt(match[1], 10) + 1;
+      }
+    }
     const order_id = `ORD-${String(orderCount).padStart(5, '0')}`;
 
     // 2. Generate queue_number
