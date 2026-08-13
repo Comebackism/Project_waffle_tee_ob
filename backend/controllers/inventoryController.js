@@ -162,8 +162,12 @@ exports.deleteProduct = async (req, res) => {
 
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
+    // 23503 is the PostgreSQL error code for foreign_key_violation
+    if (err.code === '23503') {
+      return res.status(400).json({ message: 'ไม่สามารถลบวัตถุดิบนี้ได้ เนื่องจากมีประวัติการเบิกหรือถูกใช้งานในระบบแล้ว' });
+    }
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
