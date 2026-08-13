@@ -804,8 +804,8 @@ export default function InventoryManagement() {
                           {Math.max(0, Number(withdrawItem.quantity) - Number(withdrawAmount)).toFixed(1)} {withdrawItem.unit}
                         </strong>
                         {Number(withdrawAmount) > Number(withdrawItem.quantity) && (
-                          <span style={{color: '#ef4444', display: 'block', marginTop: '4px'}}>
-                            ⚠️ ปริมาณที่เบิกมากกว่าจำนวนคงเหลือในคลัง
+                          <span style={{color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px'}}>
+                            <FaExclamationTriangle /> ปริมาณที่เบิกมากกว่าจำนวนคงเหลือในคลัง
                           </span>
                         )}
                       </p>
