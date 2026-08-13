@@ -11,7 +11,8 @@ import {
   FaHistory, 
   FaCamera, 
   FaUpload, 
-  FaImage 
+  FaImage,
+  FaCheckCircle 
 } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './InventoryManagement.css';
@@ -69,6 +70,12 @@ export default function InventoryManagement() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawDate, setWithdrawDate] = useState(new Date().toISOString().slice(0, 10));
 
+  // Alert modal
+  const [imAlert, setImAlert] = useState({ show: false, message: '', type: 'success' });
+  const showAlert = (message, type = 'error') => {
+    setImAlert({ show: true, message, type });
+  };
+
   // Invoice History modal
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoices, setInvoices] = useState([]);
@@ -115,23 +122,29 @@ export default function InventoryManagement() {
     if (!amount || amount <= 0) return;
 
     try {
+      let res;
       if (restockMode === 'add') {
-        await fetch(`${API_BASE}/api/inventory/add`, {
+        res = await fetch(`${API_BASE}/api/inventory/add`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ProductID: restockItem.ProductID, quantity: amount })
         });
       } else {
-        await fetch(`${API_BASE}/api/inventory/set`, {
+        res = await fetch(`${API_BASE}/api/inventory/set`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ProductID: restockItem.ProductID, quantity: amount })
         });
       }
+
+      if (!res.ok) throw new Error('Failed to restock');
+
+      showAlert(restockMode === 'add' ? 'เติมสต็อกสำเร็จ' : 'ตั้งค่าจำนวนสต็อกสำเร็จ', 'success');
       setShowRestockModal(false);
       fetchInventory();
     } catch (err) {
       console.error('Error restocking:', err);
+      showAlert('เกิดข้อผิดพลาดในการอัปเดตสต็อก', 'error');
     }
   };
 
@@ -141,17 +154,22 @@ export default function InventoryManagement() {
     if (!newProduct.ProductName.trim()) return;
 
     try {
-      await fetch(`${API_BASE}/api/inventory/product`, {
+      const res = await fetch(`${API_BASE}/api/inventory/product`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct)
       });
+      
+      if (!res.ok) throw new Error('Failed to add product');
+
+      showAlert('เพิ่มวัตถุดิบ/สินค้าใหม่เรียบร้อยแล้ว', 'success');
       setShowAddModal(false);
       setNewProduct({ ProductName: '', quantity: '', unit: 'กิโลกรัม', category: 'วัตถุดิบหลัก', Picture: '' });
       setAddImagePreview(null);
       fetchInventory();
     } catch (err) {
       console.error('Error adding product:', err);
+      showAlert('เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ', 'error');
     }
   };
 
@@ -163,13 +181,21 @@ export default function InventoryManagement() {
 
   const handleDelete = async () => {
     try {
-      await fetch(`${API_BASE}/api/inventory/product/${deleteItem.ProductID}`, {
+      const res = await fetch(`${API_BASE}/api/inventory/product/${deleteItem.ProductID}`, {
         method: 'DELETE'
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to delete product');
+      }
+
+      showAlert('ลบวัตถุดิบสำเร็จ', 'success');
       setShowDeleteModal(false);
       fetchInventory();
     } catch (err) {
       console.error('Error deleting product:', err);
+      showAlert(err.message || 'เกิดข้อผิดพลาดในการลบวัตถุดิบ', 'error');
     }
   };
 
@@ -189,7 +215,7 @@ export default function InventoryManagement() {
   const handleEditProduct = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`${API_BASE}/api/inventory/product/${editProduct.ProductID}`, {
+      const res = await fetch(`${API_BASE}/api/inventory/product/${editProduct.ProductID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,10 +225,15 @@ export default function InventoryManagement() {
           Picture: editProduct.Picture || undefined
         })
       });
+      
+      if (!res.ok) throw new Error('Failed to edit product');
+
+      showAlert('แก้ไขข้อมูลวัตถุดิบสำเร็จ', 'success');
       setShowEditModal(false);
       fetchInventory();
     } catch (err) {
       console.error('Error editing product:', err);
+      showAlert('เกิดข้อผิดพลาดในการแก้ไขข้อมูล', 'error');
     }
   };
 
@@ -220,7 +251,7 @@ export default function InventoryManagement() {
     if (!withdrawItem) return;
     const amount = Number(withdrawAmount);
     if (!amount || amount <= 0) {
-      alert('กรุณาระบุปริมาณน้ำหนักที่ต้องการเบิก');
+      showAlert('กรุณาระบุปริมาณน้ำหนักที่ต้องการเบิก', 'error');
       return;
     }
 
@@ -239,12 +270,12 @@ export default function InventoryManagement() {
       if (!res.ok) throw new Error('Failed to withdraw stock');
 
       const data = await res.json();
-      alert(`✅ ${data.message} (เลขที่: ${data.invoice?.InvoiceNo})`);
+      showAlert(`เบิกวัตถุดิบสำเร็จและบันทึกใบสำคัญเรียบร้อยแล้ว (เลขที่: ${data.invoice?.InvoiceNo})`, 'success');
       setShowWithdrawModal(false);
       fetchInventory();
     } catch (err) {
       console.error('Error withdrawing stock:', err);
-      alert('เกิดข้อผิดพลาดในการเบิกวัตถุดิบ');
+      showAlert('เกิดข้อผิดพลาดในการเบิกวัตถุดิบ', 'error');
     }
   };
 
@@ -886,6 +917,30 @@ export default function InventoryManagement() {
               <div className="im-modal-footer">
                 <button className="im-btn-cancel" onClick={() => setShowInvoiceModal(false)}>ปิด</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Generic Alert Modal */}
+        {imAlert.show && (
+          <div className="im-modal-overlay" onClick={() => setImAlert({ ...imAlert, show: false })}>
+            <div className="im-modal" style={{ maxWidth: '350px', textAlign: 'center', padding: '32px 24px' }} onClick={e => e.stopPropagation()}>
+              <div style={{ fontSize: '56px', color: imAlert.type === 'error' ? '#ef4444' : '#22c55e', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'center' }}>
+                {imAlert.type === 'error' ? <FaExclamationTriangle /> : <FaCheckCircle />}
+              </div>
+              <h2 style={{ margin: '0 0 12px 0', fontSize: '20px', color: '#1f2937' }}>
+                {imAlert.type === 'error' ? 'แจ้งเตือน' : 'สำเร็จ'}
+              </h2>
+              <p style={{ color: '#4b5563', fontSize: '15px', marginBottom: '24px', lineHeight: '1.5' }}>
+                {imAlert.message}
+              </p>
+              <button 
+                className="im-btn-confirm" 
+                style={{ width: '100%', background: imAlert.type === 'error' ? '#ef4444' : '#22c55e', border: 'none', borderRadius: '8px' }}
+                onClick={() => setImAlert({ ...imAlert, show: false })}
+              >
+                ตกลง
+              </button>
             </div>
           </div>
         )}
