@@ -354,3 +354,69 @@
   font-size: 16px;
   color: #6b7280;
 }
+
+/* Cancel Order Modal */
+.os-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.os-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.os-modal-header {
+  margin-bottom: 16px;
+}
+.os-modal-header.danger h2 {
+  color: #ef4444;
+  margin: 0;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-modal-body p {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.os-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.os-btn-cancel, .os-btn-danger {
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  flex: 1;
+}
+
+.os-btn-cancel {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+.os-btn-danger {
+  background: #ef4444;
+  color: white;
+}

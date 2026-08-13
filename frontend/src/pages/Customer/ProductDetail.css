@@ -383,3 +383,58 @@
     opacity: 0;
   }
 }
+
+/* Topping Limit Alert Modal */
+.pd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.pd-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 320px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.pd-modal-icon {
+  font-size: 48px;
+  color: #f59e0b;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.pd-modal h2 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.pd-modal p {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.pd-btn-ok {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  background: var(--primary-red, #B30021);
+  color: white;
+}

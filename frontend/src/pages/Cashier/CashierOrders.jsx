@@ -21,6 +21,7 @@ export default function CashierOrders() {
   const [activeTab, setActiveTab] = useState('S01'); // Filter by status
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const fetchOrders = () => {
     fetch(`${API_BASE}/api/orders/today`)
@@ -90,17 +91,19 @@ export default function CashierOrders() {
     { id: 'S06', label: 'ยกเลิก', count: orders.filter(o => o.Status_id === 'S06').length },
   ];
 
-  const clearDailyOrders = async () => {
-    if (window.confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลออเดอร์ทั้งหมดเพื่อเริ่มวันใหม่? (คิวและรหัสออเดอร์จะถูกรีเซ็ต)')) {
-      try {
-        const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
-        const data = await res.json();
-        alert(data.message);
-        fetchOrders();
-      } catch (err) {
-        console.error('Error clearing orders:', err);
-        alert('เกิดข้อผิดพลาดในการล้างออเดอร์');
-      }
+  const clearDailyOrders = () => {
+    setShowClearModal(true);
+  };
+
+  const executeClearDailyOrders = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
+      const data = await res.json();
+      setShowClearModal(false);
+      fetchOrders();
+    } catch (err) {
+      console.error('Error clearing orders:', err);
+      alert('เกิดข้อผิดพลาดในการล้างออเดอร์');
     }
   };
 
@@ -293,6 +296,27 @@ export default function CashierOrders() {
         {/* Receipt Slip Modal */}
         {receiptOrder && (
           <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} />
+        )}
+
+        {/* Clear Orders Confirm Modal */}
+        {showClearModal && (
+          <div className="co-modal-overlay" onClick={() => setShowClearModal(false)}>
+            <div className="co-modal co-modal-sm" onClick={e => e.stopPropagation()}>
+              <div className="co-modal-header danger">
+                <h2 style={{ color: '#ef4444', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FaTrash /> ยืนยันการล้างออเดอร์
+                </h2>
+                <button className="co-modal-close" onClick={() => setShowClearModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#6b7280' }}><FaTimes /></button>
+              </div>
+              <div className="co-modal-body" style={{ padding: '20px 0', color: '#4b5563', fontSize: '15px' }}>
+                <p>⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลออเดอร์ทั้งหมดเพื่อเริ่มวันใหม่? (คิวและรหัสออเดอร์จะถูกรีเซ็ต)</p>
+              </div>
+              <div className="co-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+                <button className="co-btn-cancel" onClick={() => setShowClearModal(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#4b5563', fontWeight: 'bold', cursor: 'pointer' }}>ยกเลิก</button>
+                <button className="co-btn-delete" onClick={executeClearDailyOrders} style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>ล้างออเดอร์</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </BackofficeLayout>

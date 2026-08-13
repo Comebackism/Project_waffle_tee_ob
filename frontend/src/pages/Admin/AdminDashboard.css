@@ -56,6 +56,12 @@
 }
 .admin-btn.outline:hover { background: #f9fafb; }
 
+.admin-btn.danger {
+  background: #ef4444;
+  color: white;
+}
+.admin-btn.danger:hover { background: #dc2626; }
+
 .admin-table-container {
   background: white;
   border-radius: 12px;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCheck, FaFire } from 'react-icons/fa';
+import { FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCheck, FaFire, FaExclamationCircle } from 'react-icons/fa';
 import './ProductDetail.css';
 
 const API_BASE = 'http://localhost:5000';
@@ -23,6 +23,9 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
   // Fly-to-cart animation
   const [flyItems, setFlyItems] = useState([]);
   const cartTargetRef = useRef(null);
+
+  // Topping Limit Modal State
+  const [showToppingLimitModal, setShowToppingLimitModal] = useState(false);
 
   // ดึงข้อมูลรายละเอียดสินค้า + ท็อปปิ้งจาก API ตาม productId
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
     
     // ตั้งลิมิตท็อปปิ้งแต่ละชนิดไม่เกิน 3
     if (newQty > 3) {
-      alert('สามารถเพิ่มท็อปปิ้งแต่ละชนิดได้สูงสุด 3 หน่วยครับ');
+      setShowToppingLimitModal(true);
       return;
     }
     
@@ -299,6 +302,22 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
           🔥
         </div>
       ))}
+
+      {/* Topping Limit Modal */}
+      {showToppingLimitModal && (
+        <div className="pd-modal-overlay" onClick={() => setShowToppingLimitModal(false)}>
+          <div className="pd-modal" onClick={e => e.stopPropagation()}>
+            <div className="pd-modal-icon">
+              <FaExclamationCircle />
+            </div>
+            <h2>เพิ่มท็อปปิ้งได้สูงสุด 3 หน่วย</h2>
+            <p>ขออภัยครับ สามารถเพิ่มท็อปปิ้งแต่ละชนิดได้สูงสุด 3 หน่วยเท่านั้นครับ</p>
+            <button className="pd-btn-ok" onClick={() => setShowToppingLimitModal(false)}>
+              ตกลง
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

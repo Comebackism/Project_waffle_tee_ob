@@ -139,3 +139,69 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+/* Cancel Order Modal for MyOrders */
+.mo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.mo-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.mo-modal-header {
+  margin-bottom: 16px;
+}
+.mo-modal-header.danger h2 {
+  color: #ef4444;
+  margin: 0;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mo-modal-body p {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.mo-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.mo-btn-cancel, .mo-btn-danger {
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  flex: 1;
+}
+
+.mo-btn-cancel {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+.mo-btn-danger {
+  background: #ef4444;
+  color: white;
+}

@@ -18,6 +18,7 @@ export default function MyOrders({ onBack, onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
 
   useEffect(() => {
     const fetchMyOrders = async () => {
@@ -50,23 +51,28 @@ export default function MyOrders({ onBack, onViewOrder }) {
     fetchMyOrders();
   }, []);
 
-  const handleCancelOrder = (e, orderId) => {
+  const handleCancelClick = (e, orderId) => {
     e.stopPropagation();
-    if (window.confirm('คุณต้องการยกเลิกออเดอร์นี้ใช่หรือไม่?')) {
-      fetch(`${API_BASE}/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status_id: 'S06' })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to cancel order');
-        setOrders(prev => prev.map(o => o.order_id === orderId ? { ...o, Status_id: 'S06' } : o));
-      })
-      .catch(err => {
-        console.error(err);
-        alert('เกิดข้อผิดพลาดในการยกเลิกออเดอร์');
-      });
-    }
+    setCancelOrderId(orderId);
+  };
+
+  const confirmCancelOrder = () => {
+    if (!cancelOrderId) return;
+    fetch(`${API_BASE}/api/orders/${cancelOrderId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status_id: 'S06' })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to cancel order');
+      setOrders(prev => prev.map(o => o.order_id === cancelOrderId ? { ...o, Status_id: 'S06' } : o));
+      setCancelOrderId(null);
+    })
+    .catch(err => {
+      console.error(err);
+      alert('เกิดข้อผิดพลาดในการยกเลิกออเดอร์');
+      setCancelOrderId(null);
+    });
   };
 
 
@@ -122,7 +128,7 @@ export default function MyOrders({ onBack, onViewOrder }) {
                         <FaReceipt /> ใบเสร็จ/สลิป
                       </span>
                     ) : order.Status_id === 'S01' ? (
-                      <span onClick={(e) => handleCancelOrder(e, order.order_id)} style={{display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontWeight: 600}}>
+                      <span onClick={(e) => handleCancelClick(e, order.order_id)} style={{display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontWeight: 600}}>
                         <FaTimesCircle /> ยกเลิก
                       </span>
                     ) : (
@@ -143,6 +149,27 @@ export default function MyOrders({ onBack, onViewOrder }) {
       {/* Receipt Slip Modal */}
       {receiptOrder && (
         <ReceiptSlip order={receiptOrder} onClose={() => setReceiptOrder(null)} hidePrintButton={true} />
+      )}
+
+      {/* Cancel Order Confirm Modal */}
+      {cancelOrderId && (
+        <div className="mo-modal-overlay" onClick={() => setCancelOrderId(null)}>
+          <div className="mo-modal" onClick={e => e.stopPropagation()}>
+            <div className="mo-modal-header danger">
+              <h2>
+                <FaTimesCircle /> ยืนยันการยกเลิกออเดอร์
+              </h2>
+            </div>
+            <div className="mo-modal-body">
+              <p>คุณแน่ใจหรือไม่ว่าต้องการ <strong>ยกเลิกออเดอร์นี้</strong>?</p>
+              <p style={{ color: '#ef4444', fontSize: '13px' }}>* การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+            </div>
+            <div className="mo-modal-footer">
+              <button className="mo-btn-cancel" onClick={() => setCancelOrderId(null)}>ไม่, กลับไปหน้าเดิม</button>
+              <button className="mo-btn-danger" onClick={confirmCancelOrder}>ใช่, ยกเลิกออเดอร์</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

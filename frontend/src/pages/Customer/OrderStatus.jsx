@@ -24,6 +24,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const fetchOrder = () => {
     if (!orderId) return;
@@ -53,21 +54,21 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
   };
 
   const handleCancelOrder = () => {
-    if (window.confirm('คุณต้องการยกเลิกออเดอร์นี้ใช่หรือไม่?')) {
-      fetch(`${API_BASE}/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status_id: 'S06' })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to cancel order');
-        fetchOrder();
-      })
-      .catch(err => {
-        console.error(err);
-        alert('เกิดข้อผิดพลาดในการยกเลิกออเดอร์');
-      });
-    }
+    fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status_id: 'S06' })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to cancel order');
+      setShowCancelModal(false);
+      fetchOrder();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('เกิดข้อผิดพลาดในการยกเลิกออเดอร์');
+      setShowCancelModal(false);
+    });
   };
 
   if (loading) {
@@ -217,7 +218,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
         {order.Status_id === 'S01' && (
           <button 
             className="os-cancel-btn" 
-            onClick={handleCancelOrder}
+            onClick={() => setShowCancelModal(true)}
             style={{
               width: '100%',
               padding: '16px',
@@ -243,6 +244,27 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
             onClose={() => setShowReceipt(false)} 
             hidePrintButton={true}
           />
+        )}
+
+        {/* Cancel Order Confirm Modal */}
+        {showCancelModal && (
+          <div className="os-modal-overlay" onClick={() => setShowCancelModal(false)}>
+            <div className="os-modal" onClick={e => e.stopPropagation()}>
+              <div className="os-modal-header danger">
+                <h2>
+                  <FaTimesCircle /> ยืนยันการยกเลิกออเดอร์
+                </h2>
+              </div>
+              <div className="os-modal-body">
+                <p>คุณแน่ใจหรือไม่ว่าต้องการ <strong>ยกเลิกออเดอร์นี้</strong>?</p>
+                <p style={{ color: '#ef4444', fontSize: '13px' }}>* การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+              </div>
+              <div className="os-modal-footer">
+                <button className="os-btn-cancel" onClick={() => setShowCancelModal(false)}>ไม่, กลับไปหน้าเดิม</button>
+                <button className="os-btn-danger" onClick={handleCancelOrder}>ใช่, ยกเลิกออเดอร์</button>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>
