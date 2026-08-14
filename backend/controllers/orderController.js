@@ -35,6 +35,7 @@ exports.createOrder = async (req, res) => {
 
     // Handle base64 slip_picture
     let final_slip_picture = slip_picture;
+    let slip_trans_ref = null;
     if (slip_picture && slip_picture.startsWith('data:image')) {
       const matches = slip_picture.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
       if (matches && matches.length === 3) {
@@ -66,6 +67,15 @@ exports.createOrder = async (req, res) => {
                   await db.query('ROLLBACK');
                   return res.status(400).json({ message: `ยอดเงินในสลิป (${slipData.amount} บาท) ไม่ตรงกับค่าอาหาร (${total_amount} บาท)` });
               }
+              
+              if (slipData.transRef) {
+                  const checkDupResult = await db.query('SELECT order_id FROM "Order" WHERE slip_trans_ref = $1 LIMIT 1', [slipData.transRef]);
+                  if (checkDupResult.rows.length > 0) {
+                      await db.query('ROLLBACK');
+                      return res.status(400).json({ message: 'สลิปนี้ถูกใช้งานไปแล้วในระบบ' });
+                  }
+                  slip_trans_ref = slipData.transRef;
+              }
           } catch (error) {
               await db.query('ROLLBACK');
               const slipError = error.response?.data?.message || 'เกิดข้อผิดพลาดในการตรวจสอบสลิป (อาจเป็นสลิปปลอม หรือรูปภาพอ่าน QR ไม่ได้)';
@@ -90,9 +100,9 @@ exports.createOrder = async (req, res) => {
     // 3. Insert Order (Status: S01 = รอชำระเงิน, or set pay_time if paid)
     const isPaid = pay_method === 'promptpay' && final_slip_picture;
     const orderResult = await db.query(
-      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null]
+      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null, slip_trans_ref]
     );
 
     // 4. Insert Order Items

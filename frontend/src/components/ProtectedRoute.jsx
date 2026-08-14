@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const userStr = localStorage.getItem('currentUser');
   
   if (!userStr) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const currentUser = JSON.parse(userStr);
@@ -16,10 +16,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     if (currentUser.Role_id === 'R01') return <Navigate to="/admin" replace />;
     if (currentUser.Role_id === 'R02') return <Navigate to="/cashier/orders" replace />;
     if (currentUser.Role_id === 'R03') return <Navigate to="/kitchen" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 };
 
 export default ProtectedRoute;
+

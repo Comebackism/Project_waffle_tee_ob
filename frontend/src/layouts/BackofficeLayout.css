@@ -249,3 +249,31 @@
   }
 }
 
+/* Logout Button */
+.bo-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bo-logout-btn:hover {
+  background-color: #fca5a5;
+  color: #991b1b;
+}
+
+.bo-logout-btn svg {
+  font-size: 16px;
+}
+

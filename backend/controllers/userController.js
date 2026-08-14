@@ -101,3 +101,38 @@ exports.deleteUser = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// Login
+exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: 'กรุณากรอก username และ password' });
+    }
+
+    const result = await db.query(`
+      SELECT u.user_id, u.firstname, u.lastname, u.username, u.password, u.phone, u.email, u."Role_id", r."RoleName" as rolename
+      FROM "User" u
+      LEFT JOIN "Role" r ON u."Role_id" = r."Role_id"
+      WHERE u.username = $1
+    `, [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'ไม่พบชื่อผู้ใช้นี้ในระบบ' });
+    }
+
+    const user = result.rows[0];
+
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
+    }
+
+    // Return user info without password
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({ message: 'เข้าสู่ระบบสำเร็จ', user: userWithoutPassword });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};

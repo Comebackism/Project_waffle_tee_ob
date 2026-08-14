@@ -15,6 +15,8 @@ import InventoryManagement from './pages/Shared/InventoryManagement';
 import MenuManagement from './pages/Shared/MenuManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import MyOrders from './pages/Customer/MyOrders';
+import Login from './pages/Login/Login';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Customer App (with internal navigation)
 function CustomerApp() {
@@ -240,8 +242,10 @@ export default function App() {
   const userRole = localStorage.getItem('userRole'); // Assume role is stored here
 
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       <Route path="/" element={<CustomerApp />} />
+      <Route path="/login" element={<Login />} />
 
       {/* Admin Routes — Admin (R01) can access everything */}
       <Route path="/admin" element={
@@ -281,5 +285,6 @@ export default function App() {
         </ProtectedRoute>
       } />
     </Routes>
+    </ErrorBoundary>
   );
 }

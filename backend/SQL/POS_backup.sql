@@ -133,7 +133,8 @@ CREATE TABLE public."Order" (
     pay_time timestamp without time zone,
     slip_picture character varying(255),
     note character varying(255),
-    total_calories integer DEFAULT 0
+    total_calories integer DEFAULT 0,
+    slip_trans_ref character varying(255)
 );
 
 

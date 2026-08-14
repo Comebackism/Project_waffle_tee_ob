@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList } from 'react-icons/fa';
+import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList, FaSignOutAlt } from 'react-icons/fa';
 import './BackofficeLayout.css';
 
 export default function BackofficeLayout({ children, role = 'cashier' }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -12,8 +13,15 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [machineId, setMachineId] = useState('01');
 
   useEffect(() => {
+    // Get machine ID from localStorage
+    const savedMachine = localStorage.getItem('posMachineId');
+    if (savedMachine) {
+      setMachineId(String(savedMachine).padStart(2, '0'));
+    }
+
     // Fetch all users to populate the switch user menu
     fetch('http://localhost:5000/api/users')
       .then(res => res.json())
@@ -27,22 +35,19 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
           // verify it still exists
           const exists = data.find(u => u.user_id === savedUser.user_id);
           if (exists) setCurrentUser(exists);
-          else setCurrentUser(data[0]);
-        } else if (data.length > 0) {
-          // Default to first user based on role prop if possible
-          let defaultUser = data.find(u => 
-            (role === 'admin' && u.Role_id === 'R01') ||
-            (role === 'cashier' && u.Role_id === 'R02') ||
-            (role === 'kitchen' && u.Role_id === 'R03')
-          );
-          if (!defaultUser) defaultUser = data[0];
-          setCurrentUser(defaultUser);
-          localStorage.setItem('currentUser', JSON.stringify(defaultUser));
+          else {
+            // User no longer exists, redirect to login
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('posMachineId');
+            navigate('/login');
+          }
+        } else {
+          // No saved user, redirect to login
+          navigate('/login');
         }
       });
-  }, [role]);
+  }, [role, navigate]);
 
-  const navigate = useNavigate();
 
   const initiateSwitchUser = (user) => {
     if (user.user_id === currentUser?.user_id) {
@@ -69,6 +74,12 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     } else {
       setPasswordError('รหัสผ่านไม่ถูกต้อง');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('posMachineId');
+    navigate('/login');
   };
 
   const getNavItems = () => {
@@ -126,7 +137,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
           <h1 className="bo-brand-title">
             ตี๋อบ<br />วาฟเฟิล<br />HongKong
           </h1>
-          <span className="bo-machine-id">เครื่องที่ #01</span>
+          <span className="bo-machine-id">เครื่องที่ #{machineId}</span>
         </div>
 
         <nav className="bo-nav">
@@ -145,18 +156,17 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
           ))}
         </nav>
 
-        {/* User Profile / Switcher */}
         <div className="bo-user-profile" style={{ position: 'relative' }}>
           <div className="bo-user-profile-inner" onClick={() => setShowUserMenu(!showUserMenu)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', width: '100%' }}>
             <div className="bo-avatar">
-              {currentUser ? currentUser.firstname.substring(0, 1) : 'U'}
+              {currentUser ? (currentUser.firstname || 'U').substring(0, 1) : 'U'}
             </div>
             <div className="bo-user-info">
               <span className="bo-user-name">
-                {currentUser ? `${currentUser.firstname} ${currentUser.lastname}` : 'กำลังโหลด...'}
+                {currentUser ? `${currentUser.firstname || ''} ${currentUser.lastname || ''}` : 'กำลังโหลด...'}
               </span>
               <span className="bo-user-role">
-                {currentUser ? currentUser.rolename : '...'}
+                {currentUser ? (currentUser.rolename || '...') : '...'}
               </span>
             </div>
             <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#9ca3af' }}>▼</span>
@@ -179,6 +189,12 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
             </div>
           )}
         </div>
+
+        {/* Logout Button */}
+        <button className="bo-logout-btn" onClick={handleLogout}>
+          <FaSignOutAlt />
+          <span>ออกจากระบบ</span>
+        </button>
       </aside>
 
       {/* Main Content */}
