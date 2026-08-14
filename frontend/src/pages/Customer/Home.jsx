@@ -28,11 +28,11 @@ export default function Home({ onSelectProduct }) {
     fetchMenus();
   }, [fetchMenus]);
 
-  // Resolve image URL: if it starts with '/' it's a local backend path
   const resolveImage = (pic) => {
     if (!pic) return 'https://via.placeholder.com/300';
     if (pic.startsWith('http')) return pic;
-    return `${API_BASE}${pic}`;
+    if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
+    return `${API_BASE}/images/${pic}`;
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>กำลังโหลดเมนู...</div>;
@@ -54,7 +54,8 @@ export default function Home({ onSelectProduct }) {
             price={Number(item.price)}
             image={resolveImage(item.Picture)}
             isFavorite={item.is_favorite}
-            FoodcardClick={() => onSelectProduct(item.menu_id)}
+            isActive={item.is_active}
+            FoodcardClick={() => item.is_active ? onSelectProduct(item.menu_id) : null}
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars } from 'react-icons/fa';
+import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList } from 'react-icons/fa';
 import './BackofficeLayout.css';
 
 export default function BackofficeLayout({ children, role = 'cashier' }) {
@@ -72,16 +72,24 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
   };
 
   const getNavItems = () => {
-    if (role === 'admin') {
+    let currentRole = role;
+    if (currentUser) {
+      if (currentUser.Role_id === 'R01') currentRole = 'admin';
+      else if (currentUser.Role_id === 'R02') currentRole = 'cashier';
+      else if (currentUser.Role_id === 'R03') currentRole = 'kitchen';
+    }
+
+    if (currentRole === 'admin') {
       return [
         { path: '/admin', label: 'จัดการพนักงาน', icon: <FaUsers /> },
         { path: '/admin/dashboard', label: 'แดชบอร์ด', icon: <FaChartBar /> },
         { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
         { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
         { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
+        { path: '/menu-management', label: 'จัดการเมนูหน้าร้าน', icon: <FaList /> },
       ];
     }
-    if (role === 'kitchen') {
+    if (currentRole === 'kitchen') {
       return [
         { path: '/', label: 'หน้าหลัก', icon: <FaHome /> },
         { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
@@ -91,6 +99,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     return [
       { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
       { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
+      { path: '/menu-management', label: 'จัดการเมนูหน้าร้าน', icon: <FaList /> },
     ];
   };
 

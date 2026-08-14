@@ -4,6 +4,7 @@ const path = require('path'); //  1.ดึงโมดูล path ของ Node
 require('dotenv').config();
 
 const menuRoutes = require('./routes/menuRoutes');
+const toppingRoutes = require('./routes/toppingRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 app.use('/api/menus', menuRoutes);
+app.use('/api/toppings', toppingRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);

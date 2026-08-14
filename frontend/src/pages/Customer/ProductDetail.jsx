@@ -7,7 +7,8 @@ const API_BASE = 'http://localhost:5000';
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/300';
   if (pic.startsWith('http')) return pic;
-  return `${API_BASE}${pic}`;
+  if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
+  return `${API_BASE}/images/${pic}`;
 };
 
 // 1. รับ prop onAddToCart เข้ามาจาก App.jsx 👈
@@ -262,23 +263,32 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
                   return (
                     <div
                       key={item.topping_id}
-                      className={`topping-item ${isSelected ? 'selected' : ''}`}
-                      onClick={(e) => updateToppingQuantity(item.topping_id, 1, e)}
+                      className={`topping-item ${isSelected ? 'selected' : ''} ${!item.is_active ? 'inactive' : ''}`}
+                      onClick={(e) => item.is_active ? updateToppingQuantity(item.topping_id, 1, e) : null}
+                      style={!item.is_active ? { opacity: 0.6, cursor: 'not-allowed', filter: 'grayscale(1)' } : {}}
                     >
                       <div className="topping-info">
                         <span className="topping-name">{item.name}</span>
-                        <span className="topping-details">
+                        <span className="topping-details" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           <span style={{ whiteSpace: 'nowrap' }}>+ {Number(item.price)} บาท</span>
                           <span style={{color: '#e5e7eb'}}>|</span>
                           <span style={{color: '#f97316', whiteSpace: 'nowrap'}}>🔥 + {Number(item.Calories).toFixed(2)} kcal</span>
+                          {!item.is_active && (
+                            <>
+                              <span style={{color: '#e5e7eb'}}>|</span>
+                              <span style={{ fontSize: '11px', color: '#ef4444', backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '8px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>หมดชั่วคราว</span>
+                            </>
+                          )}
                         </span>
                       </div>
                       <div className="topping-qty-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {isSelected ? (
+                        {!item.is_active ? (
+                          <div style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 'bold' }}>หมด</div>
+                        ) : isSelected ? (
                           <>
                             <button 
                               className="topping-qty-btn" 
-                              onClick={(e) => updateToppingQuantity(item.topping_id, -1, e)}
+                              onClick={(e) => { e.stopPropagation(); updateToppingQuantity(item.topping_id, -1, e); }}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: '#e5e7eb', color: '#4b5563', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                               <FaMinus style={{ fontSize: '12px' }} />
@@ -286,7 +296,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
                             <span style={{ fontWeight: 'bold', fontSize: '15px', width: '20px', textAlign: 'center', color: '#333' }}>{qty}</span>
                             <button 
                               className="topping-qty-btn" 
-                              onClick={(e) => updateToppingQuantity(item.topping_id, 1, e)}
+                              onClick={(e) => { e.stopPropagation(); updateToppingQuantity(item.topping_id, 1, e); }}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: 'none', background: 'var(--primary-red, #B30021)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(179,0,33,0.3)' }}
                             >
                               <FaPlus style={{ fontSize: '12px' }} />

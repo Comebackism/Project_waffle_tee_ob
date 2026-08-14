@@ -32,45 +32,110 @@ exports.getDashboardStats = async (req, res) => {
     const totalSales = parseFloat(allTimeSalesRes.rows[0].total || 0) + parseFloat(archivedSalesRes.rows[0].total || 0);
     const archivedOrders = parseInt(archivedSalesRes.rows[0].orders || 0);
 
-    // 4. Sales Trend (Weekly or Monthly)
+    // 4. Sales Trend (Day, Week, Month, Year)
     const range = req.query.range || 'week';
-    const intervalStr = range === 'month' ? '29 days' : '6 days';
-    
-    const weeklySalesRes = await db.query(`
-      WITH dates AS (
-        SELECT generate_series(
-          CURRENT_DATE - INTERVAL '${intervalStr}',
-          CURRENT_DATE,
-          '1 day'::interval
-        )::date AS date
-      )
-      SELECT 
-        TO_CHAR(d.date, 'Day') as day_name,
-        d.date,
-        COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
-      FROM dates d
-      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
-      LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
-      GROUP BY d.date, ds.total_sales
-      ORDER BY d.date ASC
-    `);
+    let trendData = [];
 
-    // Format for recharts
-    const thaiDays = {
-      'Monday   ': 'จ.', 'Tuesday  ': 'อ.', 'Wednesday': 'พ.', 'Thursday ': 'พฤ.', 'Friday   ': 'ศ.', 'Saturday ': 'ส.', 'Sunday   ': 'อา.'
-    };
-    const weeklySales = weeklySalesRes.rows.map(r => {
-      const d = new Date(r.date);
-      const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
-      const fullDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-      const dayName = thaiDays[r.day_name] || r.day_name.trim().substring(0,2);
-      return {
-        name: `${dayName} ${shortDate}`,
-        fullDate: fullDate,
+    if (range === 'day') {
+      const daySalesRes = await db.query(`
+        WITH hours AS (
+          SELECT generate_series(
+            CURRENT_DATE::timestamp,
+            CURRENT_DATE::timestamp + '23 hours'::interval,
+            '1 hour'::interval
+          )::timestamp AS hour
+        )
+        SELECT 
+          TO_CHAR(h.hour, 'HH24:00') as name,
+          h.hour as fullDate,
+          COALESCE(SUM(o.total_amount), 0) as sales
+        FROM hours h
+        LEFT JOIN "Order" o 
+          ON DATE_TRUNC('hour', o.created_at) = h.hour 
+          AND o."Status_id" = 'S05' 
+          AND o.is_archived = false
+        GROUP BY h.hour
+        ORDER BY h.hour ASC
+      `);
+      trendData = daySalesRes.rows.map(r => ({
+        name: r.name,
+        fullDate: r.name, // time string
         sales: parseFloat(r.sales)
-      };
-    });
+      }));
+    } else if (range === 'year') {
+      const yearSalesRes = await db.query(`
+        WITH months AS (
+          SELECT generate_series(
+            DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '11 months',
+            DATE_TRUNC('month', CURRENT_DATE),
+            '1 month'::interval
+          )::date AS month_date
+        )
+        SELECT 
+          TO_CHAR(m.month_date, 'MM/YYYY') as name,
+          m.month_date as fullDate,
+          COALESCE(SUM(o.total_amount), 0) + COALESCE(SUM(ds.total_sales), 0) as sales
+        FROM months m
+        LEFT JOIN "Order" o 
+          ON DATE_TRUNC('month', o.created_at) = m.month_date 
+          AND o."Status_id" = 'S05' 
+          AND o.is_archived = false
+        LEFT JOIN "Daily_Summary" ds 
+          ON DATE_TRUNC('month', ds.summary_date) = m.month_date
+        GROUP BY m.month_date
+        ORDER BY m.month_date ASC
+      `);
+      
+      const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      trendData = yearSalesRes.rows.map(r => {
+        const d = new Date(r.fulldate);
+        const monthName = thaiMonths[d.getMonth()];
+        const year = d.getFullYear() + 543; // Thai year
+        return {
+          name: `${monthName} ${year.toString().slice(-2)}`,
+          fullDate: r.name, // MM/YYYY
+          sales: parseFloat(r.sales)
+        };
+      });
+    } else {
+      // week or month
+      const intervalStr = range === 'month' ? '29 days' : '6 days';
+      const weeklySalesRes = await db.query(`
+        WITH dates AS (
+          SELECT generate_series(
+            CURRENT_DATE - INTERVAL '${intervalStr}',
+            CURRENT_DATE,
+            '1 day'::interval
+          )::date AS date
+        )
+        SELECT 
+          TO_CHAR(d.date, 'Day') as day_name,
+          d.date,
+          COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
+        FROM dates d
+        LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
+        LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
+        GROUP BY d.date, ds.total_sales
+        ORDER BY d.date ASC
+      `);
 
+      // Format for recharts
+      const thaiDays = {
+        'Monday   ': 'จ.', 'Tuesday  ': 'อ.', 'Wednesday': 'พ.', 'Thursday ': 'พฤ.', 'Friday   ': 'ศ.', 'Saturday ': 'ส.', 'Sunday   ': 'อา.'
+      };
+      trendData = weeklySalesRes.rows.map(r => {
+        const d = new Date(r.date);
+        const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+        const fullDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+        const dayName = thaiDays[r.day_name] || r.day_name.trim().substring(0,2);
+        return {
+          name: `${dayName} ${shortDate}`,
+          fullDate: fullDate,
+          sales: parseFloat(r.sales)
+        };
+      });
+    }
+    
     // 5. Best Selling Products (Current Month: live orders + archived daily summary)
     const bestSellingRes = await db.query(`
       WITH monthly_sales AS (
@@ -132,7 +197,7 @@ exports.getDashboardStats = async (req, res) => {
       todayOrders: totalOrders,
       totalOrders: totalOrders + archivedOrders,
       totalSales,
-      weeklySales,
+      weeklySales: trendData,
       bestSelling,
       stockAlerts
     });

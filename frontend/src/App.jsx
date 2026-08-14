@@ -11,6 +11,7 @@ import CashierOrders from './pages/Cashier/CashierOrders';
 import KitchenKDS from './pages/Kitchen/KitchenKDS';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import InventoryManagement from './pages/Shared/InventoryManagement';
+import MenuManagement from './pages/Shared/MenuManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import MyOrders from './pages/Customer/MyOrders';
 
@@ -243,6 +244,11 @@ export default function App() {
       <Route path="/inventory" element={
         <ProtectedRoute allowedRoles={['R01', 'R02']}>
           <InventoryManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/menu-management" element={
+        <ProtectedRoute allowedRoles={['R01', 'R02']}>
+          <MenuManagement />
         </ProtectedRoute>
       } />
     </Routes>

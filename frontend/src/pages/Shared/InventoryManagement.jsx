@@ -617,19 +617,45 @@ export default function InventoryManagement() {
                     </div>
                     <div className="im-form-group">
                       <label>หน่วย</label>
-                      <select 
-                        value={newProduct.unit}
-                        onChange={e => setNewProduct({...newProduct, unit: e.target.value})}
-                      >
-                        <option value="กิโลกรัม">กิโลกรัม</option>
-                        <option value="กรัม">กรัม</option>
-                        <option value="ชิ้น">ชิ้น</option>
-                        <option value="ฟอง">ฟอง</option>
-                        <option value="แพ็ค">แพ็ค</option>
-                        <option value="ถุง">ถุง</option>
-                        <option value="กล่อง">กล่อง</option>
-                        <option value="ขวด">ขวด</option>
-                      </select>
+                      {(() => {
+                        const standardUnits = ['กิโลกรัม','กรัม','ชิ้น','ฟอง','แพ็ค','ถุง','กล่อง','ขวด'];
+                        const isCustom = !standardUnits.includes(newProduct.unit) && newProduct.unit !== '';
+                        return (
+                          <>
+                            <select 
+                              value={isCustom ? '__custom__' : newProduct.unit}
+                              onChange={e => {
+                                if (e.target.value === '__custom__') {
+                                  setNewProduct({...newProduct, unit: ''});
+                                } else {
+                                  setNewProduct({...newProduct, unit: e.target.value});
+                                }
+                              }}
+                            >
+                              <option value="กิโลกรัม">กิโลกรัม</option>
+                              <option value="กรัม">กรัม</option>
+                              <option value="ชิ้น">ชิ้น</option>
+                              <option value="ฟอง">ฟอง</option>
+                              <option value="แพ็ค">แพ็ค</option>
+                              <option value="ถุง">ถุง</option>
+                              <option value="กล่อง">กล่อง</option>
+                              <option value="ขวด">ขวด</option>
+                              <option value="__custom__">กำหนดเอง...</option>
+                            </select>
+                            {(isCustom || newProduct.unit === '') && (
+                              <input 
+                                type="text" 
+                                value={isCustom ? newProduct.unit : ''}
+                                onChange={e => setNewProduct({...newProduct, unit: e.target.value})}
+                                placeholder="พิมพ์หน่วยที่ต้องการ เช่น ลิตร, มิลลิลิตร"
+                                style={{marginTop: '8px'}}
+                                autoFocus
+                                required
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="im-form-group">
@@ -739,19 +765,45 @@ export default function InventoryManagement() {
                   <div className="im-form-row">
                     <div className="im-form-group">
                       <label>หน่วย</label>
-                      <select 
-                        value={editProduct.unit}
-                        onChange={e => setEditProduct({...editProduct, unit: e.target.value})}
-                      >
-                        <option value="กิโลกรัม">กิโลกรัม</option>
-                        <option value="กรัม">กรัม</option>
-                        <option value="ชิ้น">ชิ้น</option>
-                        <option value="ฟอง">ฟอง</option>
-                        <option value="แพ็ค">แพ็ค</option>
-                        <option value="ถุง">ถุง</option>
-                        <option value="กล่อง">กล่อง</option>
-                        <option value="ขวด">ขวด</option>
-                      </select>
+                      {(() => {
+                        const standardUnits = ['กิโลกรัม','กรัม','ชิ้น','ฟอง','แพ็ค','ถุง','กล่อง','ขวด'];
+                        const isCustom = !standardUnits.includes(editProduct.unit) && editProduct.unit !== '';
+                        return (
+                          <>
+                            <select 
+                              value={isCustom ? '__custom__' : editProduct.unit}
+                              onChange={e => {
+                                if (e.target.value === '__custom__') {
+                                  setEditProduct({...editProduct, unit: ''});
+                                } else {
+                                  setEditProduct({...editProduct, unit: e.target.value});
+                                }
+                              }}
+                            >
+                              <option value="กิโลกรัม">กิโลกรัม</option>
+                              <option value="กรัม">กรัม</option>
+                              <option value="ชิ้น">ชิ้น</option>
+                              <option value="ฟอง">ฟอง</option>
+                              <option value="แพ็ค">แพ็ค</option>
+                              <option value="ถุง">ถุง</option>
+                              <option value="กล่อง">กล่อง</option>
+                              <option value="ขวด">ขวด</option>
+                              <option value="__custom__">กำหนดเอง...</option>
+                            </select>
+                            {(isCustom || editProduct.unit === '') && (
+                              <input 
+                                type="text" 
+                                value={isCustom ? editProduct.unit : ''}
+                                onChange={e => setEditProduct({...editProduct, unit: e.target.value})}
+                                placeholder="พิมพ์หน่วยที่ต้องการ เช่น ลิตร, มิลลิลิตร"
+                                style={{marginTop: '8px'}}
+                                autoFocus
+                                required
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="im-form-group">
                       <label>หมวดหมู่</label>

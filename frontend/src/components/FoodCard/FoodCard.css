@@ -97,3 +97,8 @@
 .food-card-add-btn:hover {
   background-color: var(--primary-hover, #90001a);
 }
+.food-card.inactive { opacity: 0.6; filter: grayscale(1); cursor: not-allowed; }
+.food-card.inactive:hover { transform: none; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.food-card.inactive .food-card-add-btn { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
+.food-card-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.7); display: flex; align-items: center; justify-content: center; border-radius: 12px; z-index: 10; }
+.food-card-overlay span { background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }

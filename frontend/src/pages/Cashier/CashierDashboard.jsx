@@ -163,8 +163,10 @@ export default function CashierDashboard() {
                   onChange={(e) => setTimeRange(e.target.value)}
                   style={{outline: 'none', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 8px'}}
                 >
+                  <option value="day">วันนี้ (รายชั่วโมง)</option>
                   <option value="week">สัปดาห์นี้</option>
                   <option value="month">เดือนนี้ (30 วัน)</option>
+                  <option value="year">ปีนี้ (12 เดือน)</option>
                 </select>
               </div>
               <div className="cd-chart-container">
@@ -177,7 +179,8 @@ export default function CashierDashboard() {
                       cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
                       labelFormatter={(value, payload) => {
                         if (payload && payload.length > 0) {
-                          return `วันที่: ${payload[0].payload.fullDate}`;
+                          const prefix = timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:');
+                          return `${prefix} ${payload[0].payload.fullDate}`;
                         }
                         return value;
                       }}
