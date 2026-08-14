@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import './Checkout.css';
 
 export default function Checkout({ cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
@@ -10,6 +10,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
     const [slipFile, setSlipFile] = useState(null);
     const [slipPreview, setSlipPreview] = useState(null);
     const [slipBase64, setSlipBase64] = useState(null);
+    const [showAlertModal, setShowAlertModal] = useState(false);
 
     // คำนวณราคารวมสินค้า
     const calculateItemTotal = (item) => {
@@ -49,7 +50,7 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
     // กดยืนยันการชำระเงิน
     const handleConfirm = () => {
         if (paymentMethod === 'promptpay' && !slipFile) {
-            alert('กรุณาอัปโหลดสลิปการโอนเงินเพื่อยืนยันคำสั่งซื้อ');
+            setShowAlertModal(true);
             return;
         }
 
@@ -235,8 +236,31 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                 <footer className="checkout-footer-brand">
                     ตี๋อบ วาฟเฟิล HongKong
                 </footer>
-
             </div>
+
+            {/* Alert Modal */}
+            {showAlertModal && (
+                <div className="os-modal-overlay" onClick={() => setShowAlertModal(false)}>
+                    <div className="os-modal" onClick={e => e.stopPropagation()}>
+                        <div className="os-modal-header danger">
+                            <h2>
+                                <FaExclamationCircle /> แจ้งเตือน
+                            </h2>
+                        </div>
+                        <div className="os-modal-body">
+                            <p>กรุณาอัปโหลดสลิปการโอนเงินเพื่อยืนยันคำสั่งซื้อ</p>
+                        </div>
+                        <div className="os-modal-footer">
+                            <button 
+                                className="os-btn-danger" 
+                                onClick={() => setShowAlertModal(false)}
+                            >
+                                ตกลง
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
