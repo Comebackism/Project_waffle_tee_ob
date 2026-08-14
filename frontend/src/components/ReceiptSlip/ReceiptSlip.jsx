@@ -34,7 +34,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
 
   const grandTotal = Number(order.total_amount || calculatedSubtotal);
   const paymentMethodText = order.pay_method === 'cash' ? 'เงินสด (Cash)' : 'โอนเงิน (PromptPay)';
-  const staffName = order.firstname ? `${order.firstname} ${order.lastname || ''}` : (order.user_id ? `แคชเชียร์ #${order.user_id}` : 'แคชเชียร์ #01');
+  const staffName = order.firstname ? `${order.firstname} ${order.lastname || ''}` : (order.user_id ? `แคชเชียร์ #${order.user_id}` : 'แคชเชียร์');
 
   return (
     <div className="receipt-modal-overlay" onClick={onClose}>
