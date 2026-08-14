@@ -129,6 +129,7 @@ exports.getDashboardStats = async (req, res) => {
 
     res.json({
       todaySales,
+      todayOrders: totalOrders,
       totalOrders: totalOrders + archivedOrders,
       totalSales,
       weeklySales,
@@ -136,6 +137,53 @@ exports.getDashboardStats = async (req, res) => {
       stockAlerts
     });
 
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Get sales for a specific date range
+exports.getSalesByDate = async (req, res) => {
+  try {
+    const { startDate, endDate, date } = req.query; // Support both old 'date' and new 'startDate', 'endDate'
+    
+    const start = startDate || date;
+    const end = endDate || date;
+
+    if (!start || !end) {
+      return res.status(400).json({ message: 'startDate and endDate (or date) query parameters are required (YYYY-MM-DD)' });
+    }
+
+    let sales = 0;
+    let orders = 0;
+
+    // For past dates: check Daily_Summary
+    const archiveRes = await db.query(`
+      SELECT 
+        COALESCE(SUM(total_sales), 0) as total_sales,
+        COALESCE(SUM(total_orders), 0) as total_orders
+      FROM "Daily_Summary"
+      WHERE summary_date >= $1 AND summary_date <= $2
+    `, [start, end]);
+
+    if (archiveRes.rows.length > 0) {
+      sales += parseFloat(archiveRes.rows[0].total_sales || 0);
+      orders += parseInt(archiveRes.rows[0].total_orders || 0);
+    }
+
+    // Also check for any non-archived orders in that range
+    const liveRes = await db.query(`
+      SELECT 
+        COALESCE(SUM(total_amount), 0) as total_sales,
+        COUNT(*) as total_orders
+      FROM "Order"
+      WHERE DATE(created_at) >= $1 AND DATE(created_at) <= $2 AND "Status_id" = 'S05' AND is_archived = false
+    `, [start, end]);
+    sales += parseFloat(liveRes.rows[0].total_sales || 0);
+    orders += parseInt(liveRes.rows[0].total_orders || 0);
+
+    res.json({ startDate: start, endDate: end, sales, orders });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

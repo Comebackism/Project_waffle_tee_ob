@@ -11,7 +11,7 @@ const resolveImage = (pic) => {
 };
 
 // 1. รับ prop onAddToCart เข้ามาจาก App.jsx 👈
-export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
+export default function ProductDetail({ productId = 2, onBack, onAddToCart, editingItem, onUpdateCartItem }) {
   // State สำหรับเก็บข้อมูลสินค้าจาก Database
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +44,24 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
         setLoading(false);
       });
   }, [productId]);
+
+  // Pre-fill data when editing an existing cart item
+  useEffect(() => {
+    if (editingItem && product) {
+      setQuantity(editingItem.quantity || 1);
+      // Rebuild selectedToppings from editingItem.toppings
+      const toppingMap = {};
+      if (editingItem.toppings && editingItem.toppings.length > 0) {
+        editingItem.toppings.forEach(t => {
+          const id = t.topping_id || t.id;
+          if (id) {
+            toppingMap[id] = t.quantity || 1;
+          }
+        });
+      }
+      setSelectedToppings(toppingMap);
+    }
+  }, [editingItem, product]);
 
   // ฟังก์ชันเพิ่ม/ลดจำนวนท็อปปิ้ง + animation
   const updateToppingQuantity = (id, change, event) => {
@@ -124,6 +142,33 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
 
     if (onAddToCart) {
       onAddToCart(itemToAdd);
+    }
+  };
+
+  // 2b. ฟังก์ชันเมื่อกดปุ่มอัปเดตในตะกร้า (โหมดแก้ไข) 👈
+  const handleUpdateCartClick = () => {
+    if (!product || !editingItem) return;
+
+    const toppingList = product.toppings || [];
+    const chosenToppings = toppingList
+      .filter((t) => selectedToppings[t.topping_id])
+      .map((t) => ({ ...t, quantity: selectedToppings[t.topping_id] }));
+
+    const imageUrl = resolveImage(product.Picture);
+
+    const updatedItem = {
+      ...editingItem,
+      productId: product.menu_id,
+      name: product.name,
+      image: imageUrl,
+      basePrice: Number(product.price) || 0,
+      baseCalories: Number(product.Calories) || 0,
+      toppings: chosenToppings,
+      quantity: quantity
+    };
+
+    if (onUpdateCartItem) {
+      onUpdateCartItem(updatedItem);
     }
   };
 
@@ -280,10 +325,10 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart }) {
           </button>
         </div>
 
-        {/* ปุ่มกดเพิ่มลงตะกร้า (ใส่ onClick แล้ว 👈) */}
-        <button className="add-to-cart-btn" onClick={handleAddToCartClick} ref={cartTargetRef}>
+        {/* ปุ่มกดเพิ่มลงตะกร้า หรือ อัปเดต (ใส่ onClick แล้ว 👈) */}
+        <button className="add-to-cart-btn" onClick={editingItem ? handleUpdateCartClick : handleAddToCartClick} ref={cartTargetRef}>
           <FaShoppingCart />
-          <span>เพิ่มลงตะกร้า • ฿{totalPrice}</span>
+          <span>{editingItem ? `อัปเดตตะกร้า • ฿${totalPrice}` : `เพิ่มลงตะกร้า • ฿${totalPrice}`}</span>
         </button>
       </div>
 

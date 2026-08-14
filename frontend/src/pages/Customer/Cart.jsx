@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { FaArrowLeft, FaTrashAlt, FaPlus, FaMinus, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaTrashAlt, FaPlus, FaMinus, FaArrowRight, FaEdit } from 'react-icons/fa';
 import './Cart.css';
 
-export default function Cart({ cartItems = [], setCartItems, cartNote = '', setCartNote, onBack, onGoToCheckout }) {
+export default function Cart({ cartItems = [], setCartItems, cartNote = '', setCartNote, onBack, onGoToCheckout, onEditItem }) {
     // เพิ่มจำนวนสินค้า
     const increaseQuantity = (cartId) => {
         setCartItems(cartItems.map(item =>
@@ -82,13 +82,22 @@ export default function Cart({ cartItems = [], setCartItems, cartNote = '', setC
                                         <div className="cart-item-info">
                                             <div className="cart-item-top">
                                                 <h3 className="cart-item-name">{item.name}</h3>
-                                                <button
-                                                    className="cart-delete-btn"
-                                                    onClick={() => removeItem(item.cartId)}
-                                                    title="ลบรายการนี้"
-                                                >
-                                                    <FaTrashAlt />
-                                                </button>
+                                                <div className="cart-item-actions">
+                                                    <button
+                                                        className="cart-edit-btn"
+                                                        onClick={() => onEditItem && onEditItem(item)}
+                                                        title="แก้ไขรายการนี้"
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        className="cart-delete-btn"
+                                                        onClick={() => removeItem(item.cartId)}
+                                                        title="ลบรายการนี้"
+                                                    >
+                                                        <FaTrashAlt />
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             {/* รายการท็อปปิ้ง */}

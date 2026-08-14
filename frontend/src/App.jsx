@@ -25,6 +25,9 @@ function CustomerApp() {
   const [lastOrderId, setLastOrderId] = useState(null);
   const [lastQueueNumber, setLastQueueNumber] = useState(null);
 
+  // State for editing cart item
+  const [editingCartItem, setEditingCartItem] = useState(null);
+
   const handleSelectProduct = (productId) => {
     setSelectedProductId(productId);
     setCurrentScreen('detail');
@@ -62,6 +65,24 @@ function CustomerApp() {
     setCurrentScreen('home');
   };
 
+  // Handler for editing a cart item
+  const handleEditCartItem = (item) => {
+    setEditingCartItem(item);
+    setSelectedProductId(item.productId);
+    setCurrentScreen('detail');
+  };
+
+  // Handler for updating an edited cart item
+  const handleUpdateCartItem = (updatedItem) => {
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.cartId === updatedItem.cartId ? updatedItem : item
+      )
+    );
+    setEditingCartItem(null);
+    setCurrentScreen('cart');
+  };
+
   const renderPage = () => {
     switch (currentScreen) {
       case 'home':
@@ -70,8 +91,13 @@ function CustomerApp() {
         return (
           <ProductDetail
             productId={selectedProductId}
-            onBack={() => setCurrentScreen('home')}
+            onBack={() => {
+              setEditingCartItem(null);
+              setCurrentScreen(editingCartItem ? 'cart' : 'home');
+            }}
             onAddToCart={handleAddToCart}
+            editingItem={editingCartItem}
+            onUpdateCartItem={handleUpdateCartItem}
           />
         );
       case 'cart':
@@ -83,6 +109,7 @@ function CustomerApp() {
             setCartNote={setCartNote}
             onBack={() => setCurrentScreen('home')}
             onGoToCheckout={() => setCurrentScreen('checkout')}
+            onEditItem={handleEditCartItem}
           />
         );
       case 'checkout':

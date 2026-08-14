@@ -5,6 +5,9 @@ import {
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/themes/light.css';
+import { Thai } from 'flatpickr/dist/l10n/th.js';
 import './CashierDashboard.css';
 
 const API_BASE = 'http://localhost:5000';
@@ -20,6 +23,9 @@ export default function CashierDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('week');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [dateSales, setDateSales] = useState(null);
 
   const fetchStats = async () => {
     try {
@@ -33,12 +39,34 @@ export default function CashierDashboard() {
     }
   };
 
+  const fetchSalesByDateRange = async (start, end) => {
+    if (!start || !end) {
+      setDateSales(null);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard/sales-by-date?startDate=${start}&endDate=${end}`);
+      const data = await res.json();
+      setDateSales(data);
+    } catch (err) {
+      console.error('Error fetching sales by date range:', err);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     // Refresh stats every 30 seconds
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, [timeRange]);
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchSalesByDateRange(startDate, endDate);
+    } else {
+      setDateSales(null);
+    }
+  }, [startDate, endDate]);
 
   return (
     <BackofficeLayout role="admin">
@@ -62,20 +90,61 @@ export default function CashierDashboard() {
             <div className="cd-summary-card">
               <div className="cd-summary-header">
                 <span className="cd-summary-icon gray"><FaShoppingBag /></span>
-                <span className="cd-summary-label">จำนวนออเดอร์</span>
+                <span className="cd-summary-label">ออเดอร์วันนี้</span>
               </div>
               <div className="cd-summary-value">
-                {stats.totalOrders}
+                {stats.todayOrders}
               </div>
             </div>
 
-            <div className="cd-summary-card">
+            <div className="cd-summary-card cd-sales-card">
               <div className="cd-summary-header">
                 <span className="cd-summary-icon gray"><FaChartBar /></span>
-                <span className="cd-summary-label">ยอดขายทั้งหมด</span>
+                <span className="cd-summary-label">
+                  {startDate && endDate && dateSales 
+                    ? `ยอดขาย (${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })})` 
+                    : 'ยอดขายทั้งหมด'}
+                </span>
               </div>
               <div className="cd-summary-value">
-                {stats.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {startDate && endDate && dateSales 
+                  ? dateSales.sales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  : stats.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="cd-date-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '10px' }}>
+                <Flatpickr
+                  className="cd-date-picker"
+                  options={{
+                    mode: 'range',
+                    dateFormat: 'Y-m-d',
+                    maxDate: 'today',
+                    locale: Thai
+                  }}
+                  placeholder="คลิกเพื่อเลือกช่วงวันที่..."
+                  onChange={(dates) => {
+                    if (dates.length === 2) {
+                      const start = new Date(dates[0].getTime() - (dates[0].getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                      const end = new Date(dates[1].getTime() - (dates[1].getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                      setStartDate(start);
+                      setEndDate(end);
+                    } else if (dates.length === 0) {
+                      setStartDate('');
+                      setEndDate('');
+                    }
+                  }}
+                  value={startDate && endDate ? [startDate, endDate] : []}
+                  style={{ flex: 1, minWidth: '220px', fontSize: '0.85rem', padding: '6px' }}
+                />
+                {(startDate || endDate) && (
+                  <button 
+                    className="cd-date-clear-btn" 
+                    onClick={() => { setStartDate(''); setEndDate(''); }}
+                    title="ดูยอดขายทั้งหมด"
+                    style={{ marginLeft: 'auto', padding: '4px 8px', fontSize: '0.8rem' }}
+                  >
+                    ดูทั้งหมด
+                  </button>
+                )}
               </div>
             </div>
           </div>
