@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { FaTimesCircle } from 'react-icons/fa';
 import CustomerLayout from './layouts/CustomerLayout';
 import Home from './pages/Customer/Home';
 import ProductDetail from './pages/Customer/ProductDetail';
@@ -28,6 +29,9 @@ function CustomerApp() {
 
   // State for editing cart item
   const [editingCartItem, setEditingCartItem] = useState(null);
+
+  // State for error modal
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
 
   const handleSelectProduct = (productId) => {
     setSelectedProductId(productId);
@@ -145,7 +149,10 @@ function CustomerApp() {
                   body: JSON.stringify(payload)
                 });
                 
-                if (!res.ok) throw new Error('Order failed');
+                if (!res.ok) {
+                  const errData = await res.json().catch(() => ({}));
+                  throw new Error(errData.message || 'Order failed');
+                }
                 
                 const result = await res.json();
                 
@@ -165,7 +172,7 @@ function CustomerApp() {
                 setCurrentScreen('orderStatus');
               } catch (err) {
                 console.error(err);
-                alert('เกิดข้อผิดพลาดในการสั่งซื้อ');
+                setErrorModal({ isOpen: true, message: err.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ' });
               }
             }}
           />
@@ -203,7 +210,29 @@ function CustomerApp() {
       }}
       cartCount={cartCount}
       page={renderPage()}
-    />
+    >
+      {errorModal.isOpen && (
+        <div className="mm-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="mm-modal" style={{ background: 'white', maxWidth: '400px', width: '90%', textAlign: 'center', padding: '32px 24px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <div style={{ color: '#ef4444', fontSize: '64px', marginBottom: '16px' }}>
+              <FaTimesCircle />
+            </div>
+            <h2 style={{ margin: '0 0 12px 0', color: '#1f2937', fontSize: '24px' }}>ตรวจสอบไม่ผ่าน</h2>
+            <p style={{ color: '#4b5563', marginBottom: '24px', lineHeight: '1.5', fontSize: '16px' }}>
+              {errorModal.message}
+            </p>
+            <button 
+              onClick={() => setErrorModal({ isOpen: false, message: '' })}
+              style={{ background: '#ef4444', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', width: '100%', transition: 'background 0.2s' }}
+              onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
+              onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+            >
+              ตกลง
+            </button>
+          </div>
+        </div>
+      )}
+    </CustomerLayout>
   );
 }
 
@@ -247,7 +276,7 @@ export default function App() {
         </ProtectedRoute>
       } />
       <Route path="/menu-management" element={
-        <ProtectedRoute allowedRoles={['R01', 'R02']}>
+        <ProtectedRoute allowedRoles={['R01', 'R02', 'R03']}>
           <MenuManagement />
         </ProtectedRoute>
       } />

@@ -10,7 +10,8 @@ export default function CustomerLayout({
   currentScreen = 'home', 
   onNavigate,
   onViewOrder,
-  cartCount = 0
+  cartCount = 0,
+  children
 }) {
   return (
     <div className="customer-layout-wrapper">
@@ -18,6 +19,8 @@ export default function CustomerLayout({
       <main className="customer-layout-main">
         {page} {/* แสดงผลหน้าจอที่ถูกส่งมาจาก App.jsx */}
       </main>
+      
+      {children}
       
       {/* ส่ง activeTab และฟังก์ชันสลับหน้าไปที่ BottomNavbar */}
       {showBottomNav && (

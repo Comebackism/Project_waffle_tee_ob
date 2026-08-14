@@ -91,8 +91,8 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     }
     if (currentRole === 'kitchen') {
       return [
-        { path: '/', label: 'หน้าหลัก', icon: <FaHome /> },
         { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
+        { path: '/menu-management', label: 'จัดการเมนูหน้าร้าน', icon: <FaList /> },
       ];
     }
     // Default to cashier — no dashboard, orders & inventory only

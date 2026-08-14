@@ -1,6 +1,10 @@
 const db = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+const FormData = require('form-data');
+
+
 
 // Create a new order
 exports.createOrder = async (req, res) => {
@@ -38,6 +42,39 @@ exports.createOrder = async (req, res) => {
         const buffer = Buffer.from(matches[2], 'base64');
         const extension = type.split('/')[1] || 'jpg';
         const filename = `${order_id}_slip.${extension}`;
+        
+        // --- SlipOK Integration ---
+        if (pay_method === 'promptpay') {
+          try {
+              const form = new FormData();
+              form.append('files', buffer, { filename: filename, contentType: `image/${extension}` });
+              
+              const slipOkResponse = await axios.post('https://api.slipok.com/api/line/apikey/73718', form, {
+                  headers: {
+                      'x-authorization': 'SLIPOKIRKX3DA',
+                      ...form.getHeaders()
+                  }
+              });
+              
+              if (!slipOkResponse.data.success) {
+                  await db.query('ROLLBACK');
+                  return res.status(400).json({ message: 'สลิปไม่ถูกต้อง หรือไม่สามารถตรวจสอบสลิปนี้ได้' });
+              }
+              
+              const slipData = slipOkResponse.data.data;
+              if (Number(slipData.amount) !== Number(total_amount)) {
+                  await db.query('ROLLBACK');
+                  return res.status(400).json({ message: `ยอดเงินในสลิป (${slipData.amount} บาท) ไม่ตรงกับค่าอาหาร (${total_amount} บาท)` });
+              }
+          } catch (error) {
+              await db.query('ROLLBACK');
+              const slipError = error.response?.data?.message || 'เกิดข้อผิดพลาดในการตรวจสอบสลิป (อาจเป็นสลิปปลอม หรือรูปภาพอ่าน QR ไม่ได้)';
+              console.error("SlipOK Error:", error.response?.data || error.message);
+              return res.status(400).json({ message: slipError });
+          }
+        }
+        // --- End SlipOK ---
+
         const filepath = path.join(__dirname, '../public/images', filename);
         
         // Ensure public/images directory exists
