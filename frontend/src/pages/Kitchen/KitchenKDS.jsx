@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle } from 'react-icons/fa';
+import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
 
 export default function KitchenKDS() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [completedCounts, setCompletedCounts] = useState({});
 
   const fetchOrders = async () => {
     try {
@@ -55,6 +56,25 @@ export default function KitchenKDS() {
     }
   };
 
+  const toggleCheck = (orderId, idx, max) => {
+    const key = `${orderId}-${idx}`;
+    setCompletedCounts(prev => ({
+      ...prev,
+      [key]: prev[key] === max ? 0 : max
+    }));
+  };
+
+  const setExactCount = (e, orderId, idx, count) => {
+    e.stopPropagation();
+    const key = `${orderId}-${idx}`;
+    setCompletedCounts(prev => ({
+      ...prev,
+      [key]: prev[key] === count ? count - 1 : count
+    }));
+  };
+
+
+
   const getOrdersByStatus = (statusId) => orders.filter(o => o.Status_id === statusId);
 
   const renderColumn = (title, count, statusId, badgeIcon, badgeColor) => {
@@ -78,21 +98,72 @@ export default function KitchenKDS() {
               </div>
               
               <div className="kds-task-items">
-                {order.items && order.items.map((item, idx) => (
-                  <div key={idx} className="kds-task-item">
-                    <span className="kds-t-qty">{item.quantity}x</span>
-                    <div className="kds-t-details">
-                      <span className="kds-t-name">{item.menu_name}</span>
-                      {item.toppings && item.toppings.length > 0 && (
-                        <div className="kds-t-toppings">
-                          {item.toppings.map((t, i) => (
-                            <div key={i}>เพิ่ม {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</div>
-                          ))}
+                {order.items && order.items.map((item, idx) => {
+                  const key = `${order.order_id}-${idx}`;
+                  const doneCount = completedCounts[key] || 0;
+                  const isDone = doneCount === item.quantity;
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`kds-task-item-container ${isDone ? 'done' : ''}`}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', opacity: isDone ? 0.5 : 1, transition: 'all 0.2s', padding: '8px 0', borderBottom: '1px dashed #e5e7eb' }}
+                      onClick={() => toggleCheck(order.order_id, idx, item.quantity)}
+                    >
+                      <div className="kds-task-item-main" style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="kds-t-checkbox" style={{ color: isDone ? '#10b981' : '#d1d5db', fontSize: '18px', marginRight: '8px' }}>
+                          {isDone ? <FaCheckSquare /> : <FaRegSquare />}
+                        </div>
+                        <div className="kds-t-details" style={{ flex: 1, textDecoration: isDone ? 'line-through' : 'none' }}>
+                          <span className="kds-t-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="kds-t-qty">{item.quantity}x</span> 
+                            {item.menu_name}
+                          </span>
+                          {item.toppings && item.toppings.length > 0 && (
+                            <div className="kds-t-toppings">
+                              {item.toppings.map((t, i) => (
+                                <div key={i}>เพิ่ม {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {item.quantity > 1 && (
+                        <div 
+                          className="kds-t-dots-grid" 
+                          style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginLeft: '26px' }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {Array.from({ length: item.quantity }).map((_, i) => {
+                            const isBoxDone = i < doneCount;
+                            return (
+                              <div 
+                                key={i}
+                                onClick={(e) => setExactCount(e, order.order_id, idx, i + 1)}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  borderRadius: '6px',
+                                  border: `2px solid ${isBoxDone ? '#10b981' : '#e5e7eb'}`,
+                                  background: isBoxDone ? '#10b981' : '#f9fafb',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s'
+                                }}
+                              >
+                                {isBoxDone && <FaCheck size={12} />}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {order.note && (
