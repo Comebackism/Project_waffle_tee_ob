@@ -14,8 +14,7 @@ exports.generateSession = async (req, res) => {
     const session_id = crypto.randomUUID();
     
     // Set expiration time
-    const expires_at = new Date();
-    expires_at.setHours(expires_at.getHours() + Number(duration_hours));
+    const expires_at = new Date(Date.now() + Number(duration_hours) * 60 * 60 * 1000);
 
     // Deactivate any existing active sessions for this table
     await db.query(

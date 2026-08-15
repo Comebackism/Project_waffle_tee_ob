@@ -10,6 +10,7 @@ export default function TableManager() {
   const [sessions, setSessions] = useState([]);
   const [tableNo, setTableNo] = useState('');
   const [duration, setDuration] = useState('2');
+  const [customDuration, setCustomDuration] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -42,6 +43,15 @@ export default function TableManager() {
       return;
     }
     
+    let finalDuration = duration;
+    if (duration === 'custom') {
+      if (!customDuration || isNaN(customDuration) || Number(customDuration) <= 0) {
+        setError('กรุณาระบุระยะเวลาให้ถูกต้อง (ชั่วโมง)');
+        return;
+      }
+      finalDuration = customDuration;
+    }
+    
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -50,7 +60,7 @@ export default function TableManager() {
       const res = await fetch(`${API_BASE}/api/qr/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table_no: tableNo, duration_hours: duration })
+        body: JSON.stringify({ table_no: tableNo, duration_hours: finalDuration })
       });
 
       const data = await res.json();
@@ -264,7 +274,19 @@ export default function TableManager() {
                   <option value="2">2 ชั่วโมง</option>
                   <option value="3">3 ชั่วโมง</option>
                   <option value="4">4 ชั่วโมง</option>
+                  <option value="custom">กำหนดเอง...</option>
                 </select>
+                {duration === 'custom' && (
+                  <input 
+                    type="number" 
+                    step="0.1" 
+                    min="0.1" 
+                    value={customDuration}
+                    onChange={(e) => setCustomDuration(e.target.value)}
+                    placeholder="เช่น 1.5 หรือ 0.5"
+                    style={{ marginTop: '10px' }}
+                  />
+                )}
               </div>
               <button type="submit" className="tm-btn-primary" disabled={loading}>
                 {loading ? 'กำลังสร้าง...' : <><FaPlus /> สร้าง QR Code</>}

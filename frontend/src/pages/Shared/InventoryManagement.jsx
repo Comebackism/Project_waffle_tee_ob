@@ -660,14 +660,40 @@ export default function InventoryManagement() {
                   </div>
                   <div className="im-form-group">
                     <label>หมวดหมู่</label>
-                    <select 
-                      value={newProduct.category}
-                      onChange={e => setNewProduct({...newProduct, category: e.target.value})}
-                    >
-                      <option value="วัตถุดิบหลัก">วัตถุดิบหลัก</option>
-                      <option value="ท็อปปิ้ง">ท็อปปิ้ง</option>
-                      <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
-                    </select>
+                    {(() => {
+                      const standardCategories = ['วัตถุดิบหลัก','ท็อปปิ้ง','บรรจุภัณฑ์'];
+                      const isCustom = !standardCategories.includes(newProduct.category) && newProduct.category !== '';
+                      return (
+                        <>
+                          <select 
+                            value={isCustom ? '__custom__' : newProduct.category}
+                            onChange={e => {
+                              if (e.target.value === '__custom__') {
+                                setNewProduct({...newProduct, category: ''});
+                              } else {
+                                setNewProduct({...newProduct, category: e.target.value});
+                              }
+                            }}
+                          >
+                            <option value="วัตถุดิบหลัก">วัตถุดิบหลัก</option>
+                            <option value="ท็อปปิ้ง">ท็อปปิ้ง</option>
+                            <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
+                            <option value="__custom__">กำหนดเอง...</option>
+                          </select>
+                          {(isCustom || newProduct.category === '') && (
+                            <input 
+                              type="text" 
+                              value={isCustom ? newProduct.category : ''}
+                              onChange={e => setNewProduct({...newProduct, category: e.target.value})}
+                              placeholder="พิมพ์หมวดหมู่ที่ต้องการ"
+                              style={{marginTop: '8px'}}
+                              autoFocus
+                              required
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="im-modal-footer">
@@ -807,14 +833,40 @@ export default function InventoryManagement() {
                     </div>
                     <div className="im-form-group">
                       <label>หมวดหมู่</label>
-                      <select 
-                        value={editProduct.category}
-                        onChange={e => setEditProduct({...editProduct, category: e.target.value})}
-                      >
-                        <option value="วัตถุดิบหลัก">วัตถุดิบหลัก</option>
-                        <option value="ท็อปปิ้ง">ท็อปปิ้ง</option>
-                        <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
-                      </select>
+                      {(() => {
+                        const standardCategories = ['วัตถุดิบหลัก','ท็อปปิ้ง','บรรจุภัณฑ์'];
+                        const isCustom = !standardCategories.includes(editProduct.category) && editProduct.category !== '';
+                        return (
+                          <>
+                            <select 
+                              value={isCustom ? '__custom__' : editProduct.category}
+                              onChange={e => {
+                                if (e.target.value === '__custom__') {
+                                  setEditProduct({...editProduct, category: ''});
+                                } else {
+                                  setEditProduct({...editProduct, category: e.target.value});
+                                }
+                              }}
+                            >
+                              <option value="วัตถุดิบหลัก">วัตถุดิบหลัก</option>
+                              <option value="ท็อปปิ้ง">ท็อปปิ้ง</option>
+                              <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
+                              <option value="__custom__">กำหนดเอง...</option>
+                            </select>
+                            {(isCustom || editProduct.category === '') && (
+                              <input 
+                                type="text" 
+                                value={isCustom ? editProduct.category : ''}
+                                onChange={e => setEditProduct({...editProduct, category: e.target.value})}
+                                placeholder="พิมพ์หมวดหมู่ที่ต้องการ"
+                                style={{marginTop: '8px'}}
+                                autoFocus
+                                required
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
