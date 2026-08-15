@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
@@ -157,12 +157,19 @@ export default function CashierOrders() {
                     <span className="co-queue">{order.queue_number}</span>
                     <span className="co-oid">{order.order_id}</span>
                   </div>
-                  <span
-                    className="co-status-badge"
-                    style={{ backgroundColor: STATUS_LABELS[order.Status_id]?.color }}
-                  >
-                    {order.statusname}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    {order.order_type === 'takeaway' ? (
+                      <span className="co-status-badge" style={{ backgroundColor: '#f97316', display: 'flex', alignItems: 'center', gap: '4px' }}><FaShoppingBag /> กลับบ้าน</span>
+                    ) : (
+                      <span className="co-status-badge" style={{ backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px' }}><FaUtensils /> ทานที่ร้าน {order.table_no ? `(โต๊ะ ${order.table_no})` : ''}</span>
+                    )}
+                    <span
+                      className="co-status-badge"
+                      style={{ backgroundColor: STATUS_LABELS[order.Status_id]?.color }}
+                    >
+                      {order.statusname}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="co-card-body">

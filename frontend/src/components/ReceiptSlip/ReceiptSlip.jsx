@@ -99,6 +99,10 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
               <span className="receipt-meta-key">พนักงาน:</span>
               <span className="receipt-meta-val">{staffName}</span>
             </div>
+            <div className="receipt-meta-row">
+              <span className="receipt-meta-key">ประเภท:</span>
+              <span className="receipt-meta-val" style={{ fontWeight: 'bold' }}>{order.order_type === 'takeaway' ? 'กลับบ้าน (Takeaway)' : `ทานที่ร้าน (Dine-in)${order.table_no ? ` โต๊ะ ${order.table_no}` : ''}`}</span>
+            </div>
           </div>
 
           <div className="receipt-dashed-line"></div>

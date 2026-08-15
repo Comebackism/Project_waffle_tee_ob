@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList, FaSignOutAlt, FaQrcode } from 'react-icons/fa';
 import './BackofficeLayout.css';
 
 export default function BackofficeLayout({ children, role = 'cashier' }) {
@@ -96,6 +96,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
         { path: '/admin/dashboard', label: 'แดชบอร์ด', icon: <FaChartBar /> },
         { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
         { path: '/kitchen', label: 'ห้องครัว', icon: <FaConciergeBell /> },
+        { path: '/cashier/tables', label: 'จัดการโต๊ะ (QR)', icon: <FaQrcode /> },
         { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
         { path: '/menu-management', label: 'จัดการเมนูหน้าร้าน', icon: <FaList /> },
       ];
@@ -109,6 +110,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     // Default to cashier — no dashboard, orders & inventory only
     return [
       { path: '/cashier/orders', label: 'ออเดอร์', icon: <FaConciergeBell /> },
+      { path: '/cashier/tables', label: 'จัดการโต๊ะ (QR)', icon: <FaQrcode /> },
       { path: '/inventory', label: 'คลังสินค้า', icon: <FaBoxes /> },
       { path: '/menu-management', label: 'จัดการเมนูหน้าร้าน', icon: <FaList /> },
     ];

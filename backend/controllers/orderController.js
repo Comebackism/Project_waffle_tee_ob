@@ -9,7 +9,7 @@ const FormData = require('form-data');
 // Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { items, pay_method, total_amount, slip_picture, note, total_calories } = req.body;
+    const { items, pay_method, total_amount, slip_picture, note, total_calories, session_id, order_type = 'takeaway' } = req.body;
     
     // items = [{ menu_id, quantity, toppings: [{topping_id, quantity}] }]
 
@@ -100,9 +100,9 @@ exports.createOrder = async (req, res) => {
     // 3. Insert Order (Status: S01 = รอชำระเงิน, or set pay_time if paid)
     const isPaid = pay_method === 'promptpay' && final_slip_picture;
     const orderResult = await db.query(
-      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null, slip_trans_ref]
+      `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref, session_id, order_type) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null, slip_trans_ref, session_id, order_type]
     );
 
     // 4. Insert Order Items
@@ -141,9 +141,10 @@ exports.getOrders = async (req, res) => {
   try {
     const { status } = req.query;
     let query = `
-      SELECT o.*, s.statusname 
+      SELECT o.*, s.statusname, ts.table_no 
       FROM "Order" o 
       JOIN "Status" s ON o."Status_id" = s.status_id
+      LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
       WHERE o.is_archived = false
     `;
     let params = [];
@@ -170,11 +171,12 @@ exports.getOrderById = async (req, res) => {
 
     // 1. Get order
     const orderResult = await db.query(`
-      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, r."RoleName"
+      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, r."RoleName", ts.table_no
       FROM "Order" o 
       JOIN "Status" s ON o."Status_id" = s.status_id
       LEFT JOIN "User" u ON o.user_id = u.user_id
       LEFT JOIN "Role" r ON u."Role_id" = r."Role_id"
+      LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
       WHERE o.order_id = $1
     `, [id]);
 
@@ -228,10 +230,11 @@ exports.getOrderById = async (req, res) => {
 exports.getOrdersToday = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username
+      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, ts.table_no
       FROM "Order" o
       JOIN "Status" s ON o."Status_id" = s.status_id
       LEFT JOIN "User" u ON o.user_id = u.user_id
+      LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
       WHERE DATE(o.created_at) = CURRENT_DATE AND o.is_archived = false
       ORDER BY o.created_at DESC
     `);
@@ -279,8 +282,17 @@ exports.updateOrderStatus = async (req, res) => {
       JOIN "Status" s ON o."Status_id" = s.status_id
       WHERE o.order_id = $1
     `, [id]);
+    const updatedOrder = result.rows[0];
 
-    res.json({ message: 'Order status updated', order: result.rows[0] });
+    // Handle takeaway QR invalidation when kitchen clears it (S04 or S05)
+    if ((status_id === 'S04' || status_id === 'S05') && updatedOrder.order_type === 'takeaway' && updatedOrder.session_id) {
+      await db.query(
+        `UPDATE "Table_Session" SET is_active = false WHERE session_id = $1`,
+        [updatedOrder.session_id]
+      );
+    }
+
+    res.json({ message: 'Order status updated', order: updatedOrder });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle, FaReceipt } from 'react-icons/fa';
+import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle, FaReceipt, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './OrderStatus.css';
 
@@ -113,6 +113,11 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
           <span className="os-queue-label">หมายเลขคิว</span>
           <span className="os-queue-number">{order.queue_number || queueNumber}</span>
           <span className="os-order-id">{order.order_id}</span>
+          {order.order_type === 'takeaway' ? (
+            <span style={{ background: '#f97316', color: '#fff', padding: '4px 12px', borderRadius: '12px', fontSize: '14px', marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}><FaShoppingBag /> กลับบ้าน</span>
+          ) : (
+            <span style={{ background: '#3b82f6', color: '#fff', padding: '4px 12px', borderRadius: '12px', fontSize: '14px', marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}><FaUtensils /> ทานที่ร้าน {order.table_no ? `(โต๊ะ ${order.table_no})` : ''}</span>
+          )}
         </div>
 
         {/* Status Progress */}

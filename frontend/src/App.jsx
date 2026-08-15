@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { FaTimesCircle } from 'react-icons/fa';
 import CustomerLayout from './layouts/CustomerLayout';
 import Home from './pages/Customer/Home';
@@ -11,6 +11,7 @@ import CashierDashboard from './pages/Cashier/CashierDashboard';  // Now Admin-o
 import CashierOrders from './pages/Cashier/CashierOrders';
 import KitchenKDS from './pages/Kitchen/KitchenKDS';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import TableManager from './pages/Cashier/TableManager';
 import InventoryManagement from './pages/Shared/InventoryManagement';
 import MenuManagement from './pages/Shared/MenuManagement';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,6 +21,40 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // Customer App (with internal navigation)
 function CustomerApp() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const sessionId = searchParams.get('session');
+
+  const [sessionValid, setSessionValid] = useState(null); // null = checking, true = valid, false = invalid
+  const [sessionError, setSessionError] = useState('');
+  const [tableNo, setTableNo] = useState('');
+
+  useEffect(() => {
+    // Only check session if we are strictly using the QR system.
+    // If you want to force all customers to use QR, check it.
+    if (!sessionId) {
+      setSessionValid(false);
+      setSessionError('ไม่พบรหัสโต๊ะ กรุณาสแกน QR Code ใหม่อีกครั้ง');
+      return;
+    }
+
+    fetch(`http://localhost:5000/api/qr/validate/${sessionId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.valid) {
+          setSessionValid(true);
+          setTableNo(data.table_no);
+        } else {
+          setSessionValid(false);
+          setSessionError(data.message || 'QR Code หมดอายุหรือไม่ถูกต้อง');
+        }
+      })
+      .catch(err => {
+        setSessionValid(false);
+        setSessionError('ไม่สามารถตรวจสอบ QR Code ได้');
+      });
+  }, [sessionId]);
+
   const [currentScreen, setCurrentScreen] = useState('home');
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [cart, setCart] = useState([]);
@@ -138,6 +173,8 @@ function CustomerApp() {
                   total_calories: orderData.totalCalories,
                   slip_picture: orderData.slipBase64 || null,
                   note: cartNote || '',
+                  session_id: sessionId,
+                  order_type: orderData.orderType,
                   items: orderData.cartItems.map(item => ({
                     menu_id: item.productId,
                     quantity: item.quantity,
@@ -199,6 +236,24 @@ function CustomerApp() {
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (sessionValid === null) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa' }}>
+        <h2>กำลังตรวจสอบ QR Code...</h2>
+      </div>
+    );
+  }
+
+  if (sessionValid === false) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa', padding: '20px', textAlign: 'center' }}>
+        <FaTimesCircle style={{ fontSize: '64px', color: '#ef4444', marginBottom: '16px' }} />
+        <h2 style={{ color: '#1f2937', marginBottom: '8px' }}>ไม่สามารถสั่งอาหารได้</h2>
+        <p style={{ color: '#4b5563', fontSize: '16px' }}>{sessionError}</p>
+      </div>
+    );
+  }
 
   return (
     <CustomerLayout
@@ -263,6 +318,11 @@ export default function App() {
       <Route path="/cashier/orders" element={
         <ProtectedRoute allowedRoles={['R01', 'R02']}>
           <CashierOrders />
+        </ProtectedRoute>
+      } />
+      <Route path="/cashier/tables" element={
+        <ProtectedRoute allowedRoles={['R01', 'R02']}>
+          <TableManager />
         </ProtectedRoute>
       } />
 

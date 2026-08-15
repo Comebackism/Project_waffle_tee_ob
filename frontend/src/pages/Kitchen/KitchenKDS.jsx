@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
 
@@ -94,6 +94,13 @@ export default function KitchenKDS() {
             <div key={order.order_id} className="kds-task-card">
               <div className="kds-task-header">
                 <span className="kds-task-id">{order.queue_number}</span>
+                {order.order_type === 'takeaway' ? (
+                  <span style={{ background: '#f97316', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}><FaShoppingBag /> กลับบ้าน</span>
+                ) : (
+                  <span style={{ background: '#3b82f6', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                    <FaUtensils /> ทานที่ร้าน {order.table_no ? `(โต๊ะ ${order.table_no})` : ''}
+                  </span>
+                )}
                 {statusId === 'S04' && <FaCheck className="kds-task-done-icon" />}
               </div>
               
