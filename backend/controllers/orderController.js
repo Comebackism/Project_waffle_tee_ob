@@ -28,8 +28,8 @@ exports.createOrder = async (req, res) => {
     }
     const order_id = `ORD-${String(orderCount).padStart(5, '0')}`;
 
-    // 2. Generate queue_number
-    const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false');
+    // 2. Generate queue_number (exclude cancelled orders)
+    const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false AND "Status_id" != \'S06\'');
     const queueCount = parseInt(queueCountResult.rows[0].count) + 1;
     const queue_number = `#Q${String(queueCount).padStart(3, '0')}`;
 
@@ -50,9 +50,9 @@ exports.createOrder = async (req, res) => {
               const form = new FormData();
               form.append('files', buffer, { filename: filename, contentType: `image/${extension}` });
               
-              const slipOkResponse = await axios.post('https://api.slipok.com/api/line/apikey/73718', form, {
+              const slipOkResponse = await axios.post(process.env.SLIPOK_API_URL || 'https://api.slipok.com/api/line/apikey/73718', form, {
                   headers: {
-                      'x-authorization': 'SLIPOKIRKX3DA',
+                      'x-authorization': process.env.SLIPOK_API_KEY,
                       ...form.getHeaders()
                   }
               });

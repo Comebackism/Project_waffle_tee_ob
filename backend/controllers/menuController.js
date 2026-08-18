@@ -24,10 +24,10 @@ const saveBase64Image = (base64Str, prefix = 'img') => {
   return base64Str;
 };
 
-// Get all waffle menus
+// Get all waffle menus (Customer — active only)
 exports.getAllMenus = async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM "Menu" ORDER BY menu_id ASC');
+    const result = await db.query('SELECT * FROM "Menu" WHERE is_active = true ORDER BY menu_id ASC');
     res.json(result.rows);
   } catch (err) {
     console.error(err.message);

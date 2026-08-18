@@ -4,7 +4,7 @@ const db = require('../config/db');
 exports.getUsers = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT u.user_id, u.firstname, u.lastname, u.username, u.password, u.phone, u.email, u."Role_id", r."RoleName" as rolename
+      SELECT u.user_id, u.firstname, u.lastname, u.username, u.phone, u.email, u."Role_id", r."RoleName" as rolename
       FROM "User" u
       LEFT JOIN "Role" r ON u."Role_id" = r."Role_id"
       ORDER BY u.user_id ASC

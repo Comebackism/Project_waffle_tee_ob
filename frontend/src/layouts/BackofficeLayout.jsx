@@ -3,6 +3,8 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList, FaSignOutAlt, FaQrcode } from 'react-icons/fa';
 import './BackofficeLayout.css';
 
+const API_BASE = 'http://localhost:5000';
+
 export default function BackofficeLayout({ children, role = 'cashier' }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     }
 
     // Fetch all users to populate the switch user menu
-    fetch('http://localhost:5000/api/users')
+    fetch(`${API_BASE}/api/users`)
       .then(res => res.json())
       .then(data => {
         setUsers(data);
@@ -60,19 +62,31 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     setShowUserMenu(false);
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    if (passwordInput === pendingUser.password) {
-      setCurrentUser(pendingUser);
-      localStorage.setItem('currentUser', JSON.stringify(pendingUser));
+    try {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: pendingUser.username, password: passwordInput })
+      });
+      
+      if (!res.ok) {
+        setPasswordError('รหัสผ่านไม่ถูกต้อง');
+        return;
+      }
+      
+      const data = await res.json();
+      setCurrentUser(data.user);
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
       setPendingUser(null);
       
       // Redirect based on role
-      if (pendingUser.Role_id === 'R01') navigate('/admin');
-      else if (pendingUser.Role_id === 'R02') navigate('/cashier/orders');
-      else if (pendingUser.Role_id === 'R03') navigate('/kitchen');
-    } else {
-      setPasswordError('รหัสผ่านไม่ถูกต้อง');
+      if (data.user.Role_id === 'R01') navigate('/admin');
+      else if (data.user.Role_id === 'R02') navigate('/cashier/orders');
+      else if (data.user.Role_id === 'R03') navigate('/kitchen');
+    } catch (err) {
+      setPasswordError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
     }
   };
 

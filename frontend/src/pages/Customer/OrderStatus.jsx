@@ -8,7 +8,8 @@ const API_BASE = 'http://localhost:5000';
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/60';
   if (pic.startsWith('http')) return pic;
-  return `${API_BASE}${pic}`;
+  if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
+  return `${API_BASE}/images/${pic}`;
 };
 
 const STATUS_MAP = {
@@ -28,7 +29,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
 
   const fetchOrder = () => {
     if (!orderId) return;
-    fetch(`http://localhost:5000/api/orders/${orderId}`)
+    fetch(`${API_BASE}/api/orders/${orderId}`)
       .then((res) => res.json())
       .then((data) => {
         setOrder(data);

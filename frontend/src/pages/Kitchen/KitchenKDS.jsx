@@ -3,6 +3,8 @@ import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSqua
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
 
+const API_BASE = 'http://localhost:5000';
+
 export default function KitchenKDS() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ export default function KitchenKDS() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/orders/today');
+      const res = await fetch(`${API_BASE}/api/orders/today`);
       const data = await res.json();
       
       const kitchenOrders = data.filter(o => ['S02', 'S03', 'S04'].includes(o.Status_id));
@@ -18,7 +20,7 @@ export default function KitchenKDS() {
       const detailed = await Promise.all(
         kitchenOrders.map(async (order) => {
           try {
-            const detailRes = await fetch(`http://localhost:5000/api/orders/${order.order_id}`);
+            const detailRes = await fetch(`${API_BASE}/api/orders/${order.order_id}`);
             return await detailRes.json();
           } catch {
             return order;
@@ -45,7 +47,7 @@ export default function KitchenKDS() {
       const currentUser = storedUser ? JSON.parse(storedUser) : null;
       const userId = currentUser ? currentUser.user_id : null;
 
-      await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status_id: newStatusId, user_id: userId })

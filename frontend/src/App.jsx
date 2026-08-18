@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { FaTimesCircle } from 'react-icons/fa';
+
+const API_BASE = 'http://localhost:5000';
 import CustomerLayout from './layouts/CustomerLayout';
 import Home from './pages/Customer/Home';
 import ProductDetail from './pages/Customer/ProductDetail';
@@ -38,7 +40,7 @@ function CustomerApp() {
       return;
     }
 
-    fetch(`http://localhost:5000/api/qr/validate/${sessionId}`)
+    fetch(`${API_BASE}/api/qr/validate/${sessionId}`)
       .then(res => res.json())
       .then(data => {
         if (data.valid) {
@@ -182,7 +184,7 @@ function CustomerApp() {
                   }))
                 };
 
-                const res = await fetch('http://localhost:5000/api/orders', {
+                const res = await fetch(`${API_BASE}/api/orders`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(payload)
@@ -294,7 +296,6 @@ function CustomerApp() {
 }
 
 export default function App() {
-  const userRole = localStorage.getItem('userRole'); // Assume role is stored here
 
   return (
     <ErrorBoundary>

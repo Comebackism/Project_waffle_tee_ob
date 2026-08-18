@@ -117,7 +117,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
                       {item.quantity}x {item.menu_name}
                     </span>
                     <span className="receipt-item-price">
-                      ฿{Number(item.menu_price || 0)}
+                      ฿{(Number(item.menu_price || 0) * (item.quantity || 1)).toFixed(0)}
                     </span>
                   </div>
 

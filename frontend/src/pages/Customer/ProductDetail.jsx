@@ -31,7 +31,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
   // ดึงข้อมูลรายละเอียดสินค้า + ท็อปปิ้งจาก API ตาม productId
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/menus/${productId}`)
+    fetch(`${API_BASE}/api/menus/${productId}`)
       .then((res) => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
