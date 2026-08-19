@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
+import { apiFetch } from '../../utils/api';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'http://localhost:5000'; // kept for image URLs only
 
 export default function KitchenKDS() {
   const [orders, setOrders] = useState([]);
@@ -12,7 +13,7 @@ export default function KitchenKDS() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/today`);
+      const res = await apiFetch('/api/orders/today');
       const data = await res.json();
       
       const kitchenOrders = data.filter(o => ['S02', 'S03', 'S04'].includes(o.Status_id));
@@ -20,7 +21,7 @@ export default function KitchenKDS() {
       const detailed = await Promise.all(
         kitchenOrders.map(async (order) => {
           try {
-            const detailRes = await fetch(`${API_BASE}/api/orders/${order.order_id}`);
+            const detailRes = await apiFetch(`/api/orders/${order.order_id}`);
             return await detailRes.json();
           } catch {
             return order;
@@ -47,9 +48,8 @@ export default function KitchenKDS() {
       const currentUser = storedUser ? JSON.parse(storedUser) : null;
       const userId = currentUser ? currentUser.user_id : null;
 
-      await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      await apiFetch(`/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status_id: newStatusId, user_id: userId })
       });
       fetchOrders();

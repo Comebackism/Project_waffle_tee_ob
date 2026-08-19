@@ -16,8 +16,7 @@ import {
 } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './InventoryManagement.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from '../../utils/api';
 
 const CATEGORIES = ['ทั้งหมด', 'วัตถุดิบหลัก', 'ท็อปปิ้ง', 'บรรจุภัณฑ์'];
 
@@ -88,7 +87,7 @@ export default function InventoryManagement() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/inventory`);
+      const res = await apiFetch('/api/inventory');
       const data = await res.json();
       setInventory(data);
     } catch (err) {
@@ -124,13 +123,13 @@ export default function InventoryManagement() {
     try {
       let res;
       if (restockMode === 'add') {
-        res = await fetch(`${API_BASE}/api/inventory/add`, {
+        res = await apiFetch('/api/inventory/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ProductID: restockItem.ProductID, quantity: amount })
         });
       } else {
-        res = await fetch(`${API_BASE}/api/inventory/set`, {
+        res = await apiFetch('/api/inventory/set', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ProductID: restockItem.ProductID, quantity: amount })
@@ -154,7 +153,7 @@ export default function InventoryManagement() {
     if (!newProduct.ProductName.trim()) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/inventory/product`, {
+      const res = await apiFetch('/api/inventory/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct)
@@ -181,7 +180,7 @@ export default function InventoryManagement() {
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/inventory/product/${deleteItem.ProductID}`, {
+      const res = await apiFetch(`/api/inventory/product/${deleteItem.ProductID}`, {
         method: 'DELETE'
       });
       
@@ -215,7 +214,7 @@ export default function InventoryManagement() {
   const handleEditProduct = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_BASE}/api/inventory/product/${editProduct.ProductID}`, {
+      const res = await apiFetch(`/api/inventory/product/${editProduct.ProductID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -256,7 +255,7 @@ export default function InventoryManagement() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/inventory/withdraw`, {
+      const res = await apiFetch('/api/inventory/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -284,7 +283,7 @@ export default function InventoryManagement() {
     setShowInvoiceModal(true);
     setLoadingInvoices(true);
     try {
-      const res = await fetch(`${API_BASE}/api/inventory/invoices`);
+      const res = await apiFetch('/api/inventory/invoices');
       const data = await res.json();
       setInvoices(data);
     } catch (err) {

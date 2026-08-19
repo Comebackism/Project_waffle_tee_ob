@@ -45,6 +45,10 @@ export default function Login() {
       }
 
       setLoggedInUser(data.user);
+      // Save JWT token for future API calls
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
       setStep('machine');
     } catch (err) {
       setError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');

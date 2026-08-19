@@ -9,8 +9,7 @@ import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/themes/light.css';
 import { Thai } from 'flatpickr/dist/l10n/th.js';
 import './CashierDashboard.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from '../../utils/api';
 
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/60';
@@ -29,7 +28,7 @@ export default function CashierDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/dashboard/stats?range=${timeRange}`);
+      const res = await apiFetch(`/api/dashboard/stats?range=${timeRange}`);
       const data = await res.json();
       setStats(data);
       setLoading(false);
@@ -45,7 +44,7 @@ export default function CashierDashboard() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/api/dashboard/sales-by-date?startDate=${start}&endDate=${end}`);
+      const res = await apiFetch(`/api/dashboard/sales-by-date?startDate=${start}&endDate=${end}`);
       const data = await res.json();
       setDateSales(data);
     } catch (err) {

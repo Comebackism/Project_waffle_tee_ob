@@ -3,8 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { FaQrcode, FaPrint, FaTrashAlt, FaPlus, FaCheckCircle, FaTimesCircle, FaEye } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './TableManager.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from '../../utils/api';
 
 export default function TableManager() {
   const [sessions, setSessions] = useState([]);
@@ -20,7 +19,7 @@ export default function TableManager() {
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/qr/sessions`);
+      const res = await apiFetch('/api/qr/sessions');
       if (res.ok) {
         const data = await res.json();
         setSessions(data);
@@ -57,7 +56,7 @@ export default function TableManager() {
     setSuccess(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/qr/generate`, {
+      const res = await apiFetch('/api/qr/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ table_no: tableNo, duration_hours: finalDuration })
@@ -85,7 +84,7 @@ export default function TableManager() {
   const confirmEndSession = async () => {
     if (!confirmModal.sessionId) return;
     try {
-      const res = await fetch(`${API_BASE}/api/qr/end/${confirmModal.sessionId}`, {
+      const res = await apiFetch(`/api/qr/end/${confirmModal.sessionId}`, {
         method: 'PUT'
       });
       if (res.ok) {

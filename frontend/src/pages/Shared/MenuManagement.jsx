@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCamera, FaImage, FaTimes, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import './MenuManagement.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from '../../utils/api';
 
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/60';
@@ -46,8 +45,8 @@ export default function MenuManagement({ role }) {
     setLoading(true);
     try {
       const [menuRes, toppingRes] = await Promise.all([
-        fetch(`${API_BASE}/api/menus/admin/all`),
-        fetch(`${API_BASE}/api/toppings/admin/all`)
+        apiFetch('/api/menus/admin/all'),
+        apiFetch('/api/toppings/admin/all')
       ]);
       const menuData = await menuRes.json();
       const toppingData = await toppingRes.json();
@@ -101,9 +100,8 @@ export default function MenuManagement({ role }) {
     e.preventDefault();
     const endpoint = activeTab === 'menu' ? '/api/menus' : '/api/toppings';
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await apiFetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       if (!res.ok) throw new Error('Failed to add');
@@ -123,9 +121,8 @@ export default function MenuManagement({ role }) {
       const payload = { ...formData };
       if (!payload.Picture) delete payload.Picture; // Don't send empty Picture if unchanged
 
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await apiFetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Failed to update');
@@ -141,7 +138,7 @@ export default function MenuManagement({ role }) {
   const toggleActive = async (id, currentStatus) => {
     const endpoint = activeTab === 'menu' ? `/api/menus/${id}/toggle` : `/api/toppings/${id}/toggle`;
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await apiFetch(endpoint, {
         method: 'PATCH',
       });
       if (!res.ok) throw new Error('Failed to toggle');
@@ -170,7 +167,7 @@ export default function MenuManagement({ role }) {
     const id = activeTab === 'menu' ? deleteItem.menu_id : deleteItem.topping_id;
     const endpoint = activeTab === 'menu' ? `/api/menus/${id}` : `/api/toppings/${id}`;
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await apiFetch(endpoint, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete');

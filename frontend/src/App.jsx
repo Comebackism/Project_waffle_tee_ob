@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { FaTimesCircle } from 'react-icons/fa';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from './utils/api';
 import CustomerLayout from './layouts/CustomerLayout';
 import Home from './pages/Customer/Home';
 import ProductDetail from './pages/Customer/ProductDetail';

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FaHome, FaConciergeBell, FaBoxes, FaChartBar, FaUserShield, FaUsers, FaBars, FaList, FaSignOutAlt, FaQrcode } from 'react-icons/fa';
 import './BackofficeLayout.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch, API_BASE } from '../utils/api';
 
 export default function BackofficeLayout({ children, role = 'cashier' }) {
   const location = useLocation();
@@ -25,7 +24,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     }
 
     // Fetch all users to populate the switch user menu
-    fetch(`${API_BASE}/api/users`)
+    apiFetch('/api/users')
       .then(res => res.json())
       .then(data => {
         setUsers(data);
@@ -65,9 +64,8 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_BASE}/api/users/login`, {
+      const res = await apiFetch('/api/users/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: pendingUser.username, password: passwordInput })
       });
       
@@ -93,6 +91,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('posMachineId');
+    localStorage.removeItem('authToken');
     navigate('/login');
   };
 

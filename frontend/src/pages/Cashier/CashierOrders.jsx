@@ -3,6 +3,7 @@ import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt,
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
+import { apiFetch } from '../../utils/api';
 
 const STATUS_LABELS = {
   'S01': { label: 'รอชำระเงิน', color: '#f59e0b' },
@@ -13,7 +14,7 @@ const STATUS_LABELS = {
   'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'http://localhost:5000'; // kept for image URLs only
 
 export default function CashierOrders() {
   const [orders, setOrders] = useState([]);
@@ -24,7 +25,7 @@ export default function CashierOrders() {
   const [showClearModal, setShowClearModal] = useState(false);
 
   const fetchOrders = () => {
-    fetch(`${API_BASE}/api/orders/today`)
+    apiFetch('/api/orders/today')
       .then((res) => res.json())
       .then((data) => {
         setOrders(data);
@@ -48,9 +49,8 @@ export default function CashierOrders() {
       const currentUser = storedUser ? JSON.parse(storedUser) : null;
       const userId = currentUser ? currentUser.user_id : null;
 
-      await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      await apiFetch(`/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status_id: newStatusId, user_id: userId })
       });
       fetchOrders();
@@ -62,7 +62,7 @@ export default function CashierOrders() {
 
   const viewOrderDetail = async (orderId) => {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/${orderId}`);
+      const res = await apiFetch(`/api/orders/${orderId}`);
       const data = await res.json();
       setSelectedOrder(data);
     } catch (err) {
@@ -72,7 +72,7 @@ export default function CashierOrders() {
 
   const openReceipt = async (orderId) => {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/${orderId}`);
+      const res = await apiFetch(`/api/orders/${orderId}`);
       const data = await res.json();
       setReceiptOrder(data);
     } catch (err) {
@@ -97,7 +97,7 @@ export default function CashierOrders() {
 
   const executeClearDailyOrders = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
+      const res = await apiFetch('/api/orders/clear', { method: 'DELETE' });
       const data = await res.json();
       setShowClearModal(false);
       fetchOrders();

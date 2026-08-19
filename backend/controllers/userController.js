@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Get all users
 exports.getUsers = async (req, res) => {
@@ -36,9 +38,12 @@ exports.addUser = async (req, res) => {
       nextId = 'U' + num.toString().padStart(2, '0');
     }
 
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const result = await db.query(
       'INSERT INTO "User" (user_id, firstname, lastname, username, password, "Role_id", phone, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [nextId, firstname, lastname, username, password, Role_id, phone || null, email || null]
+      [nextId, firstname, lastname, username, hashedPassword, Role_id, phone || null, email || null]
     );
 
     res.json(result.rows[0]);
@@ -71,8 +76,9 @@ exports.updateUser = async (req, res) => {
     let params = [firstname, lastname, username, Role_id, phone || null, email || null];
     
     if (password && password.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(password, 10);
       updateQuery += ', password = $7 WHERE user_id = $8 RETURNING *';
-      params.push(password, id);
+      params.push(hashedPassword, id);
     } else {
       updateQuery += ' WHERE user_id = $7 RETURNING *';
       params.push(id);
@@ -124,13 +130,22 @@ exports.login = async (req, res) => {
 
     const user = result.rows[0];
 
-    if (user.password !== password) {
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
     }
 
+    // Generate JWT token (expires in 12 hours)
+    const token = jwt.sign(
+      { user_id: user.user_id, Role_id: user.Role_id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '12h' }
+    );
+
     // Return user info without password
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ message: 'เข้าสู่ระบบสำเร็จ', user: userWithoutPassword });
+    res.json({ message: 'เข้าสู่ระบบสำเร็จ', user: userWithoutPassword, token });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

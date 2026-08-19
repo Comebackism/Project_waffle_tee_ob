@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUserPlus, FaSyncAlt, FaTrash, FaTimes, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './AdminDashboard.css';
-
-const API_BASE = 'http://localhost:5000';
+import { apiFetch } from '../../utils/api';
 
 export default function AdminDashboard() {
   const [employees, setEmployees] = useState([]);
@@ -31,7 +30,7 @@ export default function AdminDashboard() {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/users`);
+      const res = await apiFetch('/api/users');
       const data = await res.json();
       setEmployees(data);
     } catch (err) {
@@ -69,16 +68,14 @@ export default function AdminDashboard() {
       let res;
       if (editingEmployee) {
         // Edit mode
-        res = await fetch(`${API_BASE}/api/users/${editingEmployee}`, {
+        res = await apiFetch(`/api/users/${editingEmployee}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newEmployee)
         });
       } else {
         // Add mode
-        res = await fetch(`${API_BASE}/api/users`, {
+        res = await apiFetch('/api/users', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newEmployee)
         });
       }
@@ -121,7 +118,7 @@ export default function AdminDashboard() {
   const executeDelete = async () => {
     if (!employeeToDelete) return;
     try {
-      const res = await fetch(`${API_BASE}/api/users/${employeeToDelete.user_id}`, {
+      const res = await apiFetch(`/api/users/${employeeToDelete.user_id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -151,7 +148,7 @@ export default function AdminDashboard() {
 
   const clearDailyOrders = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/clear`, { method: 'DELETE' });
+      const res = await apiFetch('/api/orders/clear', { method: 'DELETE' });
       const data = await res.json();
       showAlert(data.message || 'ล้างออเดอร์รายวันสำเร็จ', 'success');
     } catch (err) {
