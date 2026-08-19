@@ -44,6 +44,19 @@ export default function KitchenKDS() {
 
   const updateStatus = async (orderId, newStatusId) => {
     try {
+      if (newStatusId === 'S04') {
+        const orderToUpdate = orders.find(o => o.order_id === orderId);
+        if (orderToUpdate && orderToUpdate.items) {
+          setCompletedCounts(prev => {
+            const nextCounts = { ...prev };
+            orderToUpdate.items.forEach((item, idx) => {
+              nextCounts[`${orderId}-${idx}`] = item.quantity;
+            });
+            return nextCounts;
+          });
+        }
+      }
+
       const storedUser = localStorage.getItem('currentUser');
       const currentUser = storedUser ? JSON.parse(storedUser) : null;
       const userId = currentUser ? currentUser.user_id : null;

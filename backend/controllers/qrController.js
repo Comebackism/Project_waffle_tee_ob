@@ -16,11 +16,13 @@ exports.generateSession = async (req, res) => {
     // Set expiration time
     const expires_at = new Date(Date.now() + Number(duration_hours) * 60 * 60 * 1000);
 
-    // Deactivate any existing active sessions for this table
-    await db.query(
-      `UPDATE "Table_Session" SET is_active = FALSE WHERE table_no = $1 AND is_active = TRUE`,
-      [table_no]
-    );
+    // Deactivate any existing active sessions for this table (except for takeaway which can have multiple concurrent sessions)
+    if (!table_no.startsWith('หน้าร้าน')) {
+      await db.query(
+        `UPDATE "Table_Session" SET is_active = FALSE WHERE table_no = $1 AND is_active = TRUE`,
+        [table_no]
+      );
+    }
 
     // Create new session
     const result = await db.query(

@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { FaArrowLeft, FaTrashAlt, FaPlus, FaMinus, FaArrowRight, FaEdit } from 'react-icons/fa';
 import './Cart.css';
 
-export default function Cart({ cartItems = [], setCartItems, cartNote = '', setCartNote, onBack, onGoToCheckout, onEditItem }) {
+export default function Cart({ 
+    cartItems = [], 
+    setCartItems, 
+    cartNote = '', 
+    setCartNote, 
+    needCutlery = false,
+    setNeedCutlery,
+    tableNo = '',
+    onBack, 
+    onGoToCheckout, 
+    onEditItem 
+}) {
     // เพิ่มจำนวนสินค้า
     const increaseQuantity = (cartId) => {
         setCartItems(cartItems.map(item =>
@@ -139,6 +150,21 @@ export default function Cart({ cartItems = [], setCartItems, cartNote = '', setC
                             </div>
 
                             {/* หมายเหตุถึงร้านค้า */}
+                            {/* ขอช้อนส้อม (เฉพาะสั่งกลับบ้าน) */}
+                            {tableNo && tableNo.startsWith('หน้าร้าน') && (
+                                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '14px', color: '#374151' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={needCutlery}
+                                            onChange={(e) => setNeedCutlery(e.target.checked)}
+                                            style={{ marginRight: '8px', width: '18px', height: '18px', accentColor: '#c8102e', cursor: 'pointer' }}
+                                        />
+                                        รับช้อน/ส้อมพลาสติก
+                                    </label>
+                                </div>
+                            )}
+
                             <div className="cart-note-section">
                                 <label className="cart-note-label">หมายเหตุถึงร้านค้า (ถ้ามี)</label>
                                 <textarea

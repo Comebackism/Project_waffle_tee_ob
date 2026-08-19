@@ -32,7 +32,12 @@ export default function AdminDashboard() {
     try {
       const res = await apiFetch('/api/users');
       const data = await res.json();
-      setEmployees(data);
+      if (Array.isArray(data)) {
+        setEmployees(data);
+      } else {
+        console.error('Expected array of employees but got:', data);
+        setEmployees([]);
+      }
     } catch (err) {
       console.error('Error fetching employees:', err);
     } finally {

@@ -92,6 +92,35 @@
   box-shadow: 0 0 0 3px rgba(179, 0, 33, 0.1);
 }
 
+.login-input-group.password-group {
+  position: relative;
+}
+
+.login-input-group.password-group input {
+  padding-right: 48px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: #B30021;
+}
+
 /* Login Button */
 .login-btn {
   width: 100%;

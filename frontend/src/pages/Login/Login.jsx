@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Login.css';
 
 const API_BASE = 'http://localhost:5000';
@@ -13,6 +14,7 @@ const MACHINES = [
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,15 +111,23 @@ export default function Login() {
               />
             </div>
 
-            <div className="login-input-group">
+            <div className="login-input-group password-group">
               <input
                 id="login-password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="รหัสผ่าน (Password)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
               />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
             <button

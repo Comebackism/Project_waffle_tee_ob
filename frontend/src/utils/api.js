@@ -10,7 +10,12 @@ const getAuthHeaders = () => {
 const apiFetch = async (url, options = {}) => {
   const headers = { ...getAuthHeaders(), ...(options.headers || {}) };
   const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  if (res.status === 401) { localStorage.removeItem('authToken'); localStorage.removeItem('currentUser'); window.location.href = '/login'; }
+  if (res.status === 401) { 
+    localStorage.removeItem('authToken'); 
+    localStorage.removeItem('currentUser'); 
+    window.location.href = '/login'; 
+    throw new Error('Unauthorized');
+  }
   return res;
 };
 

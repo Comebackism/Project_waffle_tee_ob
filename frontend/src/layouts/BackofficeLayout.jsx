@@ -27,7 +27,12 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
     apiFetch('/api/users')
       .then(res => res.json())
       .then(data => {
-        setUsers(data);
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else {
+          console.error('Expected users array, got:', data);
+          setUsers([]);
+        }
         
         // Check if there is a saved user in localStorage
         const savedUserStr = localStorage.getItem('currentUser');
@@ -184,7 +189,13 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
                 {currentUser ? (currentUser.rolename || '...') : '...'}
               </span>
             </div>
-            <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#9ca3af' }}>▼</span>
+            <span style={{ 
+              marginLeft: 'auto', 
+              fontSize: '10px', 
+              color: '#9ca3af', 
+              transition: 'transform 0.3s ease', 
+              transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)' 
+            }}>▼</span>
           </div>
 
           {/* Dropdown Menu */}

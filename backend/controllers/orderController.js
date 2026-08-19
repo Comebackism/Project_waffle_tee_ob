@@ -68,6 +68,19 @@ exports.createOrder = async (req, res) => {
                   return res.status(400).json({ message: `ยอดเงินในสลิป (${slipData.amount} บาท) ไม่ตรงกับค่าอาหาร (${total_amount} บาท)` });
               }
               
+              // Validate Receiver
+              const receiverName = (slipData.receiver?.name || '').toLowerCase() + ' ' + (slipData.receiver?.displayName || '').toLowerCase();
+              const receiverProxy = (slipData.receiver?.proxy?.value || '').replace(/\D/g, ''); // remove non-digits
+              
+              const isValidReceiver = receiverName.includes('วรวัฒน์') || 
+                                      receiverName.includes('worawat') ||
+                                      receiverProxy.includes('828072613'); // without leading 0 in case of +66 or format differences
+
+              if (!isValidReceiver) {
+                  await db.query('ROLLBACK');
+                  return res.status(400).json({ message: 'ชื่อผู้รับเงินหรือเบอร์พร้อมเพย์ในสลิป ไม่ตรงกับบัญชีของทางร้าน' });
+              }
+              
               if (slipData.transRef) {
                   const checkDupResult = await db.query('SELECT order_id FROM "Order" WHERE slip_trans_ref = $1 LIMIT 1', [slipData.transRef]);
                   if (checkDupResult.rows.length > 0) {
@@ -127,6 +140,16 @@ exports.createOrder = async (req, res) => {
     }
 
     await db.query('COMMIT');
+
+    // 6. Automatically invalidate the session IF it's a takeaway (หน้าร้าน) session
+    // to prevent customers from taking the QR code home and placing fake orders later.
+    if (session_id) {
+      const sessionResult = await db.query(`SELECT table_no FROM "Table_Session" WHERE session_id = $1`, [session_id]);
+      if (sessionResult.rows.length > 0 && sessionResult.rows[0].table_no.startsWith('หน้าร้าน')) {
+        await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE session_id = $1`, [session_id]);
+      }
+    }
+
     res.status(201).json({ message: 'Order created', order_id, queue_number });
 
   } catch (err) {

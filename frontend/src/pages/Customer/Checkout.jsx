@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import './Checkout.css';
 
-export default function Checkout({ cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
+export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
     // State เลือกวิธีชำระเงิน ('promptpay' หรือ 'cash')
     const [paymentMethod, setPaymentMethod] = useState('promptpay');
     
     // State เลือกประเภทออเดอร์
-    const [orderType, setOrderType] = useState('dine_in');
+    const isTakeawayOnly = tableNo && tableNo.startsWith('หน้าร้าน');
+    const [orderType, setOrderType] = useState(isTakeawayOnly ? 'takeaway' : 'dine_in');
 
     // State สำหรับอัปโหลดสลิป
     const [slipFile, setSlipFile] = useState(null);
@@ -132,24 +133,58 @@ export default function Checkout({ cartItems = [], cartNote = '', onBack, onConf
                     </div>
                 )}
 
-                {/* ตัวเลือกทานที่ร้าน / กลับบ้าน */}
-                <div className="checkout-order-type-section" style={{ background: '#fff', padding: '20px', borderRadius: '12px', marginTop: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                    <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#374151' }}>รูปแบบการรับประทาน</h3>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <label 
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: `2px solid ${orderType === 'dine_in' ? '#ef4444' : '#e5e7eb'}`, borderRadius: '8px', background: orderType === 'dine_in' ? '#fef2f2' : '#fff', cursor: 'pointer', transition: 'all 0.2s', fontWeight: orderType === 'dine_in' ? 'bold' : 'normal', color: orderType === 'dine_in' ? '#ef4444' : '#4b5563' }}
-                        >
-                            <input type="radio" name="orderType" value="dine_in" checked={orderType === 'dine_in'} onChange={() => setOrderType('dine_in')} style={{ display: 'none' }} />
-                            <FaUtensils style={{ marginRight: '8px' }} /> ทานที่ร้าน
-                        </label>
-                        <label 
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: `2px solid ${orderType === 'takeaway' ? '#ef4444' : '#e5e7eb'}`, borderRadius: '8px', background: orderType === 'takeaway' ? '#fef2f2' : '#fff', cursor: 'pointer', transition: 'all 0.2s', fontWeight: orderType === 'takeaway' ? 'bold' : 'normal', color: orderType === 'takeaway' ? '#ef4444' : '#4b5563' }}
-                        >
-                            <input type="radio" name="orderType" value="takeaway" checked={orderType === 'takeaway'} onChange={() => setOrderType('takeaway')} style={{ display: 'none' }} />
-                            <FaShoppingBag style={{ marginRight: '8px' }} /> กลับบ้าน
-                        </label>
+                {/* ตัวเลือกทานที่ร้าน / กลับบ้าน (ซ่อนถ้าเป็นคิวหน้าร้าน) */}
+                {!isTakeawayOnly && (
+                    <div className="checkout-order-type-section" style={{ background: '#fff', padding: '20px', borderRadius: '12px', marginTop: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#374151' }}>รูปแบบการรับประทาน</h3>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <label 
+                                style={{ 
+                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
+                                    border: `2px solid ${orderType === 'dine_in' ? '#ef4444' : '#e5e7eb'}`, 
+                                    borderRadius: '8px', 
+                                    background: orderType === 'dine_in' ? '#fef2f2' : '#fff', 
+                                    cursor: 'pointer', 
+                                    transition: 'all 0.2s', 
+                                    fontWeight: orderType === 'dine_in' ? 'bold' : 'normal', 
+                                    color: orderType === 'dine_in' ? '#ef4444' : '#4b5563' 
+                                }}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="orderType" 
+                                    value="dine_in" 
+                                    checked={orderType === 'dine_in'} 
+                                    onChange={() => setOrderType('dine_in')} 
+                                    style={{ display: 'none' }} 
+                                />
+                                <FaUtensils style={{ marginRight: '8px' }} /> ทานที่ร้าน
+                            </label>
+                            <label 
+                                style={{ 
+                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
+                                    border: `2px solid ${orderType === 'takeaway' ? '#ef4444' : '#e5e7eb'}`, 
+                                    borderRadius: '8px', 
+                                    background: orderType === 'takeaway' ? '#fef2f2' : '#fff', 
+                                    cursor: 'pointer', 
+                                    transition: 'all 0.2s', 
+                                    fontWeight: orderType === 'takeaway' ? 'bold' : 'normal', 
+                                    color: orderType === 'takeaway' ? '#ef4444' : '#4b5563' 
+                                }}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="orderType" 
+                                    value="takeaway" 
+                                    checked={orderType === 'takeaway'} 
+                                    onChange={() => setOrderType('takeaway')} 
+                                    style={{ display: 'none' }} 
+                                />
+                                <FaShoppingBag style={{ marginRight: '8px' }} /> กลับบ้าน
+                            </label>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* การ์ดสรุปราคารวม & ภาษี */}
                 <div className="checkout-summary-card">

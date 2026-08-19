@@ -60,6 +60,7 @@ function CustomerApp() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [cart, setCart] = useState([]);
   const [cartNote, setCartNote] = useState('');
+  const [needCutlery, setNeedCutlery] = useState(false);
 
   // State for order tracking after checkout
   const [lastOrderId, setLastOrderId] = useState(null);
@@ -150,6 +151,9 @@ function CustomerApp() {
             setCartItems={setCart}
             cartNote={cartNote}
             setCartNote={setCartNote}
+            needCutlery={needCutlery}
+            setNeedCutlery={setNeedCutlery}
+            tableNo={tableNo}
             onBack={() => setCurrentScreen('home')}
             onGoToCheckout={() => setCurrentScreen('checkout')}
             onEditItem={handleEditCartItem}
@@ -158,12 +162,14 @@ function CustomerApp() {
       case 'checkout':
         return (
           <Checkout
+            tableNo={tableNo}
             cartItems={cart}
-            cartNote={cartNote}
+            cartNote={needCutlery ? (cartNote ? `[รับช้อน/ส้อมพลาสติก] ${cartNote}` : '[รับช้อน/ส้อมพลาสติก]') : cartNote}
             onBack={() => setCurrentScreen('cart')}
             onCancelOrder={() => {
               setCart([]);
               setCartNote('');
+              setNeedCutlery(false);
               setCurrentScreen('home');
             }}
             onConfirmOrder={async (orderData) => {
@@ -173,7 +179,7 @@ function CustomerApp() {
                   total_amount: orderData.grandTotal,
                   total_calories: orderData.totalCalories,
                   slip_picture: orderData.slipBase64 || null,
-                  note: cartNote || '',
+                  note: (needCutlery ? (cartNote ? `[รับช้อน/ส้อมพลาสติก] ${cartNote}` : '[รับช้อน/ส้อมพลาสติก]') : cartNote) || '',
                   session_id: sessionId,
                   order_type: orderData.orderType,
                   items: orderData.cartItems.map(item => ({

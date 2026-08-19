@@ -7,6 +7,7 @@ import { apiFetch, API_BASE } from '../../utils/api';
 
 export default function TableManager() {
   const [sessions, setSessions] = useState([]);
+  const [qrType, setQrType] = useState('dine-in');
   const [tableNo, setTableNo] = useState('');
   const [duration, setDuration] = useState('2');
   const [customDuration, setCustomDuration] = useState('');
@@ -37,7 +38,21 @@ export default function TableManager() {
 
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!tableNo.trim()) {
+    let actualTableNo = tableNo;
+    if (qrType === 'takeaway') {
+      const takeawaySessions = sessions.filter(s => s.table_no.startsWith('หน้าร้าน'));
+      let nextNum = 1;
+      if (takeawaySessions.length > 0) {
+        const nums = takeawaySessions.map(s => {
+          const match = s.table_no.match(/หน้าร้าน\s*(\d+)?/);
+          return match && match[1] ? parseInt(match[1]) : 1;
+        });
+        nextNum = Math.max(...nums) + 1;
+      }
+      actualTableNo = `หน้าร้าน ${nextNum}`;
+    }
+    
+    if (qrType === 'dine-in' && !actualTableNo.trim()) {
       setError('กรุณาระบุหมายเลขโต๊ะ');
       return;
     }
@@ -59,12 +74,12 @@ export default function TableManager() {
       const res = await apiFetch('/api/qr/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table_no: tableNo, duration_hours: finalDuration })
+        body: JSON.stringify({ table_no: actualTableNo, duration_hours: finalDuration })
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSuccess(`สร้าง QR Code สำหรับโต๊ะ ${tableNo} สำเร็จ!`);
+        setSuccess(`สร้าง QR Code สำหรับ ${actualTableNo} สำเร็จ!`);
         setTableNo('');
         fetchSessions();
       } else {
@@ -205,7 +220,7 @@ export default function TableManager() {
             
             <div class="divider"></div>
             
-            <h2>โต๊ะ ${tableNo}</h2>
+            <h2>${tableNo.startsWith('หน้าร้าน') ? `สั่งกลับบ้าน (${tableNo})` : `โต๊ะ ${tableNo}`}</h2>
             <p>สแกน QR Code เพื่อสั่งอาหาร</p>
             
             <div class="qr-container" id="qr-code"></div>
@@ -256,16 +271,43 @@ export default function TableManager() {
             {success && <div className="tm-alert success"><FaCheckCircle /> {success}</div>}
             
             <form onSubmit={handleGenerate} className="tm-form">
-              <div className="form-group">
-                <label>หมายเลขโต๊ะ / ชื่อโต๊ะ</label>
-                <input 
-                  type="text" 
-                  value={tableNo}
-                  onChange={(e) => setTableNo(e.target.value)}
-                  placeholder="เช่น โต๊ะ 1 หรือ A1"
-                  autoFocus
-                />
+              <div className="form-group qr-type-group">
+                <label>ประเภท QR Code</label>
+                <div className="radio-group" style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      value="dine-in" 
+                      checked={qrType === 'dine-in'} 
+                      onChange={(e) => setQrType(e.target.value)} 
+                    />
+                    ทานที่ร้าน (Dine-in)
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      value="takeaway" 
+                      checked={qrType === 'takeaway'} 
+                      onChange={(e) => setQrType(e.target.value)} 
+                    />
+                    หน้าร้าน (Takeaway)
+                  </label>
+                </div>
               </div>
+
+              {qrType === 'dine-in' && (
+                <div className="form-group">
+                  <label>หมายเลขโต๊ะ</label>
+                  <input 
+                    type="number" 
+                    value={tableNo}
+                    onChange={(e) => setTableNo(e.target.value)}
+                    placeholder="ใส่เฉพาะตัวเลข เช่น 1, 2, 3"
+                    autoFocus
+                    min="1"
+                  />
+                </div>
+              )}
               <div className="form-group">
                 <label>ระยะเวลา (ชั่วโมง)</label>
                 <select value={duration} onChange={(e) => setDuration(e.target.value)}>
@@ -296,28 +338,25 @@ export default function TableManager() {
 
         <div className="tm-right-panel">
           <div className="tm-card active-sessions-card">
-            <h2>โต๊ะที่เปิดอยู่ตอนนี้ ({sessions.length})</h2>
+            <h2>โต๊ะที่เปิดอยู่ตอนนี้ ({sessions.filter(s => !s.table_no.startsWith('หน้าร้าน')).length})</h2>
             
-            {sessions.length === 0 ? (
+            {sessions.filter(s => !s.table_no.startsWith('หน้าร้าน')).length === 0 ? (
               <div className="tm-empty-state">
                 <p>ยังไม่มีโต๊ะที่เปิดใช้งานในขณะนี้</p>
               </div>
             ) : (
               <div className="tm-sessions-grid">
-                {sessions.map(session => {
-                  const isExpiringSoon = (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000; // < 30 mins
-                  
+                {sessions.filter(s => !s.table_no.startsWith('หน้าร้าน')).map(session => {
+                  const isExpiringSoon = (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
                   return (
                     <div key={session.session_id} className={`tm-session-item ${isExpiringSoon ? 'expiring' : ''}`}>
                       <div className="session-header">
                         <h3>โต๊ะ {session.table_no}</h3>
                         <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
                       </div>
-                      
                       <div className="qr-preview">
                         <QRCodeSVG value={`http://localhost:5173/?session=${session.session_id}`} size={120} />
                       </div>
-                      
                       <div className="session-actions" style={{ flexWrap: 'wrap' }}>
                         <button className="tm-btn-print" onClick={() => setViewSession(session)}>
                           <FaEye /> ดู QR
@@ -327,6 +366,41 @@ export default function TableManager() {
                         </button>
                         <button className="tm-btn-danger" onClick={() => handleEndSession(session.session_id, session.table_no)} style={{ flexBasis: '100%' }}>
                           <FaTrashAlt /> ปิดโต๊ะ
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <h2 style={{marginTop: '32px'}}>คิวหน้าร้านที่รอสั่ง ({sessions.filter(s => s.table_no.startsWith('หน้าร้าน')).length})</h2>
+            {sessions.filter(s => s.table_no.startsWith('หน้าร้าน')).length === 0 ? (
+              <div className="tm-empty-state">
+                <p>ยังไม่มีคิวหน้าร้านในขณะนี้</p>
+              </div>
+            ) : (
+              <div className="tm-sessions-grid">
+                {sessions.filter(s => s.table_no.startsWith('หน้าร้าน')).map(session => {
+                  const isExpiringSoon = (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
+                  return (
+                    <div key={session.session_id} className={`tm-session-item ${isExpiringSoon ? 'expiring' : ''}`}>
+                      <div className="session-header">
+                        <h3>{session.table_no}</h3>
+                        <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
+                      </div>
+                      <div className="qr-preview">
+                        <QRCodeSVG value={`http://localhost:5173/?session=${session.session_id}`} size={120} />
+                      </div>
+                      <div className="session-actions" style={{ flexWrap: 'wrap' }}>
+                        <button className="tm-btn-print" onClick={() => setViewSession(session)}>
+                          <FaEye /> ดู QR
+                        </button>
+                        <button className="tm-btn-print" onClick={() => handlePrint(session.session_id, session.table_no, session.expires_at)}>
+                          <FaPrint /> พิมพ์
+                        </button>
+                        <button className="tm-btn-danger" onClick={() => handleEndSession(session.session_id, session.table_no)} style={{ flexBasis: '100%' }}>
+                          <FaTrashAlt /> ยกเลิกคิว
                         </button>
                       </div>
                     </div>
