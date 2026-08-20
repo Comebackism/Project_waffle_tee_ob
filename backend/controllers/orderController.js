@@ -307,8 +307,8 @@ exports.updateOrderStatus = async (req, res) => {
     `, [id]);
     const updatedOrder = result.rows[0];
 
-    // Handle takeaway QR invalidation when kitchen clears it (S04 or S05)
-    if ((status_id === 'S04' || status_id === 'S05') && updatedOrder.order_type === 'takeaway' && updatedOrder.session_id) {
+    // Handle takeaway QR invalidation only when order is completely finished (S05)
+    if (status_id === 'S05' && updatedOrder.order_type === 'takeaway' && updatedOrder.session_id) {
       await db.query(
         `UPDATE "Table_Session" SET is_active = false WHERE session_id = $1`,
         [updatedOrder.session_id]
