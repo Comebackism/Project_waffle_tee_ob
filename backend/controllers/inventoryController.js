@@ -2,26 +2,30 @@ const db = require('../config/db');
 const fs = require('fs');
 const path = require('path');
 
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // Helper to save base64 image
-const saveBase64Image = (base64Str, prefix = 'product') => {
+const saveBase64Image = async (base64Str, prefix = 'product') => {
   if (!base64Str || !base64Str.startsWith('data:image')) {
     return base64Str; // Already a filename or URL
   }
-  const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  if (matches && matches.length === 3) {
-    const type = matches[1];
-    const buffer = Buffer.from(matches[2], 'base64');
-    const extension = type.split('/')[1] || 'jpg';
-    const filename = `${prefix}_${Date.now()}.${extension}`;
-    const filepath = path.join(__dirname, '../public/images', filename);
-    
-    if (!fs.existsSync(path.dirname(filepath))) {
-      fs.mkdirSync(path.dirname(filepath), { recursive: true });
-    }
-    fs.writeFileSync(filepath, buffer);
-    return filename;
+  
+  try {
+    const result = await cloudinary.uploader.upload(base64Str, {
+      folder: 'pos_images',
+      public_id: `${prefix}_${Date.now()}`
+    });
+    return result.secure_url;
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    return null;
   }
-  return base64Str;
 };
 
 // Get all inventory
@@ -39,7 +43,8 @@ exports.getInventory = async (req, res) => {
       if (!image) {
         image = `https://placehold.co/300x200?text=${encodeURIComponent(item.ProductName)}`;
       } else if (!image.startsWith('http')) {
-        image = `http://localhost:5000/images/${image}`;
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+        image = `${backendUrl.replace(/\/$/, '')}/images/${image}`;
       }
 
       let status = 'Normal';
@@ -120,7 +125,7 @@ exports.addProduct = async (req, res) => {
     }
 
     // Save image if base64 provided
-    const finalPicture = saveBase64Image(Picture, `product_${nextId}`);
+    const finalPicture = await saveBase64Image(Picture, `product_${nextId}`);
 
     // Insert into Product table
     await db.query(
@@ -179,7 +184,7 @@ exports.updateProduct = async (req, res) => {
 
     let finalPicture = null;
     if (Picture) {
-      finalPicture = saveBase64Image(Picture, `product_${id}`);
+      finalPicture = await saveBase64Image(Picture, `product_${id}`);
     }
 
     // Update product name, category, and picture
