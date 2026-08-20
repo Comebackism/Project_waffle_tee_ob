@@ -36,6 +36,23 @@ export default function KitchenKDS() {
         })
       );
       setOrders(detailed);
+      
+      // Auto-check items for orders that are already in S04 status
+      setCompletedCounts(prev => {
+        const nextCounts = { ...prev };
+        detailed.forEach(order => {
+          if (order.Status_id === 'S04' && order.items) {
+            order.items.forEach((item, idx) => {
+              const key = `${order.order_id}-${idx}`;
+              if (nextCounts[key] === undefined) {
+                nextCounts[key] = item.quantity;
+              }
+            });
+          }
+        });
+        return nextCounts;
+      });
+
       setLoading(false);
     } catch (err) {
       console.error('Error:', err);
