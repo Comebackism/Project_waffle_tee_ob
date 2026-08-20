@@ -273,8 +273,8 @@ export default function TableManager() {
             <form onSubmit={handleGenerate} className="tm-form">
               <div className="form-group qr-type-group">
                 <label>ประเภท QR Code</label>
-                <div className="radio-group" style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <div className="radio-group">
+                  <label>
                     <input 
                       type="radio" 
                       value="dine-in" 
@@ -283,7 +283,7 @@ export default function TableManager() {
                     />
                     ทานที่ร้าน (Dine-in)
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <label>
                     <input 
                       type="radio" 
                       value="takeaway" 
