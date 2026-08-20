@@ -12,7 +12,7 @@ const STATUS_MAP = {
   'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../../utils/api';
 
 export default function MyOrders({ onBack, onViewOrder }) {
   const [orders, setOrders] = useState([]);

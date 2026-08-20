@@ -28,3 +28,7 @@ dist-ssr
 
 # Uploaded images
 backend/public/images/
+
+# Database backups
+backend/SQL/*.sql
+sql/*.sql

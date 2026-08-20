@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCheck, FaFire, FaExclamationCircle } from 'react-icons/fa';
 import './ProductDetail.css';
 
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../../utils/api';
 
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/300';

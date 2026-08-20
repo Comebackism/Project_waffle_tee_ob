@@ -34,7 +34,7 @@ exports.generateSession = async (req, res) => {
     res.status(201).json({
       message: 'QR Session created successfully',
       session: result.rows[0],
-      url: `http://localhost:5173/?session=${session_id}`
+      url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/?session=${session_id}`
     });
   } catch (err) {
     console.error('Error generating QR session:', err.message);

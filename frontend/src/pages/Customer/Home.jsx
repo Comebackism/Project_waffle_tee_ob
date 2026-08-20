@@ -3,7 +3,7 @@ import { FaFire } from 'react-icons/fa';
 import FoodCard from '../../components/FoodCard/FoodCard';
 import './Home.css';
 
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../../utils/api';
 
 export default function Home({ onSelectProduct }) {
   const [products, setProducts] = useState([]);

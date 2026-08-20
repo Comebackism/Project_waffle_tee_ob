@@ -3,7 +3,7 @@ import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle, FaReceip
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './OrderStatus.css';
 
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../../utils/api';
 
 const resolveImage = (pic) => {
   if (!pic) return 'https://via.placeholder.com/60';

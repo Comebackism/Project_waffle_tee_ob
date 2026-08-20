@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaRegBell, FaShoppingCart, FaTimes } from 'react-icons/fa';
 import './Navbar.css';
 
-const API_BASE = 'http://localhost:5000';
+import { API_BASE } from '../../utils/api';
 
 const STATUS_MAP = {
   'S01': { label: 'รอชำระเงิน', color: '#f59e0b' },

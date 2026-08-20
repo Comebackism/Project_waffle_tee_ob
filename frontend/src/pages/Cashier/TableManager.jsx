@@ -115,7 +115,7 @@ export default function TableManager() {
   const handlePrint = (sessionId, tableNo, expiresAt) => {
     // Open a new window for printing the QR
     const printWindow = window.open('', '_blank');
-    const qrUrl = `http://localhost:5173/?session=${sessionId}`;
+    const qrUrl = `${window.location.origin}/?session=${sessionId}`;
     const formattedTime = formatTime(expiresAt);
     
     printWindow.document.write(`
@@ -355,7 +355,7 @@ export default function TableManager() {
                         <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
                       </div>
                       <div className="qr-preview">
-                        <QRCodeSVG value={`http://localhost:5173/?session=${session.session_id}`} size={120} />
+                        <QRCodeSVG value={`${window.location.origin}/?session=${session.session_id}`} size={120} />
                       </div>
                       <div className="session-actions" style={{ flexWrap: 'wrap' }}>
                         <button className="tm-btn-print" onClick={() => setViewSession(session)}>
@@ -390,7 +390,7 @@ export default function TableManager() {
                         <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
                       </div>
                       <div className="qr-preview">
-                        <QRCodeSVG value={`http://localhost:5173/?session=${session.session_id}`} size={120} />
+                        <QRCodeSVG value={`${window.location.origin}/?session=${session.session_id}`} size={120} />
                       </div>
                       <div className="session-actions" style={{ flexWrap: 'wrap' }}>
                         <button className="tm-btn-print" onClick={() => setViewSession(session)}>
@@ -420,7 +420,7 @@ export default function TableManager() {
               <button className="tm-close-btn" onClick={() => setViewSession(null)}><FaTimesCircle /></button>
             </div>
             <div className="tm-modal-body">
-              <QRCodeSVG value={`http://localhost:5173/?session=${viewSession.session_id}`} size={300} level="H" />
+              <QRCodeSVG value={`${window.location.origin}/?session=${viewSession.session_id}`} size={300} level="H" />
               <p className="tm-modal-url">หมดเวลา: {formatTime(viewSession.expires_at)}</p>
             </div>
             <div className="tm-modal-footer">

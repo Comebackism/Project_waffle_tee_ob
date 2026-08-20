@@ -82,6 +82,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
       const data = await res.json();
       setCurrentUser(data.user);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
+      localStorage.setItem('authToken', data.token);
       setPendingUser(null);
       
       // Redirect based on role

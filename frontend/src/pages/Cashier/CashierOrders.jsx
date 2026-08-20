@@ -3,7 +3,7 @@ import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt,
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
-import { apiFetch } from '../../utils/api';
+import { apiFetch, API_BASE } from '../../utils/api';
 
 const STATUS_LABELS = {
   'S01': { label: 'รอชำระเงิน', color: '#f59e0b' },
@@ -13,8 +13,6 @@ const STATUS_LABELS = {
   'S05': { label: 'เสร็จสิ้น', color: '#6b7280' },
   'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
-
-const API_BASE = 'http://localhost:5000'; // kept for image URLs only
 
 export default function CashierOrders() {
   const [orders, setOrders] = useState([]);

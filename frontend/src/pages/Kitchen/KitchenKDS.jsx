@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
-import { apiFetch } from '../../utils/api';
-
-const API_BASE = 'http://localhost:5000'; // kept for image URLs only
+import { apiFetch, API_BASE } from '../../utils/api';
 
 export default function KitchenKDS() {
   const [orders, setOrders] = useState([]);
