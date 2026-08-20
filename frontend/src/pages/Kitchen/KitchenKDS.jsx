@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
@@ -9,6 +9,11 @@ export default function KitchenKDS() {
   const [loading, setLoading] = useState(true);
   const [completedCounts, setCompletedCounts] = useState({});
 
+  const ordersRef = useRef([]);
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
+
   const fetchOrders = async () => {
     try {
       const res = await apiFetch('/api/orders/today');
@@ -18,6 +23,10 @@ export default function KitchenKDS() {
       
       const detailed = await Promise.all(
         kitchenOrders.map(async (order) => {
+          const existing = ordersRef.current.find(o => o.order_id === order.order_id);
+          if (existing && existing.items) {
+            return { ...existing, ...order }; // Keep items, update status from DB
+          }
           try {
             const detailRes = await apiFetch(`/api/orders/${order.order_id}`);
             return await detailRes.json();
@@ -41,9 +50,12 @@ export default function KitchenKDS() {
   }, []);
 
   const updateStatus = async (orderId, newStatusId) => {
+    // 1. Optimistic UI update (prevents bouncing)
+    setOrders(prev => prev.map(o => o.order_id === orderId ? { ...o, Status_id: newStatusId } : o));
+
     try {
       if (newStatusId === 'S04') {
-        const orderToUpdate = orders.find(o => o.order_id === orderId);
+        const orderToUpdate = ordersRef.current.find(o => o.order_id === orderId);
         if (orderToUpdate && orderToUpdate.items) {
           setCompletedCounts(prev => {
             const nextCounts = { ...prev };
@@ -63,9 +75,10 @@ export default function KitchenKDS() {
         method: 'PUT',
         body: JSON.stringify({ status_id: newStatusId, user_id: userId })
       });
-      fetchOrders();
+      // The background interval will sync this up later, no need to force await fetchOrders() here.
     } catch (err) {
       console.error('Error:', err);
+      fetchOrders(); // Revert on error
     }
   };
 
