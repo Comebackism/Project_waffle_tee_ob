@@ -3,6 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 
 
@@ -98,15 +105,17 @@ exports.createOrder = async (req, res) => {
         }
         // --- End SlipOK ---
 
-        const filepath = path.join(__dirname, '../public/images', filename);
-        
-        // Ensure public/images directory exists
-        if (!fs.existsSync(path.dirname(filepath))) {
-            fs.mkdirSync(path.dirname(filepath), { recursive: true });
+        try {
+            const cloudinaryResult = await cloudinary.uploader.upload(slip_picture, {
+                folder: 'pos_slips',
+                public_id: `${order_id}_slip_${Date.now()}`
+            });
+            final_slip_picture = cloudinaryResult.secure_url;
+        } catch (error) {
+            console.error('Cloudinary slip upload error:', error);
+            await db.query('ROLLBACK');
+            return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกรูปสลิป' });
         }
-        
-        fs.writeFileSync(filepath, buffer);
-        final_slip_picture = filename;
       }
     }
 

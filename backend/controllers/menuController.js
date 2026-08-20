@@ -2,26 +2,30 @@ const db = require('../config/db');
 const fs = require('fs');
 const path = require('path');
 
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // Helper to save base64 image
-const saveBase64Image = (base64Str, prefix = 'img') => {
+const saveBase64Image = async (base64Str, prefix = 'img') => {
   if (!base64Str || !base64Str.startsWith('data:image')) {
     return base64Str; // Already a filename or URL
   }
-  const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  if (matches && matches.length === 3) {
-    const type = matches[1];
-    const buffer = Buffer.from(matches[2], 'base64');
-    const extension = type.split('/')[1] || 'jpg';
-    const filename = `${prefix}_${Date.now()}.${extension}`;
-    const filepath = path.join(__dirname, '../public/images', filename);
-    
-    if (!fs.existsSync(path.dirname(filepath))) {
-      fs.mkdirSync(path.dirname(filepath), { recursive: true });
-    }
-    fs.writeFileSync(filepath, buffer);
-    return filename;
+  
+  try {
+    const result = await cloudinary.uploader.upload(base64Str, {
+      folder: 'pos_images',
+      public_id: `${prefix}_${Date.now()}`
+    });
+    return result.secure_url;
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    return null;
   }
-  return base64Str;
 };
 
 // Get all waffle menus (Customer — active only)
@@ -90,7 +94,7 @@ exports.addMenu = async (req, res) => {
       nextId = 'M' + num.toString().padStart(2, '0');
     }
 
-    const finalPicture = saveBase64Image(Picture, `menu_${nextId}`);
+    const finalPicture = await saveBase64Image(Picture, `menu_${nextId}`);
 
     await db.query(
       'INSERT INTO "Menu" (menu_id, name, price, "Picture", "Calories", description, is_active) VALUES ($1, $2, $3, $4, $5, $6, true)',
@@ -112,7 +116,7 @@ exports.updateMenu = async (req, res) => {
     
     let finalPicture = null;
     if (Picture) {
-      finalPicture = saveBase64Image(Picture, `menu_${id}`);
+      finalPicture = await saveBase64Image(Picture, `menu_${id}`);
     }
 
     if (finalPicture) {
@@ -185,7 +189,7 @@ exports.addTopping = async (req, res) => {
       nextId = 'T' + num.toString().padStart(2, '0');
     }
 
-    const finalPicture = saveBase64Image(Picture, `topping_${nextId}`);
+    const finalPicture = await saveBase64Image(Picture, `topping_${nextId}`);
 
     await db.query(
       'INSERT INTO "Topping" (topping_id, name, price, "Picture", "Calories", is_active) VALUES ($1, $2, $3, $4, $5, true)',
@@ -207,7 +211,7 @@ exports.updateTopping = async (req, res) => {
     
     let finalPicture = null;
     if (Picture) {
-      finalPicture = saveBase64Image(Picture, `topping_${id}`);
+      finalPicture = await saveBase64Image(Picture, `topping_${id}`);
     }
 
     if (finalPicture) {
