@@ -3,14 +3,8 @@ import { FaArrowLeft, FaClock, FaFireAlt, FaCheckCircle, FaTimesCircle, FaReceip
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './OrderStatus.css';
 
-import { API_BASE } from '../../utils/api';
+import { API_BASE, resolveImage } from '../../utils/api';
 
-const resolveImage = (pic) => {
-  if (!pic) return 'https://via.placeholder.com/60';
-  if (pic.startsWith('http')) return pic;
-  if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
-  return `${API_BASE}/images/${pic}`;
-};
 
 const STATUS_MAP = {
   'S01': { label: 'รอชำระเงิน', icon: <FaClock />, color: '#f59e0b', step: 1 },

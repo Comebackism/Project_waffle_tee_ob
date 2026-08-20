@@ -2,14 +2,8 @@ import React, { useState, useEffect } from 'react';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCamera, FaImage, FaTimes, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import './MenuManagement.css';
-import { apiFetch, API_BASE } from '../../utils/api';
+import { apiFetch, API_BASE, resolveImage } from '../../utils/api';
 
-const resolveImage = (pic) => {
-  if (!pic) return 'https://via.placeholder.com/60';
-  if (pic.startsWith('http') || pic.startsWith('data:')) return pic;
-  if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
-  return `${API_BASE}/images/${pic}`;
-};
 
 export default function MenuManagement({ role }) {
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'topping'

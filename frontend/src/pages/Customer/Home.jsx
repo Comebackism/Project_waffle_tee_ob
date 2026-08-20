@@ -3,7 +3,7 @@ import { FaFire } from 'react-icons/fa';
 import FoodCard from '../../components/FoodCard/FoodCard';
 import './Home.css';
 
-import { API_BASE } from '../../utils/api';
+import { API_BASE, resolveImage } from '../../utils/api';
 
 export default function Home({ onSelectProduct }) {
   const [products, setProducts] = useState([]);
@@ -28,12 +28,6 @@ export default function Home({ onSelectProduct }) {
     fetchMenus();
   }, [fetchMenus]);
 
-  const resolveImage = (pic) => {
-    if (!pic) return 'https://via.placeholder.com/300';
-    if (pic.startsWith('http')) return pic;
-    if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
-    return `${API_BASE}/images/${pic}`;
-  };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>กำลังโหลดเมนู...</div>;
 

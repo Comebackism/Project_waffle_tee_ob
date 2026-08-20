@@ -2,14 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCheck, FaFire, FaExclamationCircle } from 'react-icons/fa';
 import './ProductDetail.css';
 
-import { API_BASE } from '../../utils/api';
+import { API_BASE, resolveImage } from '../../utils/api';
 
-const resolveImage = (pic) => {
-  if (!pic) return 'https://via.placeholder.com/300';
-  if (pic.startsWith('http')) return pic;
-  if (pic.startsWith('/images/')) return `${API_BASE}${pic}`;
-  return `${API_BASE}/images/${pic}`;
-};
 
 // 1. รับ prop onAddToCart เข้ามาจาก App.jsx 👈
 export default function ProductDetail({ productId = 2, onBack, onAddToCart, editingItem, onUpdateCartItem }) {

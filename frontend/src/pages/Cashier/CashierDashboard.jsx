@@ -9,13 +9,8 @@ import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/themes/light.css';
 import { Thai } from 'flatpickr/dist/l10n/th.js';
 import './CashierDashboard.css';
-import { apiFetch, API_BASE } from '../../utils/api';
+import { apiFetch, API_BASE, resolveImage } from '../../utils/api';
 
-const resolveImage = (pic) => {
-  if (!pic) return 'https://via.placeholder.com/60';
-  if (pic.startsWith('http')) return pic;
-  return `${API_BASE}${pic}`;
-};
 
 export default function CashierDashboard() {
   const navigate = useNavigate();
