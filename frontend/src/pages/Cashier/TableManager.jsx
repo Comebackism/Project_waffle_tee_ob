@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { FaQrcode, FaPrint, FaTrashAlt, FaPlus, FaCheckCircle, FaTimesCircle, FaEye } from 'react-icons/fa';
+import { FaQrcode, FaPrint, FaTrashAlt, FaPlus, FaCheckCircle, FaTimesCircle, FaEye, FaUtensils, FaShoppingBag } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './TableManager.css';
 import { apiFetch, API_BASE } from '../../utils/api';
@@ -273,24 +273,50 @@ export default function TableManager() {
             <form onSubmit={handleGenerate} className="tm-form">
               <div className="form-group qr-type-group">
                 <label>ประเภท QR Code</label>
-                <div className="radio-group">
-                  <label>
+                <div className="radio-group" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                  <label 
+                    style={{ 
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
+                        border: `2px solid ${qrType === 'dine-in' ? '#ef4444' : '#e5e7eb'}`, 
+                        borderRadius: '8px', 
+                        background: qrType === 'dine-in' ? '#fef2f2' : '#fff', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.2s', 
+                        fontWeight: qrType === 'dine-in' ? 'bold' : 'normal', 
+                        color: qrType === 'dine-in' ? '#ef4444' : '#4b5563',
+                        whiteSpace: 'nowrap'
+                    }}
+                  >
                     <input 
                       type="radio" 
                       value="dine-in" 
                       checked={qrType === 'dine-in'} 
                       onChange={(e) => setQrType(e.target.value)} 
+                      style={{ display: 'none' }}
                     />
-                    ทานที่ร้าน (Dine-in)
+                    <FaUtensils style={{ marginRight: '8px' }} /> ทานที่ร้าน
                   </label>
-                  <label>
+                  <label 
+                    style={{ 
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
+                        border: `2px solid ${qrType === 'takeaway' ? '#ef4444' : '#e5e7eb'}`, 
+                        borderRadius: '8px', 
+                        background: qrType === 'takeaway' ? '#fef2f2' : '#fff', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.2s', 
+                        fontWeight: qrType === 'takeaway' ? 'bold' : 'normal', 
+                        color: qrType === 'takeaway' ? '#ef4444' : '#4b5563',
+                        whiteSpace: 'nowrap'
+                    }}
+                  >
                     <input 
                       type="radio" 
                       value="takeaway" 
                       checked={qrType === 'takeaway'} 
                       onChange={(e) => setQrType(e.target.value)} 
+                      style={{ display: 'none' }}
                     />
-                    หน้าร้าน (Takeaway)
+                    <FaShoppingBag style={{ marginRight: '8px' }} /> หน้าร้าน
                   </label>
                 </div>
               </div>
