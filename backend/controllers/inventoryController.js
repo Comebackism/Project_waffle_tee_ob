@@ -160,13 +160,17 @@ exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
     
+    await db.query('BEGIN');
+    
     // Delete stock first (FK dependency)
     await db.query('DELETE FROM "Stock" WHERE "ProductID" = $1', [id]);
     // Delete product
     await db.query('DELETE FROM "Product" WHERE "ProductID" = $1', [id]);
 
+    await db.query('COMMIT');
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
+    await db.query('ROLLBACK');
     // 23503 is the PostgreSQL error code for foreign_key_violation
     if (err.code === '23503') {
       return res.status(400).json({ message: 'ไม่สามารถลบวัตถุดิบนี้ได้ เนื่องจากมีประวัติการเบิกหรือถูกใช้งานในระบบแล้ว' });
