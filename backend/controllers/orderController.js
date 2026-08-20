@@ -23,6 +23,19 @@ exports.createOrder = async (req, res) => {
     // Start transaction
     await db.query('BEGIN');
 
+    // 0. Validate session if provided (to prevent ordering on expired QR codes)
+    if (session_id) {
+      const sessionResult = await db.query('SELECT is_active FROM "Table_Session" WHERE session_id = $1', [session_id]);
+      if (sessionResult.rows.length === 0) {
+        await db.query('ROLLBACK');
+        return res.status(400).json({ message: 'เซสชัน QR Code ไม่ถูกต้อง' });
+      }
+      if (!sessionResult.rows[0].is_active) {
+        await db.query('ROLLBACK');
+        return res.status(403).json({ message: 'QR Code นี้หมดอายุหรือถูกปิดไปแล้ว กรุณาสแกนใหม่' });
+      }
+    }
+
     // 1. Generate order_id using MAX instead of COUNT to prevent duplicates if rows are deleted
     const lastOrderResult = await db.query('SELECT order_id FROM "Order" ORDER BY order_id DESC LIMIT 1');
     let orderCount = 1;

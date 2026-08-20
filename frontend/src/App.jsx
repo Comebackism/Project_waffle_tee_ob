@@ -218,7 +218,12 @@ function CustomerApp() {
                 setCurrentScreen('orderStatus');
               } catch (err) {
                 console.error(err);
-                setErrorModal({ isOpen: true, message: err.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ' });
+                if (err.message.includes('QR Code นี้หมดอายุ') || err.message.includes('เซสชัน QR Code ไม่ถูกต้อง')) {
+                  alert(err.message);
+                  window.location.reload();
+                } else {
+                  setErrorModal({ isOpen: true, message: err.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ' });
+                }
               }
             }}
           />
