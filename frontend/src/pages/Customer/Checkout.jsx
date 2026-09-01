@@ -1,6 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag, FaDownload } from 'react-icons/fa';
+import { QRCodeCanvas } from 'qrcode.react';
 import './Checkout.css';
+
+// === PromptPay QR Code Generator (EMVCo Standard) ===
+function crc16(data) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < data.length; i++) {
+        crc ^= data.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+            crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
+            crc &= 0xFFFF;
+        }
+    }
+    return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+function tlv(id, value) {
+    return `${id}${String(value.length).padStart(2, '0')}${value}`;
+}
+
+function generatePromptPayPayload(phone, amount) {
+    const cleaned = phone.replace(/[^0-9]/g, '');
+    const intlPhone = '0066' + cleaned.substring(1);
+    const merchantInfo = tlv('00', 'A000000677010111') + tlv('01', intlPhone);
+    let data = tlv('00', '01') + tlv('01', amount > 0 ? '12' : '11');
+    data += tlv('29', merchantInfo);
+    data += tlv('53', '764');
+    if (amount > 0) data += tlv('54', amount.toFixed(2));
+    data += tlv('58', 'TH');
+    data += '6304';
+    return data + crc16(data);
+}
 
 export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
     // State เลือกวิธีชำระเงิน ('promptpay' หรือ 'cash')
@@ -16,26 +47,10 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     const [slipBase64, setSlipBase64] = useState(null);
     const [showAlertModal, setShowAlertModal] = useState(false);
 
-    // ฟังก์ชันบันทึก QR Code
-    const handleSaveQR = async () => {
-        try {
-            const qrUrl = `https://promptpay.io/0828072613/${grandTotal}.png`;
-            const response = await fetch(qrUrl);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `PromptPay_QR_${grandTotal}THB.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
-        } catch (err) {
-            console.error('Download QR failed:', err);
-        }
-    };
+    // Ref สำหรับ QR Code canvas
+    const qrRef = useRef(null);
 
-    // คำนวณราคารวมสินค้า
+
     const calculateItemTotal = (item) => {
         const toppingsTotal = item.toppings
             ? item.toppings.reduce((sum, top) => sum + (Number(top.price || 0) * (top.quantity || 1)), 0)
@@ -46,6 +61,39 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     const subtotal = cartItems.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     const vat = 0; // ไม่คิด VAT
     const grandTotal = subtotal;
+
+    // สร้าง PromptPay QR payload
+    const promptPayPayload = generatePromptPayPayload('0828072613', grandTotal);
+
+    // ฟังก์ชันบันทึก QR Code (ใช้ canvas จาก QRCodeCanvas)
+    const handleSaveQR = async () => {
+        const canvas = qrRef.current?.querySelector('canvas');
+        if (!canvas) return;
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) return;
+            const fileName = `PromptPay_QR_${grandTotal}THB.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            // มือถือ: ใช้ Native Share (บันทึกรูป / ส่ง Line ฯลฯ)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ files: [file], title: 'PromptPay QR Code' });
+                    return;
+                } catch (e) { /* ผู้ใช้กดยกเลิก — ตกไป fallback */ }
+            }
+
+            // Desktop / fallback: ดาวน์โหลดไฟล์ตรง
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 'image/png');
+    };
 
     // คำนวณแคลอรีรวม
     const calculateItemCalories = (item) => {
@@ -257,12 +305,13 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
 
                         {/* กรอบรูป QR Code สีเทาเข้ม */}
                         <div className="qr-image-wrapper">
-                            <div className="qr-image-inner">
-                                <img
-                                    src={`https://promptpay.io/0828072613/${grandTotal}.png`}
-                                    alt="PromptPay QR Code"
-                                    className="qr-code-img"
-                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            <div className="qr-image-inner" ref={qrRef}>
+                                <QRCodeCanvas
+                                    value={promptPayPayload}
+                                    size={280}
+                                    level="M"
+                                    includeMargin={true}
+                                    style={{ width: '100%', height: '100%' }}
                                 />
                             </div>
                         </div>
