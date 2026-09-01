@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag } from 'react-icons/fa';
+import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag, FaDownload } from 'react-icons/fa';
 import './Checkout.css';
 
 export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBack, onConfirmOrder, onCancelOrder }) {
@@ -15,6 +15,25 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     const [slipPreview, setSlipPreview] = useState(null);
     const [slipBase64, setSlipBase64] = useState(null);
     const [showAlertModal, setShowAlertModal] = useState(false);
+
+    // ฟังก์ชันบันทึก QR Code
+    const handleSaveQR = async () => {
+        try {
+            const qrUrl = `https://promptpay.io/0828072613/${grandTotal}.png`;
+            const response = await fetch(qrUrl);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `PromptPay_QR_${grandTotal}THB.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error('Download QR failed:', err);
+        }
+    };
 
     // คำนวณราคารวมสินค้า
     const calculateItemTotal = (item) => {
@@ -247,6 +266,15 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                                 />
                             </div>
                         </div>
+
+                        {/* ปุ่มบันทึก QR Code */}
+                        <button
+                            onClick={handleSaveQR}
+                            className="save-qr-btn"
+                        >
+                            <FaDownload />
+                            <span>บันทึก QR Code</span>
+                        </button>
 
                         {/* รายละเอียดบัญชี */}
                         <div className="account-info">
