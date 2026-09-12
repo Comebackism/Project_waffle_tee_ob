@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
-import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCamera, FaImage, FaTimes, FaToggleOn, FaToggleOff } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaEdit, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCamera, FaImage, FaTimes, FaToggleOn, FaToggleOff, FaEye, FaInfoCircle, FaFire, FaShoppingCart } from 'react-icons/fa';
 import './MenuManagement.css';
 import { apiFetch, API_BASE, resolveImage } from '../../utils/api';
 
@@ -16,6 +16,10 @@ export default function MenuManagement({ role }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
   
   // State for Add/Edit
   const [formData, setFormData] = useState({
@@ -88,6 +92,16 @@ export default function MenuManagement({ role }) {
     });
     setEditId(activeTab === 'menu' ? item.menu_id : item.topping_id);
     setShowEditModal(true);
+  };
+
+  const openDetailModal = (item) => {
+    setDetailItem(item);
+    setShowDetailModal(true);
+  };
+
+  const openPreviewModal = (item) => {
+    setPreviewItem(item);
+    setShowPreviewModal(true);
   };
 
   const handleAddSubmit = async (e) => {
@@ -198,6 +212,14 @@ export default function MenuManagement({ role }) {
           <p className="mm-card-price">฿{item.price}</p>
           
           <div className="mm-card-actions">
+            {/* ใหม่: ปุ่ม View มุมมองลูกค้า */}
+            <button className="mm-btn-icon view" onClick={() => openPreviewModal(item)} title="ดูมุมมองลูกค้า">
+              <FaEye />
+            </button>
+            {/* ใหม่: ปุ่ม Detail รายละเอียด */}
+            <button className="mm-btn-icon detail" onClick={() => openDetailModal(item)} title="รายละเอียด">
+              <FaInfoCircle />
+            </button>
             <button 
               className="mm-btn-icon edit" 
               onClick={() => openEditModal(item)}
@@ -496,6 +518,108 @@ export default function MenuManagement({ role }) {
                   <button type="submit" className="mm-btn-confirm">บันทึกการแก้ไข</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========== CUSTOMER PREVIEW MODAL ========== */}
+        {showPreviewModal && previewItem && (
+          <div className="mm-modal-overlay" onClick={() => setShowPreviewModal(false)}>
+            <div className="mm-modal mm-preview-modal" onClick={e => e.stopPropagation()}>
+              <div className="mm-modal-header" style={{ background: '#fff8f0', borderBottomColor: '#fed7aa' }}>
+                <h2 style={{ color: '#c2410c' }}><FaEye style={{ marginRight: '8px', fontSize: '16px' }} />มุมมองลูกค้า</h2>
+                <button className="mm-modal-close" onClick={() => setShowPreviewModal(false)}><FaTimes /></button>
+              </div>
+              <div className="mm-preview-body">
+                <div className="mm-preview-image-container">
+                  <img src={resolveImage(previewItem.Picture)} alt={previewItem.name} className="mm-preview-image"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300'; }} />
+                </div>
+                <div className="mm-preview-info-card">
+                  <div className="mm-preview-title-row">
+                    <h2 className="mm-preview-title">{previewItem.name}</h2>
+                    <span className="mm-preview-price">฿{previewItem.price}</span>
+                  </div>
+                  <p className="mm-preview-description">
+                    {previewItem.description ? previewItem.description.replace(/🔥/g, '').trim() : 'ไม่มีคำอธิบาย'}
+                    {previewItem.Calories ? (
+                      <span className="mm-preview-calories"><FaFire /> {previewItem.Calories} kcal</span>
+                    ) : ''}
+                  </p>
+                </div>
+                <div className="mm-preview-action-bar">
+                  <div className="mm-preview-qty">
+                    <span className="mm-preview-qty-btn"><FaMinus style={{ fontSize: '10px' }} /></span>
+                    <span className="mm-preview-qty-val">1</span>
+                    <span className="mm-preview-qty-btn"><FaPlus style={{ fontSize: '10px' }} /></span>
+                  </div>
+                  <div className="mm-preview-cart-btn">
+                    <FaShoppingCart style={{ marginRight: '6px' }} /> เพิ่มลงตะกร้า • ฿{previewItem.price}
+                  </div>
+                </div>
+              </div>
+              <div className="mm-modal-footer" style={{ background: '#fffbeb' }}>
+                <span style={{ fontSize: '12px', color: '#92400e', flex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FaExclamationTriangle style={{ flexShrink: 0 }} /> นี่คือตัวอย่างที่ลูกค้าจะเห็น (ไม่สามารถสั่งซื้อได้จากหน้านี้)
+                </span>
+                <button className="mm-btn-cancel" onClick={() => setShowPreviewModal(false)}>ปิด</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== DETAIL MODAL ========== */}
+        {showDetailModal && detailItem && (
+          <div className="mm-modal-overlay" onClick={() => setShowDetailModal(false)}>
+            <div className="mm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+              <div className="mm-modal-header">
+                <h2>รายละเอียด{activeTab === 'menu' ? 'เมนู' : 'ท็อปปิ้ง'}</h2>
+                <button className="mm-modal-close" onClick={() => setShowDetailModal(false)}><FaTimes /></button>
+              </div>
+              <div className="mm-modal-body" style={{ padding: 0 }}>
+                <div className="mm-detail-image-wrapper">
+                  {resolveImage(detailItem.Picture) ? (
+                    <img src={resolveImage(detailItem.Picture)} alt={detailItem.name} className="mm-detail-image" />
+                  ) : (
+                    <div className="mm-no-image" style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6' }}><FaImage /></div>
+                  )}
+                  <span className={`mm-status-badge ${detailItem.is_active ? 'active' : 'inactive'}`}>
+                    {detailItem.is_active ? 'เปิดขาย' : 'ปิดการขาย'}
+                  </span>
+                </div>
+                <div style={{ padding: '20px 24px' }}>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: '#1f2937' }}>{detailItem.name}</h3>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '22px', fontWeight: 700, color: '#4f46e5' }}>฿{detailItem.price}</p>
+                  <div className="mm-detail-info-grid">
+                    <div className="mm-detail-info-item">
+                      <span className="mm-detail-info-label">รหัส</span>
+                      <span className="mm-detail-info-value">{activeTab === 'menu' ? detailItem.menu_id : detailItem.topping_id}</span>
+                    </div>
+                    {detailItem.Calories && (
+                      <div className="mm-detail-info-item">
+                        <span className="mm-detail-info-label">แคลอรี่</span>
+                        <span className="mm-detail-info-value">{detailItem.Calories} kcal</span>
+                      </div>
+                    )}
+                    <div className="mm-detail-info-item">
+                      <span className="mm-detail-info-label">สถานะ</span>
+                      <span className={`mm-detail-status-chip ${detailItem.is_active ? 'active' : 'inactive'}`}>
+                        {detailItem.is_active ? 'เปิดขาย' : 'ปิดการขาย'}
+                      </span>
+                    </div>
+                  </div>
+                  {detailItem.description && (
+                    <div style={{ marginTop: '16px' }}>
+                      <span className="mm-detail-info-label">คำอธิบาย</span>
+                      <p style={{ margin: '6px 0 0 0', color: '#4b5563', fontSize: '14px', lineHeight: '1.6' }}>{detailItem.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mm-modal-footer">
+                <button className="mm-btn-cancel" onClick={() => setShowDetailModal(false)}>ปิด</button>
+                <button className="mm-btn-confirm" onClick={() => { setShowDetailModal(false); openEditModal(detailItem); }}>แก้ไข</button>
+              </div>
             </div>
           </div>
         )}
