@@ -139,11 +139,11 @@ export default function CashierDashboard() {
                     }}
                   >
                     <option value="today">ยอดขายวันนี้</option>
-                    <option value="yesterday">เมื่อวาน</option>
+                    <option value="yesterday">ยอดขายเมื่อวาน</option>
                     <option value="custom_date">เลือกวัน...</option>
-                    <option value="this_month">เดือนนี้</option>
+                    <option value="this_month">ยอดขายเดือนนี้</option>
                     <option value="custom_month">เลือกเดือน...</option>
-                    <option value="this_year">ปีนี้</option>
+                    <option value="this_year">ยอดขายปีนี้</option>
                     <option value="custom_year">เลือกปี...</option>
                   </select>
                 </div>
@@ -193,26 +193,91 @@ export default function CashierDashboard() {
               <div className="cd-summary-value highlight">
                 {salesPeriodLoading ? (
                   <span style={{ fontSize: '16px', color: '#9ca3af' }}>กำลังโหลด...</span>
+                ) : (['custom_date', 'custom_month', 'custom_year'].includes(salesPeriod) && !salesPeriodCustomDate) ? (
+                  <span style={{ fontSize: '20px', color: '#9ca3af' }}>-</span>
                 ) : salesPeriod === 'today' || !salesPeriodData ? (
                   stats.todaySales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 ) : (
                   salesPeriodData.sales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 )}
               </div>
-              {salesPeriodData && salesPeriod !== 'today' && (
-                <div className="cd-sales-period-orders">
-                  {salesPeriodData.orders} ออเดอร์
-                </div>
-              )}
             </div>
             
-            <div className="cd-summary-card">
+            <div className="cd-summary-card cd-sales-period-card">
               <div className="cd-summary-header">
                 <span className="cd-summary-icon gray"><FaShoppingBag /></span>
-                <span className="cd-summary-label">ออเดอร์วันนี้</span>
+                <div className="cd-sales-period-selector">
+                  <select
+                    className="cd-sales-period-select"
+                    value={salesPeriod}
+                    onChange={(e) => {
+                      setSalesPeriod(e.target.value);
+                      setSalesPeriodCustomDate('');
+                      setSalesPeriodData(null);
+                    }}
+                  >
+                    <option value="today">ออเดอร์วันนี้</option>
+                    <option value="yesterday">ออเดอร์เมื่อวาน</option>
+                    <option value="custom_date">เลือกวัน...</option>
+                    <option value="this_month">ออเดอร์เดือนนี้</option>
+                    <option value="custom_month">เลือกเดือน...</option>
+                    <option value="this_year">ออเดอร์ปีนี้</option>
+                    <option value="custom_year">เลือกปี...</option>
+                  </select>
+                </div>
               </div>
+
+              {/* Custom date inputs - synced with sales */}
+              {salesPeriod === 'custom_date' && (
+                <div className="cd-sales-period-input-row">
+                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
+                  <input
+                    type="date"
+                    className="cd-sales-period-input"
+                    value={salesPeriodCustomDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
+                  />
+                </div>
+              )}
+              {salesPeriod === 'custom_month' && (
+                <div className="cd-sales-period-input-row">
+                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
+                  <input
+                    type="month"
+                    className="cd-sales-period-input"
+                    value={salesPeriodCustomDate}
+                    max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
+                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
+                  />
+                </div>
+              )}
+              {salesPeriod === 'custom_year' && (
+                <div className="cd-sales-period-input-row">
+                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
+                  <select
+                    className="cd-sales-period-input"
+                    value={salesPeriodCustomDate}
+                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
+                  >
+                    <option value="">เลือกปี</option>
+                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                      <option key={y} value={y}>{y + 543} ({y})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="cd-summary-value">
-                {stats.todayOrders}
+                {salesPeriodLoading ? (
+                  <span style={{ fontSize: '16px', color: '#9ca3af' }}>กำลังโหลด...</span>
+                ) : (['custom_date', 'custom_month', 'custom_year'].includes(salesPeriod) && !salesPeriodCustomDate) ? (
+                  <span style={{ fontSize: '20px', color: '#9ca3af' }}>-</span>
+                ) : salesPeriod === 'today' || !salesPeriodData ? (
+                  stats.todayOrders
+                ) : (
+                  salesPeriodData.orders
+                )}
               </div>
             </div>
 
