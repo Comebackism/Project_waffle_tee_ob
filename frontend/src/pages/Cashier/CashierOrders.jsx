@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash, FaUtensils, FaShoppingBag } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash, FaUtensils, FaShoppingBag, FaBan } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
@@ -21,6 +21,8 @@ export default function CashierOrders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [receiptOrder, setReceiptOrder] = useState(null);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelOrderTarget, setCancelOrderTarget] = useState(null);
 
   const fetchOrders = () => {
     apiFetch('/api/orders/today')
@@ -217,6 +219,12 @@ export default function CashierOrders() {
                       <FaCheck /> ลูกค้ารับแล้ว
                     </button>
                   )}
+                  {/* ปุ่มยกเลิกออเดอร์ — แสดงเฉพาะออเดอร์ที่ยังไม่เสร็จสิ้นหรือยกเลิก */}
+                  {order.Status_id !== 'S05' && order.Status_id !== 'S06' && (
+                    <button className="co-action-btn cancel-order" onClick={() => { setCancelOrderTarget(order); setShowCancelModal(true); }}>
+                      <FaBan /> ยกเลิก
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -295,6 +303,12 @@ export default function CashierOrders() {
                       ยืนยันชำระเงิน
                     </button>
                   )}
+                  {/* ปุ่มยกเลิกออเดอร์ใน Detail Modal */}
+                  {selectedOrder.Status_id !== 'S05' && selectedOrder.Status_id !== 'S06' && (
+                    <button className="co-action-btn cancel-order full" onClick={() => { setCancelOrderTarget(selectedOrder); setShowCancelModal(true); setSelectedOrder(null); }}>
+                      <FaBan /> ยกเลิกออเดอร์
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -322,6 +336,44 @@ export default function CashierOrders() {
               <div className="co-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
                 <button className="co-btn-cancel" onClick={() => setShowClearModal(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#4b5563', fontWeight: 'bold', cursor: 'pointer' }}>ยกเลิก</button>
                 <button className="co-btn-delete" onClick={executeClearDailyOrders} style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>ล้างออเดอร์</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Order Confirm Modal */}
+        {showCancelModal && cancelOrderTarget && (
+          <div className="co-modal-overlay" onClick={() => { setShowCancelModal(false); setCancelOrderTarget(null); }}>
+            <div className="co-modal co-modal-sm" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+              <div className="co-modal-header" style={{ borderBottom: '2px solid #fecaca', background: '#fef2f2' }}>
+                <h2 style={{ color: '#dc2626', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
+                  <FaBan /> ยืนยันการยกเลิกออเดอร์
+                </h2>
+                <button className="co-modal-close" onClick={() => { setShowCancelModal(false); setCancelOrderTarget(null); }} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#dc2626' }}><FaTimes /></button>
+              </div>
+              <div style={{ padding: '20px 24px' }}>
+                <p style={{ color: '#4b5563', fontSize: '15px', margin: '0 0 12px 0' }}>
+                  คุณต้องการยกเลิกออเดอร์นี้หรือไม่?
+                </p>
+                <div style={{ background: '#f9fafb', borderRadius: '10px', padding: '14px 16px', border: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 800, fontSize: '18px', color: '#1f2937' }}>{cancelOrderTarget.queue_number}</span>
+                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>{cancelOrderTarget.order_id}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', color: '#6b7280' }}>
+                      {cancelOrderTarget.pay_method === 'promptpay' ? 'พร้อมเพย์' : 'เงินสด'}
+                    </span>
+                    <span style={{ fontWeight: 700, color: '#dc2626', fontSize: '16px' }}>฿{Number(cancelOrderTarget.total_amount).toFixed(2)}</span>
+                  </div>
+                </div>
+                <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  ⚠️ การยกเลิกออเดอร์จะไม่สามารถกู้คืนได้
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid #f3f4f6', background: '#f9fafb' }}>
+                <button onClick={() => { setShowCancelModal(false); setCancelOrderTarget(null); }} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#4b5563', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>ไม่ใช่</button>
+                <button onClick={() => { updateStatus(cancelOrderTarget.order_id, 'S06'); setShowCancelModal(false); setCancelOrderTarget(null); }} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#dc2626', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}><FaBan /> ยืนยันยกเลิก</button>
               </div>
             </div>
           </div>

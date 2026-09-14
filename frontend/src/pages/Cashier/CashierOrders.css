@@ -135,7 +135,8 @@
 
 .co-card-actions .approve,
 .co-card-actions .cooking,
-.co-card-actions .complete {
+.co-card-actions .complete,
+.co-card-actions .cancel-order {
   grid-column: span 2;
 }
 
@@ -163,6 +164,8 @@
 .co-action-btn.approve { background: #22c55e; color: white; }
 .co-action-btn.cooking { background: #f97316; color: white; }
 .co-action-btn.complete { background: #3b82f6; color: white; }
+.co-action-btn.cancel-order { background: #fee2e2; color: #dc2626; }
+.co-action-btn.cancel-order:hover { background: #dc2626; color: white; }
 .co-action-btn.full { width: 100%; }
 
 .co-loading, .co-empty {
