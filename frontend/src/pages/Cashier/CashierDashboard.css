@@ -61,6 +61,62 @@
   color: #b91c1c;
 }
 
+/* Sales Period Selector */
+.cd-sales-period-card {
+  position: relative;
+}
+
+.cd-sales-period-selector {
+  flex: 1;
+}
+
+.cd-sales-period-select {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 2px 0;
+  outline: none;
+  appearance: auto;
+  width: 100%;
+}
+
+.cd-sales-period-select:hover {
+  color: #374151;
+}
+
+.cd-sales-period-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cd-sales-period-input {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #374151;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cd-sales-period-input:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.08);
+}
+
+.cd-sales-period-orders {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
 /* Middle Grid */
 .cd-middle-grid {
   display: grid;
