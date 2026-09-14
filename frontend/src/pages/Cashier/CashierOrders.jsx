@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash, FaUtensils, FaShoppingBag, FaBan } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaClock, FaMoneyBillWave, FaQrcode, FaSyncAlt, FaReceipt, FaTrash, FaUtensils, FaShoppingBag, FaBan, FaExclamationTriangle } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import ReceiptSlip from '../../components/ReceiptSlip/ReceiptSlip';
 import './CashierOrders.css';
@@ -219,8 +219,8 @@ export default function CashierOrders() {
                       <FaCheck /> ลูกค้ารับแล้ว
                     </button>
                   )}
-                  {/* ปุ่มยกเลิกออเดอร์ — แสดงเฉพาะออเดอร์ที่ยังไม่เสร็จสิ้นหรือยกเลิก */}
-                  {order.Status_id !== 'S05' && order.Status_id !== 'S06' && (
+                  {/* ปุ่มยกเลิกออเดอร์ — แสดงเฉพาะสถานะ รอชำระเงิน (S01) และ รอดำเนินการ (S02) */}
+                  {(order.Status_id === 'S01' || order.Status_id === 'S02') && (
                     <button className="co-action-btn cancel-order" onClick={() => { setCancelOrderTarget(order); setShowCancelModal(true); }}>
                       <FaBan /> ยกเลิก
                     </button>
@@ -304,7 +304,7 @@ export default function CashierOrders() {
                     </button>
                   )}
                   {/* ปุ่มยกเลิกออเดอร์ใน Detail Modal */}
-                  {selectedOrder.Status_id !== 'S05' && selectedOrder.Status_id !== 'S06' && (
+                  {(selectedOrder.Status_id === 'S01' || selectedOrder.Status_id === 'S02') && (
                     <button className="co-action-btn cancel-order full" onClick={() => { setCancelOrderTarget(selectedOrder); setShowCancelModal(true); setSelectedOrder(null); }}>
                       <FaBan /> ยกเลิกออเดอร์
                     </button>
@@ -368,7 +368,7 @@ export default function CashierOrders() {
                   </div>
                 </div>
                 <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  ⚠️ การยกเลิกออเดอร์จะไม่สามารถกู้คืนได้
+                  <FaExclamationTriangle style={{ flexShrink: 0 }} /> การยกเลิกออเดอร์จะไม่สามารถกู้คืนได้
                 </p>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid #f3f4f6', background: '#f9fafb' }}>
