@@ -149,20 +149,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const [showClearOrdersModal, setShowClearOrdersModal] = useState(false);
-
-  const clearDailyOrders = async () => {
-    try {
-      const res = await apiFetch('/api/orders/clear', { method: 'DELETE' });
-      const data = await res.json();
-      showAlert(data.message || 'ล้างออเดอร์รายวันสำเร็จ', 'success');
-    } catch (err) {
-      console.error('Error clearing orders:', err);
-      showAlert('เกิดข้อผิดพลาดในการล้างออเดอร์', 'error');
-    } finally {
-      setShowClearOrdersModal(false);
-    }
-  };
 
   return (
     <BackofficeLayout role="admin">
@@ -173,9 +159,7 @@ export default function AdminDashboard() {
             <p className="admin-subtitle">รายชื่อพนักงานและสิทธิ์การเข้าใช้งาน</p>
           </div>
           <div className="admin-header-actions">
-            <button className="admin-btn danger" onClick={() => setShowClearOrdersModal(true)}>
-              <FaTrash /> ล้างออเดอร์รายวัน
-            </button>
+
             <button className="admin-btn outline" onClick={fetchEmployees}>
               <FaSyncAlt />
             </button>
@@ -319,26 +303,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Clear Daily Orders Confirm Modal */}
-        {showClearOrdersModal && (
-          <div className="admin-modal-overlay" onClick={() => setShowClearOrdersModal(false)}>
-            <div className="admin-modal" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-              <div className="admin-modal-header danger">
-                <h2 style={{ color: '#ef4444', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FaTrash /> ยืนยันการล้างออเดอร์รายวัน
-                </h2>
-              </div>
-              <div className="admin-modal-body" style={{ padding: '20px 0', color: '#4b5563', fontSize: '15px' }}>
-                <p>คุณแน่ใจหรือไม่ว่าต้องการ <strong>ล้างข้อมูลออเดอร์ทั้งหมด</strong> เพื่อเริ่มวันใหม่?</p>
-                <p style={{ marginTop: '8px', color: '#ef4444', fontSize: '13px' }}>* คิวและรหัสออเดอร์จะถูกรีเซ็ต การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
-              </div>
-              <div className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-                <button className="admin-btn outline" onClick={() => setShowClearOrdersModal(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#4b5563', fontWeight: 'bold', cursor: 'pointer' }}>ยกเลิก</button>
-                <button className="admin-btn danger" onClick={clearDailyOrders} style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>ยืนยันการล้างออเดอร์</button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Generic Alert Modal */}
         {adminAlert.show && (
