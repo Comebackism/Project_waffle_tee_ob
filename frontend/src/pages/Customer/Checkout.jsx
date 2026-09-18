@@ -46,6 +46,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     const [slipPreview, setSlipPreview] = useState(null);
     const [slipBase64, setSlipBase64] = useState(null);
     const [showAlertModal, setShowAlertModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Ref สำหรับ QR Code canvas
     const qrRef = useRef(null);
@@ -119,14 +120,17 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     };
 
     // กดยืนยันการชำระเงิน
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
+        if (isSubmitting) return;
+
         if (paymentMethod === 'promptpay' && !slipFile) {
             setShowAlertModal(true);
             return;
         }
 
+        setIsSubmitting(true);
         if (onConfirmOrder) {
-            onConfirmOrder({
+            await onConfirmOrder({
                 paymentMethod,
                 subtotal,
                 vat,
@@ -138,6 +142,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                 orderType
             });
         }
+        setIsSubmitting(false);
     };
 
     return (
@@ -358,8 +363,13 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
 
                 {/* ปุ่มยืนยัน / ยกเลิก */}
                 <div className="checkout-action-buttons">
-                    <button className="confirm-order-btn" onClick={handleConfirm}>
-                        ยืนยันการชำระเงิน
+                    <button 
+                        className={`confirm-order-btn ${isSubmitting ? 'submitting' : ''}`} 
+                        onClick={handleConfirm}
+                        disabled={isSubmitting}
+                        style={{ opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+                    >
+                        {isSubmitting ? 'กำลังดำเนินการ...' : 'ยืนยันการชำระเงิน'}
                     </button>
 
                     <button className="cancel-order-btn" onClick={onCancelOrder || onBack}>
