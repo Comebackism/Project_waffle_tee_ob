@@ -11,8 +11,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-});
-
 // ---- Auto-Archive Logic ----
 let lastArchiveCheckDate = new Date().toDateString();
 
