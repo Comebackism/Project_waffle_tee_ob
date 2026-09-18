@@ -11,7 +11,86 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+});
 
+// ---- Auto-Archive Logic ----
+let lastArchiveCheckDate = new Date().toDateString();
+
+const autoArchivePastOrders = async () => {
+  const client = await db.connect();
+  try {
+    // Check if there are any unarchived orders from before today
+    const checkRes = await client.query(`
+      SELECT DATE(created_at) as summary_date,
+             COUNT(*) as order_count,
+             COALESCE(SUM(total_amount), 0) as total_sales
+      FROM "Order"
+      WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false AND "Status_id" = 'S05'
+      GROUP BY DATE(created_at)
+    `);
+
+    if (checkRes.rows.length > 0) {
+      await client.query('BEGIN');
+      for (let row of checkRes.rows) {
+        const summaryDate = row.summary_date;
+        const orderCount = parseInt(row.order_count || 0);
+        const totalSales = parseFloat(row.total_sales || 0);
+
+        await client.query(`
+          INSERT INTO "Daily_Summary" (summary_date, total_orders, total_sales)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (summary_date) 
+          DO UPDATE SET 
+            total_orders = "Daily_Summary".total_orders + $2,
+            total_sales = "Daily_Summary".total_sales + $3
+        `, [summaryDate, orderCount, totalSales]);
+
+        const menuSummaryRes = await client.query(`
+          SELECT oi.menu_id, SUM(oi.quantity) as sold
+          FROM "Order_Item" oi
+          JOIN "Order" o ON oi.order_id = o.order_id
+          WHERE DATE(o.created_at) = $1 AND o."Status_id" = 'S05' AND o.is_archived = false
+          GROUP BY oi.menu_id
+        `, [summaryDate]);
+
+        for (let menuRow of menuSummaryRes.rows) {
+          await client.query(`
+            INSERT INTO "Daily_Menu_Summary" (summary_date, menu_id, quantity_sold)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (summary_date, menu_id) 
+            DO UPDATE SET 
+              quantity_sold = "Daily_Menu_Summary".quantity_sold + $3
+          `, [summaryDate, menuRow.menu_id, menuRow.sold]);
+        }
+      }
+      
+      await client.query(`
+        UPDATE "Order"
+        SET is_archived = true
+        WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false
+      `);
+      
+      await client.query('COMMIT');
+      console.log('Auto-archived past orders successfully');
+    } else {
+      // Archive other incomplete past orders
+      await client.query(`
+        UPDATE "Order"
+        SET is_archived = true
+        WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false
+      `);
+    }
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error auto-archiving:', err);
+  } finally {
+    client.release();
+  }
+};
+
+// Run once on startup
+autoArchivePastOrders();
+// ----------------------------
 
 // Create a new order
 exports.createOrder = async (req, res) => {
@@ -280,6 +359,12 @@ exports.getOrderById = async (req, res) => {
 
 // Get all orders for today (for dashboards)
 exports.getOrdersToday = async (req, res) => {
+  const currentDate = new Date().toDateString();
+  if (currentDate !== lastArchiveCheckDate) {
+    lastArchiveCheckDate = currentDate;
+    autoArchivePastOrders(); // Fire and forget
+  }
+
   try {
     const result = await db.query(`
       SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, ts.table_no
