@@ -59,13 +59,16 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
   }, [editingItem, product]);
 
   // ฟังก์ชันเพิ่ม/ลดจำนวนท็อปปิ้ง + animation
+  // คำนวณจำนวนท็อปปิ้งรวมทั้งหมดที่เลือกอยู่
+  const totalToppingsSelected = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0);
+
   const updateToppingQuantity = (id, change, event) => {
     event.stopPropagation();
     const currentQty = selectedToppings[id] || 0;
     const newQty = currentQty + change;
     
-    // ตั้งลิมิตท็อปปิ้งแต่ละชนิดไม่เกิน 3
-    if (newQty > 3) {
+    // ตั้งลิมิตท็อปปิ้งรวมทุกชนิดไม่เกิน 3 ชิ้น
+    if (change > 0 && totalToppingsSelected >= 3) {
       setShowToppingLimitModal(true);
       return;
     }
@@ -247,7 +250,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
             <div className="topping-card">
               <div className="topping-header">
                 <h3 className="topping-title">เลือกท็อปปิ้ง</h3>
-                <span className="topping-badge">เลือกได้หลายอย่าง</span>
+                <span className="topping-badge">เลือกได้สูงสุด 3 ชิ้น ({totalToppingsSelected}/3)</span>
               </div>
 
               <div className="topping-grid">
@@ -359,8 +362,8 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
             <div className="pd-modal-icon">
               <FaExclamationCircle />
             </div>
-            <h2>เพิ่มท็อปปิ้งได้สูงสุด 3 หน่วย</h2>
-            <p>ขออภัยครับ สามารถเพิ่มท็อปปิ้งแต่ละชนิดได้สูงสุด 3 หน่วยเท่านั้นครับ</p>
+            <h2>เพิ่มท็อปปิ้งได้สูงสุด 3 ชิ้น</h2>
+            <p>ขออภัยครับ สามารถเลือกท็อปปิ้งรวมทุกชนิดได้สูงสุด 3 ชิ้นเท่านั้นครับ</p>
             <button className="pd-btn-ok" onClick={() => setShowToppingLimitModal(false)}>
               ตกลง
             </button>
