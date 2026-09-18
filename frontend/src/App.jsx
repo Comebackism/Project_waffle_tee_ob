@@ -8,6 +8,7 @@ import ProductDetail from './pages/Customer/ProductDetail';
 import Cart from './pages/Customer/Cart';
 import Checkout from './pages/Customer/Checkout';
 import OrderStatus from './pages/Customer/OrderStatus';
+import CashWaiting from './pages/Customer/CashWaiting';
 import CashierDashboard from './pages/Cashier/CashierDashboard';  // Now Admin-only dashboard
 import CashierOrders from './pages/Cashier/CashierOrders';
 import KitchenKDS from './pages/Kitchen/KitchenKDS';
@@ -65,6 +66,9 @@ function CustomerApp() {
   // State for order tracking after checkout
   const [lastOrderId, setLastOrderId] = useState(null);
   const [lastQueueNumber, setLastQueueNumber] = useState(null);
+
+  // State for cash payment waiting
+  const [cashGrandTotal, setCashGrandTotal] = useState(0);
 
   // State for editing cart item
   const [editingCartItem, setEditingCartItem] = useState(null);
@@ -215,7 +219,14 @@ function CustomerApp() {
                 setLastQueueNumber(result.queue_number);
                 setCart([]);
                 setCartNote('');
-                setCurrentScreen('orderStatus');
+
+                // ถ้าจ่ายเงินสด -> ไปหน้ารอชำระเงินที่เคาน์เตอร์
+                if (orderData.paymentMethod === 'cash') {
+                  setCashGrandTotal(orderData.grandTotal);
+                  setCurrentScreen('cashWaiting');
+                } else {
+                  setCurrentScreen('orderStatus');
+                }
               } catch (err) {
                 console.error(err);
                 if (err.message.includes('QR Code นี้หมดอายุ') || err.message.includes('เซสชัน QR Code ไม่ถูกต้อง')) {
@@ -226,6 +237,19 @@ function CustomerApp() {
                 }
               }
             }}
+          />
+        );
+      case 'cashWaiting':
+        return (
+          <CashWaiting
+            orderId={lastOrderId}
+            grandTotal={cashGrandTotal}
+            onConfirmed={(orderId, queueNumber) => {
+              setLastOrderId(orderId);
+              setLastQueueNumber(queueNumber);
+              setCurrentScreen('orderStatus');
+            }}
+            onBack={() => setCurrentScreen('home')}
           />
         );
       case 'orderStatus':
@@ -269,7 +293,7 @@ function CustomerApp() {
 
   return (
     <CustomerLayout
-      showBottomNav={currentScreen !== 'detail' && currentScreen !== 'checkout' && currentScreen !== 'orderStatus'}
+      showBottomNav={currentScreen !== 'detail' && currentScreen !== 'checkout' && currentScreen !== 'orderStatus' && currentScreen !== 'cashWaiting'}
       currentScreen={currentScreen}
       onNavigate={(screen) => setCurrentScreen(screen)}
       onViewOrder={(id) => {
