@@ -36,7 +36,10 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // 1. Generate order_id using MAX instead of COUNT to prevent duplicates if rows are deleted
+    // 1. Advisory lock to prevent concurrent order creation from generating duplicate IDs
+    await db.query('SELECT pg_advisory_xact_lock(1)');
+
+    // 2. Generate order_id using MAX instead of COUNT to prevent duplicates if rows are deleted
     const lastOrderResult = await db.query('SELECT order_id FROM "Order" ORDER BY order_id DESC LIMIT 1');
     let orderCount = 1;
     if (lastOrderResult.rows.length > 0) {
@@ -48,9 +51,19 @@ exports.createOrder = async (req, res) => {
     }
     const order_id = `ORD-${String(orderCount).padStart(5, '0')}`;
 
-    // 2. Generate queue_number (exclude cancelled orders)
-    const queueCountResult = await db.query('SELECT COUNT(*) FROM "Order" WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false AND "Status_id" != \'S06\'');
-    const queueCount = parseInt(queueCountResult.rows[0].count) + 1;
+    // 3. Generate queue_number using MAX to prevent duplicates (even after cancellations)
+    const queueMaxResult = await db.query(`
+      SELECT queue_number FROM "Order" 
+      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false 
+      ORDER BY queue_number DESC LIMIT 1
+    `);
+    let queueCount = 1;
+    if (queueMaxResult.rows.length > 0 && queueMaxResult.rows[0].queue_number) {
+      const match = queueMaxResult.rows[0].queue_number.match(/#Q(\d+)/);
+      if (match) {
+        queueCount = parseInt(match[1], 10) + 1;
+      }
+    }
     const queue_number = `#Q${String(queueCount).padStart(3, '0')}`;
 
     // Handle base64 slip_picture
