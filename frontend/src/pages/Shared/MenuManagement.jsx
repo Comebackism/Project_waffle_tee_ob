@@ -209,7 +209,7 @@ export default function MenuManagement({ role }) {
         </div>
         <div className="mm-card-body">
           <h3 className="mm-card-title">{item.name}</h3>
-          <p className="mm-card-price">฿{item.price}</p>
+          <p className="mm-card-price">{item.price} บาท</p>
           
           <div className="mm-card-actions">
             {/* ใหม่: ปุ่ม View มุมมองลูกค้า */}
@@ -538,7 +538,7 @@ export default function MenuManagement({ role }) {
                 <div className="mm-preview-info-card">
                   <div className="mm-preview-title-row">
                     <h2 className="mm-preview-title">{previewItem.name}</h2>
-                    <span className="mm-preview-price">฿{previewItem.price}</span>
+                    <span className="mm-preview-price">{previewItem.price} บาท</span>
                   </div>
                   <p className="mm-preview-description">
                     {previewItem.description ? previewItem.description.replace(/🔥/g, '').trim() : 'ไม่มีคำอธิบาย'}
@@ -554,7 +554,7 @@ export default function MenuManagement({ role }) {
                     <span className="mm-preview-qty-btn"><FaPlus style={{ fontSize: '10px' }} /></span>
                   </div>
                   <div className="mm-preview-cart-btn">
-                    <FaShoppingCart style={{ marginRight: '6px' }} /> เพิ่มลงตะกร้า • ฿{previewItem.price}
+                    <FaShoppingCart style={{ marginRight: '6px' }} /> เพิ่มลงตะกร้า • {previewItem.price} บาท
                   </div>
                 </div>
               </div>
@@ -589,7 +589,7 @@ export default function MenuManagement({ role }) {
                 </div>
                 <div style={{ padding: '20px 24px' }}>
                   <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: '#1f2937' }}>{detailItem.name}</h3>
-                  <p style={{ margin: '0 0 16px 0', fontSize: '22px', fontWeight: 700, color: '#4f46e5' }}>฿{detailItem.price}</p>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '22px', fontWeight: 700, color: '#4f46e5' }}>{detailItem.price} บาท</p>
                   <div className="mm-detail-info-grid">
                     <div className="mm-detail-info-item">
                       <span className="mm-detail-info-label">รหัส</span>

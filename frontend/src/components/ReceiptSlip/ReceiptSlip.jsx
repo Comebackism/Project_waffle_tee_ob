@@ -117,7 +117,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
                       {item.quantity}x {item.menu_name}
                     </span>
                     <span className="receipt-item-price">
-                      ฿{(Number(item.menu_price || 0) * (item.quantity || 1)).toFixed(0)}
+                      {(Number(item.menu_price || 0) * (item.quantity || 1)).toFixed(0)} บาท
                     </span>
                   </div>
 
@@ -125,7 +125,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
                   {item.toppings && item.toppings.map((top, tIdx) => (
                     <div key={tIdx} className="receipt-topping-row">
                       <span className="receipt-topping-name">+ {top.topping_name || top.name} {top.quantity > 1 ? `x${top.quantity}` : ''}</span>
-                      <span className="receipt-topping-price">+ ฿{Number(top.topping_price || top.price || 0) * (top.quantity || 1) * (item.quantity || 1)}</span>
+                      <span className="receipt-topping-price">+ {(Number(top.topping_price || top.price || 0) * (top.quantity || 1) * (item.quantity || 1)).toFixed(0)} บาท</span>
                     </div>
                   ))}
                 </div>
@@ -153,7 +153,7 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
 
             <div className="receipt-total-row">
               <span className="receipt-total-label">ยอดสุทธิ</span>
-              <span className="receipt-total-val">฿{grandTotal.toFixed(2)}</span>
+              <span className="receipt-total-val">{grandTotal.toFixed(2)} บาท</span>
             </div>
 
             <div className="receipt-pay-method-row">

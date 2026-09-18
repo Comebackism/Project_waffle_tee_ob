@@ -15,32 +15,33 @@ cloudinary.config({
 
 // Create a new order
 exports.createOrder = async (req, res) => {
+  const client = await db.connect();
   try {
     const { items, pay_method, total_amount, slip_picture, note, total_calories, session_id, order_type = 'takeaway' } = req.body;
     
     // items = [{ menu_id, quantity, toppings: [{topping_id, quantity}] }]
 
     // Start transaction
-    await db.query('BEGIN');
+    await client.query('BEGIN');
 
     // 0. Validate session if provided (to prevent ordering on expired QR codes)
     if (session_id) {
-      const sessionResult = await db.query('SELECT is_active FROM "Table_Session" WHERE session_id = $1', [session_id]);
+      const sessionResult = await client.query('SELECT is_active FROM "Table_Session" WHERE session_id = $1', [session_id]);
       if (sessionResult.rows.length === 0) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         return res.status(400).json({ message: 'เซสชัน QR Code ไม่ถูกต้อง' });
       }
       if (!sessionResult.rows[0].is_active) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         return res.status(403).json({ message: 'QR Code นี้หมดอายุหรือถูกปิดไปแล้ว กรุณาสแกนใหม่' });
       }
     }
 
     // 1. Advisory lock to prevent concurrent order creation from generating duplicate IDs
-    await db.query('SELECT pg_advisory_xact_lock(1)');
+    await client.query('SELECT pg_advisory_xact_lock(1)');
 
     // 2. Generate order_id using MAX instead of COUNT to prevent duplicates if rows are deleted
-    const lastOrderResult = await db.query('SELECT order_id FROM "Order" ORDER BY order_id DESC LIMIT 1');
+    const lastOrderResult = await client.query('SELECT order_id FROM "Order" ORDER BY order_id DESC LIMIT 1');
     let orderCount = 1;
     if (lastOrderResult.rows.length > 0) {
       const lastId = lastOrderResult.rows[0].order_id;
@@ -52,7 +53,7 @@ exports.createOrder = async (req, res) => {
     const order_id = `ORD-${String(orderCount).padStart(5, '0')}`;
 
     // 3. Generate queue_number using MAX to prevent duplicates (even after cancellations)
-    const queueMaxResult = await db.query(`
+    const queueMaxResult = await client.query(`
       SELECT queue_number FROM "Order" 
       WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false 
       ORDER BY queue_number DESC LIMIT 1
@@ -91,13 +92,13 @@ exports.createOrder = async (req, res) => {
               });
               
               if (!slipOkResponse.data.success) {
-                  await db.query('ROLLBACK');
+                  await client.query('ROLLBACK');
                   return res.status(400).json({ message: 'สลิปไม่ถูกต้อง หรือไม่สามารถตรวจสอบสลิปนี้ได้' });
               }
               
               const slipData = slipOkResponse.data.data;
               if (Number(slipData.amount) !== Number(total_amount)) {
-                  await db.query('ROLLBACK');
+                  await client.query('ROLLBACK');
                   return res.status(400).json({ message: `ยอดเงินในสลิป (${slipData.amount} บาท) ไม่ตรงกับค่าอาหาร (${total_amount} บาท)` });
               }
               
@@ -110,20 +111,20 @@ exports.createOrder = async (req, res) => {
                                       receiverProxy.includes('828072613'); // without leading 0 in case of +66 or format differences
 
               if (!isValidReceiver) {
-                  await db.query('ROLLBACK');
+                  await client.query('ROLLBACK');
                   return res.status(400).json({ message: 'ชื่อผู้รับเงินหรือเบอร์พร้อมเพย์ในสลิป ไม่ตรงกับบัญชีของทางร้าน' });
               }
               
               if (slipData.transRef) {
-                  const checkDupResult = await db.query('SELECT order_id FROM "Order" WHERE slip_trans_ref = $1 LIMIT 1', [slipData.transRef]);
+                  const checkDupResult = await client.query('SELECT order_id FROM "Order" WHERE slip_trans_ref = $1 LIMIT 1', [slipData.transRef]);
                   if (checkDupResult.rows.length > 0) {
-                      await db.query('ROLLBACK');
+                      await client.query('ROLLBACK');
                       return res.status(400).json({ message: 'สลิปนี้ถูกใช้งานไปแล้วในระบบ' });
                   }
                   slip_trans_ref = slipData.transRef;
               }
           } catch (error) {
-              await db.query('ROLLBACK');
+              await client.query('ROLLBACK');
               const slipError = error.response?.data?.message || 'เกิดข้อผิดพลาดในการตรวจสอบสลิป (อาจเป็นสลิปปลอม หรือรูปภาพอ่าน QR ไม่ได้)';
               console.error("SlipOK Error:", error.response?.data || error.message);
               return res.status(400).json({ message: slipError });
@@ -139,7 +140,7 @@ exports.createOrder = async (req, res) => {
             final_slip_picture = cloudinaryResult.secure_url;
         } catch (error) {
             console.error('Cloudinary slip upload error:', error);
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกรูปสลิป' });
         }
       }
@@ -147,7 +148,7 @@ exports.createOrder = async (req, res) => {
 
     // 3. Insert Order (Status: S01 = รอชำระเงิน, or set pay_time if paid)
     const isPaid = pay_method === 'promptpay' && final_slip_picture;
-    const orderResult = await db.query(
+    const orderResult = await client.query(
       `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref, session_id, order_type) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
       [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null, slip_trans_ref, session_id, order_type]
@@ -157,7 +158,7 @@ exports.createOrder = async (req, res) => {
     let item_counter = 1;
     for (const item of items) {
       const order_item_id = `${order_id}-I${item_counter}`;
-      await db.query(
+      await client.query(
         `INSERT INTO "Order_Item" (order_item_id, order_id, menu_id, quantity) VALUES ($1, $2, $3, $4)`,
         [order_item_id, order_id, item.menu_id, item.quantity]
       );
@@ -165,7 +166,7 @@ exports.createOrder = async (req, res) => {
       // 5. Insert Toppings for the item
       if (item.toppings && item.toppings.length > 0) {
         for (const t of item.toppings) {
-          await db.query(
+          await client.query(
             `INSERT INTO "Order_Item_Topping" (order_item_id, topping_id, quantity) VALUES ($1, $2, $3)`,
             [order_item_id, t.topping_id, t.quantity]
           );
@@ -174,14 +175,16 @@ exports.createOrder = async (req, res) => {
       item_counter++;
     }
 
-    await db.query('COMMIT');
+    await client.query('COMMIT');
 
     res.status(201).json({ message: 'Order created', order_id, queue_number });
 
   } catch (err) {
-    await db.query('ROLLBACK');
+    await client.query('ROLLBACK');
     console.error(err.message);
     res.status(500).send('Server Error');
+  } finally {
+    client.release();
   }
 };
 

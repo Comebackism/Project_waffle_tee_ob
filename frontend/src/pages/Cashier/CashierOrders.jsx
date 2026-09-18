@@ -185,7 +185,7 @@ export default function CashierOrders() {
                     <span>{new Date(order.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   <div className="co-card-total">
-                    ฿{Number(order.total_amount).toFixed(2)}
+                    {Number(order.total_amount).toFixed(2)} บาท
                   </div>
                   {order.note && (
                     <div className="co-card-note" style={{ marginTop: '8px', fontSize: '13px', color: '#ef4444', background: '#fee2e2', padding: '6px 10px', borderRadius: '6px' }}>
@@ -247,14 +247,14 @@ export default function CashierOrders() {
                     <div key={idx} style={{ marginBottom: '8px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', color: '#374151' }}>
                         <span>{item.quantity}x {item.menu_name}</span>
-                        <span>฿{(Number(item.menu_price || 0) * item.quantity).toFixed(2)}</span>
+                        <span>{(Number(item.menu_price || 0) * item.quantity).toFixed(2)} บาท</span>
                       </div>
                       {item.toppings && item.toppings.length > 0 && (
                         <div style={{ paddingLeft: '20px', fontSize: '13px', color: '#6b7280' }}>
                           {item.toppings.map((t, i) => (
                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span>+ {t.topping_name} {t.quantity > 1 ? `x${t.quantity}` : ''}</span>
-                              {Number(t.topping_price || 0) > 0 && <span>+ ฿{(Number(t.topping_price || 0) * (t.quantity || 1)).toFixed(2)}</span>}
+                              {Number(t.topping_price || 0) > 0 && <span>+ {(Number(t.topping_price || 0) * (t.quantity || 1)).toFixed(2)} บาท</span>}
                             </div>
                           ))}
                         </div>
@@ -264,7 +264,7 @@ export default function CashierOrders() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '15px' }}>
                   <strong>ยอดรวมทั้งสิ้น:</strong>
-                  <strong style={{ color: '#e11d48' }}>฿{Number(selectedOrder.total_amount).toFixed(2)}</strong>
+                  <strong style={{ color: '#e11d48' }}>{Number(selectedOrder.total_amount).toFixed(2)} บาท</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', color: '#4b5563' }}>
                   <strong>วิธีชำระเงิน:</strong>
@@ -364,7 +364,7 @@ export default function CashierOrders() {
                     <span style={{ fontSize: '13px', color: '#6b7280' }}>
                       {cancelOrderTarget.pay_method === 'promptpay' ? 'พร้อมเพย์' : 'เงินสด'}
                     </span>
-                    <span style={{ fontWeight: 700, color: '#dc2626', fontSize: '16px' }}>฿{Number(cancelOrderTarget.total_amount).toFixed(2)}</span>
+                    <span style={{ fontWeight: 700, color: '#dc2626', fontSize: '16px' }}>{Number(cancelOrderTarget.total_amount).toFixed(2)} บาท</span>
                   </div>
                 </div>
                 <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>

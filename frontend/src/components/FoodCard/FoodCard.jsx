@@ -16,7 +16,7 @@ export default function FoodCard({ name, description, price, image, isFavorite, 
         <p className="food-card-desc">{description ? description.replace(/🔥/g, '').trim() : ''}</p>
         
         <div className="food-card-action">
-          <span className="food-card-price">฿{price}</span>
+          <span className="food-card-price">{price} บาท</span>
           <button className="food-card-add-btn" disabled={!isActive}>
             <FaPlus />
           </button>

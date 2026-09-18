@@ -118,7 +118,7 @@ export default function MyOrders({ onBack, onViewOrder }) {
                       </span>
                     ))}
                   </div>
-                  <div className="mo-total">฿{Number(order.total_amount).toFixed(2)}</div>
+                  <div className="mo-total">{Number(order.total_amount).toFixed(2)} บาท</div>
                 </div>
 
                 <div className="mo-card-footer">

@@ -169,7 +169,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                                     </div>
                                     <div className="checkout-item-price-group">
                                         <span className="checkout-price-main">
-                                            ฿{baseTotal} <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginLeft: '4px' }}>{Number(item.baseCalories || 0) * item.quantity} kcal</span>
+                                            {baseTotal} บาท <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginLeft: '4px' }}>{Number(item.baseCalories || 0) * item.quantity} kcal</span>
                                         </span>
                                         {toppingsTotal > 0 && (
                                             <span className="checkout-price-sub">+ {toppingsTotal * item.quantity} บาท</span>
@@ -257,7 +257,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                 <div className="checkout-summary-card">
                     <div className="summary-line">
                         <span>ยอดรวม</span>
-                        <span className="summary-val">฿{subtotal.toFixed(2)}</span>
+                        <span className="summary-val">{subtotal.toFixed(2)} บาท</span>
                     </div>
 
                     <div className="summary-line" style={{ color: '#6b7280', marginTop: '4px' }}>
@@ -269,7 +269,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
 
                     <div className="summary-line total-line">
                         <span className="summary-total-label">ยอดสุทธิ</span>
-                        <span className="summary-total-price">฿{grandTotal.toFixed(2)}</span>
+                        <span className="summary-total-price">{grandTotal.toFixed(2)} บาท</span>
                     </div>
                 </div>
 

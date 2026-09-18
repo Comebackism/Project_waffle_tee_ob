@@ -50,7 +50,7 @@ export default function CashWaiting({ orderId, grandTotal, onConfirmed, onBack }
           {/* ยอดที่ต้องจ่าย */}
           <div className="cw-amount-card">
             <p className="cw-amount-label">ยอดที่ต้องชำระ</p>
-            <p className="cw-amount-value">฿{Number(grandTotal).toFixed(2)}</p>
+            <p className="cw-amount-value">{Number(grandTotal).toFixed(2)} บาท</p>
             <p className="cw-order-id">เลขออเดอร์: {orderId}</p>
           </div>
 

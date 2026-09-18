@@ -125,7 +125,7 @@ export default function Cart({
                                             {/* ราคา และ ปุ่มเพิ่ม/ลด จำนวน */}
                                             <div className="cart-item-bottom">
                                                 <span className="cart-item-price">
-                                                    ฿{getItemUnitPrice(item) * item.quantity} <span style={{fontSize: '13px', color: '#6b7280', fontWeight: 'normal', marginLeft: '6px'}}>{getItemUnitCalories(item) * item.quantity} kcal</span>
+                                                    {getItemUnitPrice(item) * item.quantity} บาท <span style={{fontSize: '13px', color: '#6b7280', fontWeight: 'normal', marginLeft: '6px'}}>{getItemUnitCalories(item) * item.quantity} kcal</span>
                                                 </span>
 
                                                 <div className="cart-qty-control">
@@ -180,7 +180,7 @@ export default function Cart({
                             <div className="cart-summary-card">
                                 <div className="summary-row">
                                     <span>ยอดรวมสินค้า ({totalQuantity} ชิ้น)</span>
-                                    <span>฿{totalAmount}</span>
+                                    <span>{totalAmount} บาท</span>
                                 </div>
                                 <div className="summary-row" style={{ color: '#6b7280', marginTop: '8px' }}>
                                     <span>ปริมาณแคลอรีรวม</span>
@@ -191,7 +191,7 @@ export default function Cart({
 
                                 <div className="summary-total-row">
                                     <span className="summary-total-label">ยอดสุทธิ</span>
-                                    <span className="summary-total-price">฿{totalAmount}</span>
+                                    <span className="summary-total-price">{totalAmount} บาท</span>
                                 </div>
 
                                 <button className="cart-checkout-btn" onClick={onGoToCheckout}>

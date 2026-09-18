@@ -182,7 +182,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
                     </div>
                   )}
                 </div>
-                <span className="os-item-price">฿{calculateItemTotal(item)}</span>
+                <span className="os-item-price">{calculateItemTotal(item)} บาท</span>
               </div>
             ))}
           </div>
@@ -199,7 +199,7 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
         {/* Total */}
         <div className="os-total-card">
           <span>ยอดรวม</span>
-          <span className="os-total-price">฿{Number(order.total_amount).toFixed(2)}</span>
+          <span className="os-total-price">{Number(order.total_amount).toFixed(2)} บาท</span>
         </div>
 
         {/* Receipt / Slip Button - Only show if NOT waiting for payment and NOT cancelled */}

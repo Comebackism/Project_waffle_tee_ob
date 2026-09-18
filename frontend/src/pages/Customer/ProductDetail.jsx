@@ -233,7 +233,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
           <div className="product-main-card">
             <div className="product-title-price">
               <h2 className="product-title">{product.name}</h2>
-              <span className="product-price">฿{basePrice}</span>
+              <span className="product-price">{basePrice} บาท</span>
             </div>
             <p className="product-description">
               {product.description ? product.description.replace(/🔥/g, '').trim() : ''}
@@ -335,7 +335,7 @@ export default function ProductDetail({ productId = 2, onBack, onAddToCart, edit
         {/* ปุ่มกดเพิ่มลงตะกร้า หรือ อัปเดต (ใส่ onClick แล้ว 👈) */}
         <button className="add-to-cart-btn" onClick={editingItem ? handleUpdateCartClick : handleAddToCartClick} ref={cartTargetRef}>
           <FaShoppingCart />
-          <span>{editingItem ? `อัปเดตตะกร้า • ฿${totalPrice}` : `เพิ่มลงตะกร้า • ฿${totalPrice}`}</span>
+          <span>{editingItem ? `อัปเดตตะกร้า • ${totalPrice} บาท` : `เพิ่มลงตะกร้า • ${totalPrice} บาท`}</span>
         </button>
       </div>
 
