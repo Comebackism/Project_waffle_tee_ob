@@ -270,7 +270,7 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                                 alignItems: 'center',
                                 gap: '8px'
                             }}>
-                                <span style={{ fontSize: '18px' }}>⚠️</span>
+                                <FaExclamationCircle style={{ fontSize: '18px', color: '#ea580c' }} />
                                 <span style={{ lineHeight: '1.4' }}>
                                     <strong>ข้อควรระวัง:</strong> ถ้าสั่งกลับบ้าน โปรดสั่งให้เรียบร้อยในบิลเดียว เนื่องจากหลังจากสั่งเสร็จ QR Code ของโต๊ะนี้จะถูกปิดลง
                                 </span>
