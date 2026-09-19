@@ -21,39 +21,29 @@ export default function Navbar({ sessionId, cartCount = 0, onCartClick, onOrderC
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        let sessionOrders = [];
-        let localOrders = [];
-
         if (sessionId) {
           // Shared table mode: fetch from backend
           const res = await fetch(`${API_BASE}/api/orders/session/${sessionId}`);
           if (res.ok) {
-            sessionOrders = await res.json();
+            const data = await res.json();
+            const active = data.filter(r => r.Status_id !== 'S05' && r.Status_id !== 'S06');
+            // Data is already sorted by created_at DESC from backend
+            setActiveOrders(active);
           }
-        }
-
-        // Fetch local storage orders (Personal History)
-        const savedStr = localStorage.getItem('myOrders');
-        if (savedStr) {
+        } else {
+          // Fallback: read from localStorage (e.g. for takeaway without session)
+          const savedStr = localStorage.getItem('myOrders');
+          if (!savedStr) return;
+          
           const orderIds = JSON.parse(savedStr);
-          if (orderIds.length > 0) {
-            const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
-            const results = await Promise.all(promises);
-            localOrders = results.filter(r => r !== null);
-          }
+          if (orderIds.length === 0) return;
+
+          const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
+          const results = await Promise.all(promises);
+          
+          const active = results.filter(r => r !== null && r.Status_id !== 'S05' && r.Status_id !== 'S06').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+          setActiveOrders(active);
         }
-
-        // Combine and remove duplicates
-        const allOrdersMap = new Map();
-        localOrders.forEach(o => allOrdersMap.set(o.order_id, o));
-        sessionOrders.forEach(o => allOrdersMap.set(o.order_id, o));
-
-        const combined = Array.from(allOrdersMap.values());
-        
-        const active = combined.filter(r => r.Status_id !== 'S05' && r.Status_id !== 'S06')
-                               .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        setActiveOrders(active);
       } catch (err) {
         console.error('Error fetching notifications:', err);
       }
