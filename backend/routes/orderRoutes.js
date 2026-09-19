@@ -7,6 +7,7 @@ router.post('/', orderController.createOrder);             // Public: ลูก�
 router.get('/', auth, orderController.getOrders);           // Protected
 router.get('/today', auth, orderController.getOrdersToday); // Protected
 router.delete('/clear', auth, orderController.clearAllOrders); // Protected
+router.get('/session/:sessionId', orderController.getOrdersBySession); // Public: ลูกค้าดูประวัติโต๊ะ
 router.get('/:id', orderController.getOrderById);           // Public: ลูกค้าดูสถานะ
 router.put('/:id/status', orderController.updateOrderStatus); // Public: ลูกค้ากดยกเลิกได้ / พนักงานกดเปลี่ยนสถานะ
 

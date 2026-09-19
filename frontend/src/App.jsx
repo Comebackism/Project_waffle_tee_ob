@@ -261,7 +261,7 @@ function CustomerApp() {
           />
         );
       case 'myOrders':
-        return <MyOrders onBack={() => setCurrentScreen('home')} onViewOrder={(id) => {
+        return <MyOrders sessionId={sessionId} onBack={() => setCurrentScreen('home')} onViewOrder={(id) => {
           setLastOrderId(id);
           setLastQueueNumber(null); // It will fetch dynamically
           setCurrentScreen('orderStatus');

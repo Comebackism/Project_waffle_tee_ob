@@ -14,7 +14,7 @@ const STATUS_MAP = {
 
 import { API_BASE } from '../../utils/api';
 
-export default function MyOrders({ onBack, onViewOrder }) {
+export default function MyOrders({ sessionId, onBack, onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [receiptOrder, setReceiptOrder] = useState(null);
@@ -22,25 +22,35 @@ export default function MyOrders({ onBack, onViewOrder }) {
 
   useEffect(() => {
     const fetchMyOrders = async () => {
-      const savedStr = localStorage.getItem('myOrders');
-      if (!savedStr) {
-        setLoading(false);
-        return;
-      }
-      
-      const orderIds = JSON.parse(savedStr);
-      if (orderIds.length === 0) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
-        const results = await Promise.all(promises);
-        
-        // Filter out nulls and sort by latest
-        const validOrders = results.filter(r => r !== null).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        setOrders(validOrders);
+        if (sessionId) {
+          // Shared table mode: Fetch all orders for this session from backend
+          const res = await fetch(`${API_BASE}/api/orders/session/${sessionId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setOrders(data);
+          }
+        } else {
+          // Fallback: Read from localStorage
+          const savedStr = localStorage.getItem('myOrders');
+          if (!savedStr) {
+            setLoading(false);
+            return;
+          }
+          
+          const orderIds = JSON.parse(savedStr);
+          if (orderIds.length === 0) {
+            setLoading(false);
+            return;
+          }
+
+          const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
+          const results = await Promise.all(promises);
+          
+          // Filter out nulls and sort by latest
+          const validOrders = results.filter(r => r !== null).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+          setOrders(validOrders);
+        }
       } catch (err) {
         console.error('Error fetching my orders:', err);
       } finally {
@@ -49,7 +59,7 @@ export default function MyOrders({ onBack, onViewOrder }) {
     };
 
     fetchMyOrders();
-  }, []);
+  }, [sessionId]);
 
   const handleCancelClick = (e, orderId) => {
     e.stopPropagation();

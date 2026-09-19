@@ -355,6 +355,59 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+// Get all orders for a specific session
+exports.getOrdersBySession = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    // 1. Get orders for this session (only today's orders that are not archived)
+    const ordersResult = await db.query(`
+      SELECT o.*, s.statusname, u.firstname, u.lastname, u.username, ts.table_no
+      FROM "Order" o 
+      JOIN "Status" s ON o."Status_id" = s.status_id
+      LEFT JOIN "User" u ON o.user_id = u.user_id
+      LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
+      WHERE o.session_id = $1 AND DATE(o.created_at) = CURRENT_DATE AND o.is_archived = false
+      ORDER BY o.created_at DESC
+    `, [sessionId]);
+
+    if (ordersResult.rows.length === 0) {
+      return res.json([]);
+    }
+
+    const orders = ordersResult.rows;
+
+    // 2. Fetch items and toppings for each order
+    for (let order of orders) {
+      const itemsResult = await db.query(`
+        SELECT oi.*, m.name as menu_name, m.price as menu_price, m."Picture" as menu_picture
+        FROM "Order_Item" oi
+        JOIN "Menu" m ON oi.menu_id = m.menu_id
+        WHERE oi.order_id = $1
+        ORDER BY oi.order_item_id ASC
+      `, [order.order_id]);
+
+      for (let item of itemsResult.rows) {
+        const toppingsResult = await db.query(`
+          SELECT oit.*, t.name as topping_name, t.price as topping_price
+          FROM "Order_Item_Topping" oit
+          JOIN "Topping" t ON oit.topping_id = t.topping_id
+          WHERE oit.order_item_id = $1
+        `, [item.order_item_id]);
+        item.toppings = toppingsResult.rows;
+      }
+      
+      order.items = itemsResult.rows;
+    }
+
+    res.json(orders);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 // Get all orders for today (for dashboards)
 exports.getOrdersToday = async (req, res) => {
   const currentDate = new Date().toDateString();
