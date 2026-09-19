@@ -138,7 +138,9 @@ export default function KitchenKDS() {
               <div className="kds-task-header">
                 <span className="kds-task-id">{order.queue_number}</span>
                 {order.order_type === 'takeaway' ? (
-                  <span style={{ background: '#f97316', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}><FaShoppingBag /> กลับบ้าน</span>
+                  <span style={{ background: '#f97316', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                    <FaShoppingBag /> กลับบ้าน {order.table_no && !order.table_no.startsWith('หน้าร้าน') ? `(โต๊ะ ${order.table_no})` : ''}
+                  </span>
                 ) : (
                   <span style={{ background: '#3b82f6', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                     <FaUtensils /> ทานที่ร้าน {order.table_no ? `(โต๊ะ ${order.table_no})` : ''}

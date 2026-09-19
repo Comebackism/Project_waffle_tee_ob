@@ -144,7 +144,10 @@ export default function CashierOrders() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     {order.order_type === 'takeaway' ? (
-                      <span className="co-status-badge" style={{ backgroundColor: '#f97316', display: 'flex', alignItems: 'center', gap: '4px' }}><FaShoppingBag /> กลับบ้าน</span>
+                      <span className="co-status-badge" style={{ backgroundColor: '#f97316', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FaShoppingBag /> 
+                        กลับบ้าน {order.table_no && !order.table_no.startsWith('หน้าร้าน') ? `(จากโต๊ะ ${order.table_no})` : ''}
+                      </span>
                     ) : (
                       <span className="co-status-badge" style={{ backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px' }}><FaUtensils /> ทานที่ร้าน {order.table_no ? `(โต๊ะ ${order.table_no})` : ''}</span>
                     )}
