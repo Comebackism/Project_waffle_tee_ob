@@ -23,34 +23,37 @@ export default function MyOrders({ sessionId, onBack, onViewOrder }) {
   useEffect(() => {
     const fetchMyOrders = async () => {
       try {
+        let sessionOrders = [];
+        let localOrders = [];
+
+        // 1. Fetch Shared Table Orders (if sessionId exists)
         if (sessionId) {
-          // Shared table mode: Fetch all orders for this session from backend
           const res = await fetch(`${API_BASE}/api/orders/session/${sessionId}`);
           if (res.ok) {
-            const data = await res.json();
-            setOrders(data);
+            sessionOrders = await res.json();
           }
-        } else {
-          // Fallback: Read from localStorage
-          const savedStr = localStorage.getItem('myOrders');
-          if (!savedStr) {
-            setLoading(false);
-            return;
-          }
-          
-          const orderIds = JSON.parse(savedStr);
-          if (orderIds.length === 0) {
-            setLoading(false);
-            return;
-          }
-
-          const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
-          const results = await Promise.all(promises);
-          
-          // Filter out nulls and sort by latest
-          const validOrders = results.filter(r => r !== null).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-          setOrders(validOrders);
         }
+
+        // 2. Fetch LocalStorage Orders (Personal History)
+        const savedStr = localStorage.getItem('myOrders');
+        if (savedStr) {
+          const orderIds = JSON.parse(savedStr);
+          if (orderIds.length > 0) {
+            const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
+            const results = await Promise.all(promises);
+            localOrders = results.filter(r => r !== null);
+          }
+        }
+
+        // 3. Combine and remove duplicates
+        const allOrdersMap = new Map();
+        localOrders.forEach(o => allOrdersMap.set(o.order_id, o));
+        sessionOrders.forEach(o => allOrdersMap.set(o.order_id, o));
+
+        const combinedOrders = Array.from(allOrdersMap.values());
+        combinedOrders.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        setOrders(combinedOrders);
       } catch (err) {
         console.error('Error fetching my orders:', err);
       } finally {
