@@ -90,6 +90,9 @@ exports.validateSession = async (req, res) => {
 // Get all active sessions (for cashier dashboard)
 exports.getActiveSessions = async (req, res) => {
   try {
+    // Auto-deactivate any sessions that have expired
+    await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE is_active = TRUE AND expires_at < CURRENT_TIMESTAMP`);
+
     const result = await db.query(
       `SELECT * FROM "Table_Session" WHERE is_active = TRUE ORDER BY created_at DESC`
     );
