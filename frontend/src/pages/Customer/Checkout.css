@@ -82,35 +82,43 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 12px;
 }
 
 .checkout-item-title-group {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1;
 }
 
 .checkout-item-name {
     font-size: 1.05rem;
     font-weight: 700;
     color: #111827;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
 .checkout-item-qty {
     font-size: 0.9rem;
     color: #6b7280;
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .checkout-item-price-group {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    flex-shrink: 0;
 }
 
 .checkout-price-main {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 800;
     color: #c8102e;
+    white-space: nowrap;
 }
 
 .checkout-price-sub {
