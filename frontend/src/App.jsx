@@ -293,6 +293,7 @@ function CustomerApp() {
 
   return (
     <CustomerLayout
+      sessionId={sessionId}
       showBottomNav={currentScreen !== 'detail' && currentScreen !== 'checkout' && currentScreen !== 'orderStatus' && currentScreen !== 'cashWaiting'}
       currentScreen={currentScreen}
       onNavigate={(screen) => setCurrentScreen(screen)}

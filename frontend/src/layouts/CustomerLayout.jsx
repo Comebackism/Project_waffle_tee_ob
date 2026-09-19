@@ -5,6 +5,7 @@ import BottomNavbar from '../components/BottomNavbar/BottomNavbar';
 
 // รับค่า prop page, showBottomNav, currentScreen และ onNavigate เพิ่มเติม
 export default function CustomerLayout({ 
+  sessionId,
   page, 
   showBottomNav = true, 
   currentScreen = 'home', 
@@ -15,7 +16,7 @@ export default function CustomerLayout({
 }) {
   return (
     <div className="customer-layout-wrapper">
-      <Navbar cartCount={cartCount} onCartClick={() => onNavigate && onNavigate('cart')} onOrderClick={onViewOrder} />
+      <Navbar sessionId={sessionId} cartCount={cartCount} onCartClick={() => onNavigate && onNavigate('cart')} onOrderClick={onViewOrder} />
       <main className="customer-layout-main">
         {page} {/* แสดงผลหน้าจอที่ถูกส่งมาจาก App.jsx */}
       </main>

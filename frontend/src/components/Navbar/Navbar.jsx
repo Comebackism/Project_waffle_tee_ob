@@ -13,26 +13,37 @@ const STATUS_MAP = {
   'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
-export default function Navbar({ cartCount = 0, onCartClick, onOrderClick }) {
+export default function Navbar({ sessionId, cartCount = 0, onCartClick, onOrderClick }) {
   const [activeOrders, setActiveOrders] = useState([]);
   const [showNoti, setShowNoti] = useState(false);
   const notiRef = useRef(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const savedStr = localStorage.getItem('myOrders');
-      if (!savedStr) return;
-      
-      const orderIds = JSON.parse(savedStr);
-      if (orderIds.length === 0) return;
-
       try {
-        const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
-        const results = await Promise.all(promises);
-        
-        // Show active orders (not S05 and not S06)
-        const active = results.filter(r => r !== null && r.Status_id !== 'S05' && r.Status_id !== 'S06').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        setActiveOrders(active);
+        if (sessionId) {
+          // Shared table mode: fetch from backend
+          const res = await fetch(`${API_BASE}/api/orders/session/${sessionId}`);
+          if (res.ok) {
+            const data = await res.json();
+            const active = data.filter(r => r.Status_id !== 'S05' && r.Status_id !== 'S06');
+            // Data is already sorted by created_at DESC from backend
+            setActiveOrders(active);
+          }
+        } else {
+          // Fallback: read from localStorage (e.g. for takeaway without session)
+          const savedStr = localStorage.getItem('myOrders');
+          if (!savedStr) return;
+          
+          const orderIds = JSON.parse(savedStr);
+          if (orderIds.length === 0) return;
+
+          const promises = orderIds.map(id => fetch(`${API_BASE}/api/orders/${id}`).then(res => res.ok ? res.json() : null));
+          const results = await Promise.all(promises);
+          
+          const active = results.filter(r => r !== null && r.Status_id !== 'S05' && r.Status_id !== 'S06').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+          setActiveOrders(active);
+        }
       } catch (err) {
         console.error('Error fetching notifications:', err);
       }
@@ -41,7 +52,7 @@ export default function Navbar({ cartCount = 0, onCartClick, onOrderClick }) {
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000); // refresh every 5s
     return () => clearInterval(interval);
-  }, []);
+  }, [sessionId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
