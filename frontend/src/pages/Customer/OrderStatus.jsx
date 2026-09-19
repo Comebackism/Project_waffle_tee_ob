@@ -20,6 +20,34 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
   const [loading, setLoading] = useState(true);
   const [showReceipt, setShowReceipt] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [hasPlayedReadySound, setHasPlayedReadySound] = useState(false);
+
+  const playNotificationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.error('Audio play failed', e);
+    }
+  };
 
   const fetchOrder = () => {
     if (!orderId) return;
@@ -41,6 +69,13 @@ export default function OrderStatus({ orderId, queueNumber, onBack }) {
     const interval = setInterval(fetchOrder, 5000);
     return () => clearInterval(interval);
   }, [orderId]);
+
+  useEffect(() => {
+    if (order && order.Status_id === 'S04' && !hasPlayedReadySound) {
+      playNotificationSound();
+      setHasPlayedReadySound(true);
+    }
+  }, [order, hasPlayedReadySound]);
 
   const calculateItemTotal = (item) => {
     const basePrice = Number(item.menu_price) || 0;
