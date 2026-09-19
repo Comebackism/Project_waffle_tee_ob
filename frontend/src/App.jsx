@@ -21,6 +21,69 @@ import MyOrders from './pages/Customer/MyOrders';
 import Login from './pages/Login/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// Global Notification for Ready Orders
+function GlobalNotification({ sessionId }) {
+  const [notifiedOrders, setNotifiedOrders] = useState(new Set());
+
+  const playNotificationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.error('Audio play failed', e);
+    }
+  };
+
+  const playMultipleTimes = (times = 3) => {
+    let count = 0;
+    const interval = setInterval(() => {
+      playNotificationSound();
+      count++;
+      if (count >= times) clearInterval(interval);
+    }, 600); // Wait 600ms between beeps
+  };
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const interval = setInterval(() => {
+      fetch(`${API_BASE}/api/orders/session/${sessionId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            data.forEach(order => {
+              if (order.Status_id === 'S04' && !notifiedOrders.has(order.order_id)) {
+                // We found a new ready order!
+                playMultipleTimes(3);
+                // Mark as notified
+                setNotifiedOrders(prev => new Set(prev).add(order.order_id));
+              }
+            });
+          }
+        })
+        .catch(err => console.error(err));
+    }, 8000); // Check every 8 seconds
+    return () => clearInterval(interval);
+  }, [sessionId, notifiedOrders]);
+
+  return null;
+}
+
 // Customer App (with internal navigation)
 function CustomerApp() {
   const location = useLocation();
