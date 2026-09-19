@@ -21,30 +21,69 @@ import MyOrders from './pages/Customer/MyOrders';
 import Login from './pages/Login/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// --- Global Audio Context Setup ---
+let globalAudioCtx = null;
+let isAudioUnlocked = false;
+
+const initAudio = () => {
+  if (isAudioUnlocked) return;
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      globalAudioCtx = new AudioContext();
+      // Play a silent oscillator to unlock the audio engine on user interaction
+      const osc = globalAudioCtx.createOscillator();
+      const gain = globalAudioCtx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(globalAudioCtx.destination);
+      osc.start(0);
+      osc.stop(0.001);
+      isAudioUnlocked = true;
+      
+      // Remove listeners once unlocked
+      window.removeEventListener('click', initAudio);
+      window.removeEventListener('touchstart', initAudio);
+    }
+  } catch (e) {
+    console.error('Failed to init audio context', e);
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', initAudio);
+  window.addEventListener('touchstart', initAudio);
+}
+// ----------------------------------
+
 // Global Notification for Ready Orders
 function GlobalNotification({ sessionId }) {
   const [notifiedOrders, setNotifiedOrders] = useState(new Set());
 
   const playNotificationSound = () => {
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
+      if (!globalAudioCtx) initAudio();
+      if (!globalAudioCtx) return;
+      
+      if (globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume();
+      }
+
+      const osc = globalAudioCtx.createOscillator();
+      const gainNode = globalAudioCtx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(880, globalAudioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, globalAudioCtx.currentTime + 0.1);
       
-      gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      gainNode.gain.setValueAtTime(0, globalAudioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, globalAudioCtx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.5);
       
       osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.5);
+      gainNode.connect(globalAudioCtx.destination);
+      osc.start(globalAudioCtx.currentTime);
+      osc.stop(globalAudioCtx.currentTime + 0.5);
     } catch (e) {
       console.error('Audio play failed', e);
     }
