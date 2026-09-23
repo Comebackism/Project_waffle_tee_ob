@@ -16,7 +16,7 @@ export default function CustomerLayout({
 }) {
   return (
     <div className="customer-layout-wrapper">
-      <Navbar sessionId={sessionId} cartCount={cartCount} onCartClick={() => onNavigate && onNavigate('cart')} onOrderClick={onViewOrder} />
+      <Navbar sessionId={sessionId} cartCount={cartCount} onCartClick={() => onNavigate && onNavigate('cart')} onOrderClick={onViewOrder} onLogoClick={() => onNavigate && onNavigate('home')} />
       <main className="customer-layout-main">
         {page} {/* แสดงผลหน้าจอที่ถูกส่งมาจาก App.jsx */}
       </main>

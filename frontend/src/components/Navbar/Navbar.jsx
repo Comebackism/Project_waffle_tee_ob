@@ -13,7 +13,7 @@ const STATUS_MAP = {
   'S06': { label: 'ยกเลิก', color: '#ef4444' },
 };
 
-export default function Navbar({ sessionId, cartCount = 0, onCartClick, onOrderClick }) {
+export default function Navbar({ sessionId, cartCount = 0, onCartClick, onOrderClick, onLogoClick }) {
   const [activeOrders, setActiveOrders] = useState([]);
   const [showNoti, setShowNoti] = useState(false);
   const notiRef = useRef(null);
@@ -67,7 +67,7 @@ export default function Navbar({ sessionId, cartCount = 0, onCartClick, onOrderC
 
   return (
     <header className="navbar">
-      <h1 className="navbar-title">ตี๋อบ วาฟเฟิล HongKong</h1>
+      <h1 className="navbar-title" onClick={onLogoClick} style={{ cursor: onLogoClick ? 'pointer' : 'default' }}>ตี๋อบ วาฟเฟิล HongKong</h1>
       <div className="navbar-actions">
         
         <div className="navbar-noti-container" ref={notiRef}>
