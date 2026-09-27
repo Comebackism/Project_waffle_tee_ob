@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell 
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
@@ -11,6 +11,16 @@ import { Thai } from 'flatpickr/dist/l10n/th.js';
 import './CashierDashboard.css';
 import { apiFetch, API_BASE, resolveImage } from '../../utils/api';
 
+
+const ROLE_COLORS = {
+  'Admin': '#8b5cf6',
+  'Cashier': '#3b82f6',
+  'Kitchen': '#f97316',
+  'ผู้ดูแลระบบ': '#8b5cf6',
+  'แคชเชียร์': '#3b82f6',
+  'พนักงานครัว': '#f97316'
+};
+const DEFAULT_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
 export default function CashierDashboard() {
   const navigate = useNavigate();
@@ -376,7 +386,11 @@ export default function CashierDashboard() {
                         labelStyle={{ color: '#374151', fontSize: '12px', fontWeight: 'bold' }}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                       />
-                      <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={24}>
+                        {stats.employeeStats.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ROLE_COLORS[entry.role] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
