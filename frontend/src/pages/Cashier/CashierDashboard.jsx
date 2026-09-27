@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
-import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown } from 'react-icons/fa';
+import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/themes/light.css';
@@ -351,6 +351,25 @@ export default function CashierDashboard() {
                     ดูทั้งหมด
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Employee Stats Card */}
+            <div className="cd-summary-card cd-sales-card">
+              <div className="cd-summary-header">
+                <span className="cd-summary-icon" style={{ background: '#e0e7ff', color: '#4f46e5' }}><FaUsers /></span>
+                <span className="cd-summary-label">พนักงานทั้งหมด</span>
+              </div>
+              <div className="cd-summary-value" style={{ marginBottom: '12px' }}>
+                {stats.totalEmployees || 0} <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: 'normal' }}>คน</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {stats.employeeStats && stats.employeeStats.map(role => (
+                  <div key={role.role} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                    <span style={{ color: '#4b5563' }}>{role.role || 'ไม่ระบุ'}</span>
+                    <span style={{ fontWeight: '600', color: '#111827' }}>{role.count} คน</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

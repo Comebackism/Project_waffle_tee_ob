@@ -198,6 +198,20 @@ exports.getDashboardStats = async (req, res) => {
       unit: row.unit
     }));
 
+    // 7. Employee Stats
+    const employeeStatsRes = await db.query(`
+      SELECT r."RoleName" as rolename, COUNT(u.user_id) as count
+      FROM "Role" r
+      LEFT JOIN "User" u ON r."Role_id" = u."Role_id"
+      GROUP BY r."RoleName"
+      ORDER BY count DESC
+    `);
+    const employeeStats = employeeStatsRes.rows.map(r => ({
+      role: r.rolename,
+      count: parseInt(r.count || 0)
+    }));
+    const totalEmployees = employeeStats.reduce((acc, curr) => acc + curr.count, 0);
+
     res.json({
       todaySales,
       todayOrders: totalOrders,
@@ -205,7 +219,9 @@ exports.getDashboardStats = async (req, res) => {
       totalSales,
       weeklySales: trendData,
       bestSelling,
-      stockAlerts
+      stockAlerts,
+      employeeStats,
+      totalEmployees
     });
 
   } catch (err) {
