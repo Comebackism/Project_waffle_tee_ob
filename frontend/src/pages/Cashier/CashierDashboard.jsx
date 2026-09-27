@@ -30,6 +30,7 @@ export default function CashierDashboard() {
   // Chart custom data (synced with startDate/endDate)
   const [chartCustomData, setChartCustomData] = useState(null);
   const [chartCustomLoading, setChartCustomLoading] = useState(false);
+  const [chartType, setChartType] = useState('sales'); // 'sales' | 'orders'
 
   const fetchStats = async () => {
     try {
@@ -360,12 +361,38 @@ export default function CashierDashboard() {
             {/* Chart */}
             <div className="cd-chart-card">
               <div className="cd-card-header">
-                <h3>Sales Trend</h3>
-                <span className="cd-subtitle">
-                  {chartCustomData && startDate && endDate
-                    ? `${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
-                    : 'แนวโน้มยอดขาย'}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <h3 style={{ margin: 0 }}>Trend</h3>
+                    <div style={{ display: 'flex', background: '#f3f4f6', padding: '2px', borderRadius: '6px' }}>
+                      <button 
+                        onClick={() => setChartType('sales')}
+                        style={{
+                          padding: '4px 12px', fontSize: '13px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                          background: chartType === 'sales' ? 'white' : 'transparent',
+                          color: chartType === 'sales' ? '#dc2626' : '#6b7280',
+                          fontWeight: chartType === 'sales' ? 'bold' : 'normal',
+                          boxShadow: chartType === 'sales' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        }}
+                      >ยอดขาย</button>
+                      <button 
+                        onClick={() => setChartType('orders')}
+                        style={{
+                          padding: '4px 12px', fontSize: '13px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                          background: chartType === 'orders' ? 'white' : 'transparent',
+                          color: chartType === 'orders' ? '#3b82f6' : '#6b7280',
+                          fontWeight: chartType === 'orders' ? 'bold' : 'normal',
+                          boxShadow: chartType === 'orders' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        }}
+                      >จำนวนออเดอร์</button>
+                    </div>
+                  </div>
+                  <span className="cd-subtitle">
+                    {chartCustomData && startDate && endDate
+                      ? `${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+                      : (chartType === 'sales' ? 'แนวโน้มยอดขาย' : 'แนวโน้มจำนวนออเดอร์')}
+                  </span>
+                </div>
                 {!chartCustomData && (
                   <select 
                     className="cd-filter-btn" 
@@ -388,10 +415,7 @@ export default function CashierDashboard() {
                     <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-                      
-                      <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
-                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={10} />
-                      
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
                       <Tooltip 
                         cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
                         labelFormatter={(value, payload) => {
@@ -402,26 +426,14 @@ export default function CashierDashboard() {
                           return value;
                         }}
                       />
-                      <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', color: '#4b5563' }} />
                       <Line 
-                        yAxisId="left"
-                        name="ยอดขาย (บาท)"
+                        name={chartType === 'sales' ? 'ยอดขาย (บาท)' : 'จำนวนออเดอร์ (บิล)'}
                         type="monotone" 
-                        dataKey="sales" 
-                        stroke="#dc2626" 
+                        dataKey={chartType}
+                        stroke={chartType === 'sales' ? '#dc2626' : '#3b82f6'}
                         strokeWidth={3}
-                        dot={{ r: 4, fill: '#dc2626', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#b91c1c' }}
-                      />
-                      <Line 
-                        yAxisId="right"
-                        name="จำนวนออเดอร์ (บิล)"
-                        type="monotone" 
-                        dataKey="orders" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#2563eb' }}
+                        dot={{ r: 4, fill: chartType === 'sales' ? '#dc2626' : '#3b82f6', strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: chartType === 'sales' ? '#b91c1c' : '#2563eb' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
