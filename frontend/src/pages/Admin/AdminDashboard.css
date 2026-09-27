@@ -182,7 +182,7 @@
 .form-group-row {
   display: flex;
   gap: 16px;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 .form-group-row .form-group { flex: 1; }
 
