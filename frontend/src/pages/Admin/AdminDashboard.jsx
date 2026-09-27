@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   });
 
   const [adminAlert, setAdminAlert] = useState({ show: false, message: '', type: 'error' });
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const showAlert = (message, type = 'error') => {
     setAdminAlert({ show: true, message, type });
@@ -69,6 +70,15 @@ export default function AdminDashboard() {
       showAlert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก", "error");
       return;
     }
+    // Validate password confirmation (only when setting a new password)
+    if (newEmployee.password && newEmployee.password !== confirmPassword) {
+      showAlert("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน", "error");
+      return;
+    }
+    if (!editingEmployee && !confirmPassword) {
+      showAlert("กรุณายืนยันรหัสผ่าน", "error");
+      return;
+    }
     try {
       let res;
       if (editingEmployee) {
@@ -94,6 +104,7 @@ export default function AdminDashboard() {
       setShowAddForm(false);
       setEditingEmployee(null);
       setNewEmployee({ firstname: '', lastname: '', username: '', password: '', phone: '', email: '', Role_id: 'R02' });
+      setConfirmPassword('');
       fetchEmployees();
     } catch (err) {
       console.error('Error saving employee:', err);
@@ -166,6 +177,7 @@ export default function AdminDashboard() {
             <button className="admin-btn primary" onClick={() => {
               setEditingEmployee(null);
               setNewEmployee({ firstname: '', lastname: '', username: '', password: '', phone: '', email: '', Role_id: 'R02' });
+              setConfirmPassword('');
               setShowAddForm(true);
             }}>
               <FaUserPlus /> เพิ่มพนักงาน
@@ -228,8 +240,8 @@ export default function AdminDashboard() {
                     <input type="text" name="firstname" required value={newEmployee.firstname} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label>นามสกุล (ตัวเลือก)</label>
-                    <input type="text" name="lastname" value={newEmployee.lastname} onChange={handleInputChange} />
+                    <label>นามสกุล</label>
+                    <input type="text" name="lastname" required value={newEmployee.lastname} onChange={handleInputChange} />
                   </div>
                 </div>
                 
@@ -239,10 +251,33 @@ export default function AdminDashboard() {
                     <input type="text" name="username" required value={newEmployee.username} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label>Password {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ปล่อยว่างไว้หากไม่ต้องการเปลี่ยน)</span>}</label>
+                    <label>บันทึกรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ปล่อยว่างไว้หากไม่ต้องการเปลี่ยน)</span>}</label>
                     <input type="password" name="password" required={!editingEmployee} value={newEmployee.password} onChange={handleInputChange} />
                   </div>
                 </div>
+
+                {/* ยืนยันรหัสผ่าน: show when adding OR when editing with a new password */}
+                {(!editingEmployee || newEmployee.password) && (
+                  <div className="form-group">
+                    <label>ยืนยันรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ผู้เปลี่ยนรหัสผ่าน)</span>}</label>
+                    <input 
+                      type="password" 
+                      value={confirmPassword} 
+                      required={!editingEmployee || !!newEmployee.password}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="กรอกรหัสผ่านอีกครั้ง"
+                      style={{
+                        borderColor: confirmPassword && newEmployee.password && confirmPassword !== newEmployee.password ? '#ef4444' : ''
+                      }}
+                    />
+                    {confirmPassword && newEmployee.password && confirmPassword !== newEmployee.password && (
+                      <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>รหัสผ่านไม่ตรงกัน</span>
+                    )}
+                    {confirmPassword && newEmployee.password && confirmPassword === newEmployee.password && (
+                      <span style={{ color: '#22c55e', fontSize: '12px', marginTop: '4px', display: 'block' }}>รหัสผ่านตรงกัน</span>
+                    )}
+                  </div>
+                )}
 
                 <div className="form-group-row">
                   <div className="form-group">
@@ -275,7 +310,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="admin-modal-footer">
-                  <button type="button" className="admin-btn outline" onClick={() => setShowAddForm(false)}>ยกเลิก</button>
+                  <button type="button" className="admin-btn outline" onClick={() => { setShowAddForm(false); setConfirmPassword(''); }}>ยกเลิก</button>
                   <button type="submit" className="admin-btn primary">บันทึก</button>
                 </div>
               </form>
