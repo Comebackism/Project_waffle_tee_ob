@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
@@ -363,13 +363,25 @@ export default function CashierDashboard() {
               <div className="cd-summary-value" style={{ marginBottom: '12px' }}>
                 {stats.totalEmployees || 0} <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: 'normal' }}>คน</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {stats.employeeStats && stats.employeeStats.map(role => (
-                  <div key={role.role} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                    <span style={{ color: '#4b5563' }}>{role.role || 'ไม่ระบุ'}</span>
-                    <span style={{ fontWeight: '600', color: '#111827' }}>{role.count} คน</span>
-                  </div>
-                ))}
+              <div style={{ height: '120px', width: '100%', marginTop: 'auto' }}>
+                {stats.employeeStats && stats.employeeStats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats.employeeStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="role" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <Tooltip 
+                        cursor={{ fill: '#f3f4f6' }}
+                        formatter={(value) => [`${value} คน`, 'จำนวน']}
+                        labelStyle={{ color: '#374151', fontSize: '12px', fontWeight: 'bold' }}
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      />
+                      <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={24} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#9ca3af', fontSize: '13px' }}>ไม่มีข้อมูลพนักงาน</div>
+                )}
               </div>
             </div>
           </div>
