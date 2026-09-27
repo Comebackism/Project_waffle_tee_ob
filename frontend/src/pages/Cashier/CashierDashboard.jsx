@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
@@ -431,12 +431,12 @@ export default function CashierDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>กำลังโหลดกราฟ...</div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                    <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
                       <Tooltip 
-                        cursor={{ fill: '#fef2f2' }} 
+                        cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
                         labelFormatter={(value, payload) => {
                           if (payload && payload.length > 0) {
                             const prefix = chartCustomData ? 'วันที่:' : (timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:'));
@@ -445,14 +445,16 @@ export default function CashierDashboard() {
                           return value;
                         }}
                       />
-                      <Bar 
+                      <Line 
                         name={chartType === 'sales' ? 'ยอดขาย (บาท)' : 'จำนวนออเดอร์ (บิล)'}
+                        type="monotone" 
                         dataKey={chartType}
-                        fill={chartType === 'sales' ? '#dc2626' : '#3b82f6'}
-                        radius={[4, 4, 0, 0]}
-                        barSize={30}
+                        stroke={chartType === 'sales' ? '#dc2626' : '#3b82f6'}
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: chartType === 'sales' ? '#dc2626' : '#3b82f6', strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: chartType === 'sales' ? '#b91c1c' : '#2563eb' }}
                       />
-                    </BarChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 )}
               </div>
