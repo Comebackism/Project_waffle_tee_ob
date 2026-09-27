@@ -229,7 +229,7 @@ function CustomerApp() {
                 }
               } catch (err) {
                 console.error(err);
-                if (err.message.includes('QR Code นี้หมดอายุ') || err.message.includes('เซสชัน QR Code ไม่ถูกต้อง')) {
+                if (err.message.includes('QR Code นี้หมดอายุ') || err.message.includes('เซสชัน QR Code ไม่ถูกต้อง') || err.message.includes('ถูกปิดใช้งาน')) {
                   alert(err.message);
                   window.location.reload();
                 } else {
