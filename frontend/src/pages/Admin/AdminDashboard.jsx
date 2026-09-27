@@ -278,10 +278,10 @@ export default function AdminDashboard() {
                       }}
                     />
                     {confirmPassword && newEmployee.password && confirmPassword !== newEmployee.password && (
-                      <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>รหัสผ่านไม่ตรงกัน</span>
+                      <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block', position: 'absolute' }}>รหัสผ่านไม่ตรงกัน</span>
                     )}
                     {confirmPassword && newEmployee.password && confirmPassword === newEmployee.password && (
-                      <span style={{ color: '#22c55e', fontSize: '12px', marginTop: '4px', display: 'block' }}>รหัสผ่านตรงกัน</span>
+                      <span style={{ color: '#22c55e', fontSize: '12px', marginTop: '4px', display: 'block', position: 'absolute' }}>รหัสผ่านตรงกัน</span>
                     )}
                   </div>
                 </div>
