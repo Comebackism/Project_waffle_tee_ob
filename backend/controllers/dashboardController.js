@@ -254,3 +254,48 @@ exports.getSalesByDate = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// Get sales trend data for a custom date range (per-day breakdown)
+exports.getSalesTrend = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: 'startDate and endDate are required (YYYY-MM-DD)' });
+    }
+
+    const trendRes = await db.query(`
+      WITH dates AS (
+        SELECT generate_series(
+          $1::date,
+          $2::date,
+          '1 day'::interval
+        )::date AS date
+      )
+      SELECT 
+        d.date,
+        COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
+      FROM dates d
+      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
+      LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
+      GROUP BY d.date, ds.total_sales
+      ORDER BY d.date ASC
+    `, [startDate, endDate]);
+
+    const trendData = trendRes.rows.map(r => {
+      const d = new Date(r.date);
+      const shortDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+      const fullDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+      return {
+        name: shortDate,
+        fullDate: fullDate,
+        sales: parseFloat(r.sales)
+      };
+    });
+
+    res.json(trendData);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};

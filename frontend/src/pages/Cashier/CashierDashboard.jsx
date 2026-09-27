@@ -27,6 +27,10 @@ export default function CashierDashboard() {
   const [salesPeriodData, setSalesPeriodData] = useState(null);
   const [salesPeriodLoading, setSalesPeriodLoading] = useState(false);
 
+  // Chart custom data (synced with startDate/endDate)
+  const [chartCustomData, setChartCustomData] = useState(null);
+  const [chartCustomLoading, setChartCustomLoading] = useState(false);
+
   const fetchStats = async () => {
     try {
       const res = await apiFetch(`/api/dashboard/stats?range=${timeRange}`);
@@ -111,8 +115,24 @@ export default function CashierDashboard() {
   useEffect(() => {
     if (startDate && endDate) {
       fetchSalesByDateRange(startDate, endDate);
+      // Also fetch chart trend for this date range
+      const fetchChartData = async () => {
+        setChartCustomLoading(true);
+        try {
+          const res = await apiFetch(`/api/dashboard/sales-trend?startDate=${startDate}&endDate=${endDate}`);
+          const data = await res.json();
+          setChartCustomData(data);
+        } catch (err) {
+          console.error('Error fetching chart trend:', err);
+          setChartCustomData(null);
+        } finally {
+          setChartCustomLoading(false);
+        }
+      };
+      fetchChartData();
     } else {
       setDateSales(null);
+      setChartCustomData(null);
     }
   }, [startDate, endDate]);
 
@@ -322,7 +342,7 @@ export default function CashierDashboard() {
                 {(startDate || endDate) && (
                   <button 
                     className="cd-date-clear-btn" 
-                    onClick={() => { setStartDate(''); setEndDate(''); }}
+                    onClick={() => { setStartDate(''); setEndDate(''); setChartCustomData(null); }}
                     title="ดูยอดขายทั้งหมด"
                     style={{ marginLeft: 'auto', padding: '4px 8px', fontSize: '0.8rem' }}
                   >
@@ -340,45 +360,55 @@ export default function CashierDashboard() {
             <div className="cd-chart-card">
               <div className="cd-card-header">
                 <h3>Sales Trend</h3>
-                <span className="cd-subtitle">แนวโน้มยอดขาย</span>
-                <select 
-                  className="cd-filter-btn" 
-                  value={timeRange} 
-                  onChange={(e) => setTimeRange(e.target.value)}
-                  style={{outline: 'none', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 8px'}}
-                >
-                  <option value="day">วันนี้ (รายชั่วโมง)</option>
-                  <option value="week">สัปดาห์นี้</option>
-                  <option value="month">เดือนนี้ (30 วัน)</option>
-                  <option value="year">ปีนี้ (12 เดือน)</option>
-                </select>
+                <span className="cd-subtitle">
+                  {chartCustomData && startDate && endDate
+                    ? `${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+                    : 'แนวโน้มยอดขาย'}
+                </span>
+                {!chartCustomData && (
+                  <select 
+                    className="cd-filter-btn" 
+                    value={timeRange} 
+                    onChange={(e) => setTimeRange(e.target.value)}
+                    style={{outline: 'none', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 8px'}}
+                  >
+                    <option value="day">วันนี้ (รายชั่วโมง)</option>
+                    <option value="week">สัปดาห์นี้</option>
+                    <option value="month">เดือนนี้ (30 วัน)</option>
+                    <option value="year">ปีนี้ (12 เดือน)</option>
+                  </select>
+                )}
               </div>
               <div className="cd-chart-container">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
-                    <Tooltip 
-                      cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
-                      labelFormatter={(value, payload) => {
-                        if (payload && payload.length > 0) {
-                          const prefix = timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:');
-                          return `${prefix} ${payload[0].payload.fullDate}`;
-                        }
-                        return value;
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="sales" 
-                      stroke="#dc2626" 
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: '#dc2626', strokeWidth: 0 }}
-                      activeDot={{ r: 6, fill: '#b91c1c' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {chartCustomLoading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>กำลังโหลดกราฟ...</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
+                      <Tooltip 
+                        cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
+                        labelFormatter={(value, payload) => {
+                          if (payload && payload.length > 0) {
+                            const prefix = chartCustomData ? 'วันที่:' : (timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:'));
+                            return `${prefix} ${payload[0].payload.fullDate || value}`;
+                          }
+                          return value;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="sales" 
+                        stroke="#dc2626" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#dc2626', strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: '#b91c1c' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 

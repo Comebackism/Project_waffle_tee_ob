@@ -9,4 +9,7 @@ router.get('/stats', auth, dashboardController.getDashboardStats);
 // GET /api/dashboard/sales-by-date?date=YYYY-MM-DD
 router.get('/sales-by-date', auth, dashboardController.getSalesByDate);
 
+// GET /api/dashboard/sales-trend?startDate=...&endDate=...
+router.get('/sales-trend', auth, dashboardController.getSalesTrend);
+
 module.exports = router;
