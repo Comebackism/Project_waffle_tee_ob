@@ -114,6 +114,27 @@ exports.createOrder = async (req, res) => {
       }
     }
 
+    // 0.5 Validate that all requested menus are active
+    if (!items || items.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'กรุณาเลือกเมนูอย่างน้อย 1 รายการ' });
+    }
+
+    const menuIds = items.map(item => item.menu_id);
+    const menuResult = await client.query('SELECT menu_id, name, is_active FROM "Menu" WHERE menu_id = ANY($1::text[])', [menuIds]);
+    
+    for (const item of items) {
+      const dbMenu = menuResult.rows.find(m => m.menu_id === item.menu_id);
+      if (!dbMenu) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ message: `ไม่พบเมนูรหัส ${item.menu_id} ในระบบ` });
+      }
+      if (!dbMenu.is_active) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ message: `ขออภัย เมนู "${dbMenu.name}" ถูกปิดใช้งานชั่วคราว กรุณารีเฟรชหน้าและทำรายการใหม่` });
+      }
+    }
+
     // 1. Advisory lock to prevent concurrent order creation from generating duplicate IDs
     await client.query('SELECT pg_advisory_xact_lock(1)');
 
