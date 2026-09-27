@@ -364,40 +364,6 @@ export default function CashierDashboard() {
               </div>
             </div>
 
-            {/* Employee Stats Card */}
-            <div className="cd-summary-card cd-sales-card">
-              <div className="cd-summary-header">
-                <span className="cd-summary-icon" style={{ background: '#e0e7ff', color: '#4f46e5' }}><FaUsers /></span>
-                <span className="cd-summary-label">พนักงานทั้งหมด</span>
-              </div>
-              <div className="cd-summary-value" style={{ marginBottom: '12px' }}>
-                {stats.totalEmployees || 0} <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: 'normal' }}>คน</span>
-              </div>
-              <div style={{ height: '120px', width: '100%', marginTop: 'auto' }}>
-                {stats.employeeStats && stats.employeeStats.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stats.employeeStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis dataKey="role" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                      <Tooltip 
-                        cursor={{ fill: '#f3f4f6' }}
-                        formatter={(value) => [`${value} คน`, 'จำนวน']}
-                        labelStyle={{ color: '#374151', fontSize: '12px', fontWeight: 'bold' }}
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                      />
-                      <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={24}>
-                        {stats.employeeStats.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={ROLE_COLORS[entry.role] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#9ca3af', fontSize: '13px' }}>ไม่มีข้อมูลพนักงาน</div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Middle Section: Chart & Alerts */}
@@ -430,12 +396,22 @@ export default function CashierDashboard() {
                           boxShadow: chartType === 'orders' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
                         }}
                       >จำนวนออเดอร์</button>
+                      <button 
+                        onClick={() => setChartType('employees')}
+                        style={{
+                          padding: '4px 12px', fontSize: '13px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                          background: chartType === 'employees' ? 'white' : 'transparent',
+                          color: chartType === 'employees' ? '#8b5cf6' : '#6b7280',
+                          fontWeight: chartType === 'employees' ? 'bold' : 'normal',
+                          boxShadow: chartType === 'employees' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        }}
+                      >พนักงาน</button>
                     </div>
                   </div>
                   <span className="cd-subtitle">
-                    {chartCustomData && startDate && endDate
+                    {chartType === 'employees' ? `พนักงานทั้งหมด ${stats.totalEmployees || 0} คน` : (chartCustomData && startDate && endDate
                       ? `${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
-                      : (chartType === 'sales' ? 'แนวโน้มยอดขาย' : 'แนวโน้มจำนวนออเดอร์')}
+                      : (chartType === 'sales' ? 'แนวโน้มยอดขาย' : 'แนวโน้มจำนวนออเดอร์'))}
                   </span>
                 </div>
                 {!chartCustomData && (
@@ -455,6 +431,29 @@ export default function CashierDashboard() {
               <div className="cd-chart-container">
                 {chartCustomLoading ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>กำลังโหลดกราฟ...</div>
+                ) : chartType === 'employees' ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    {stats.employeeStats && stats.employeeStats.length > 0 ? (
+                      <BarChart data={stats.employeeStats} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                        <XAxis dataKey="role" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} dy={10} />
+                        <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} dx={-10} allowDecimals={false} />
+                        <Tooltip 
+                          cursor={{ fill: '#f3f4f6' }}
+                          formatter={(value) => [`${value} คน`, 'จำนวนพนักงาน']}
+                          labelStyle={{ color: '#374151', fontSize: '13px', fontWeight: 'bold' }}
+                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                        />
+                        <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={40}>
+                          {stats.employeeStats.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={ROLE_COLORS[entry.role] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#9ca3af', fontSize: '13px' }}>ไม่มีข้อมูลพนักงาน</div>
+                    )}
+                  </ResponsiveContainer>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
