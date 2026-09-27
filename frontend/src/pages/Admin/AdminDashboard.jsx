@@ -251,15 +251,22 @@ export default function AdminDashboard() {
                     <input type="text" name="username" required value={newEmployee.username} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label>บันทึกรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ปล่อยว่างไว้หากไม่ต้องการเปลี่ยน)</span>}</label>
-                    <input type="password" name="password" required={!editingEmployee} value={newEmployee.password} onChange={handleInputChange} />
+                    <label>ตำแหน่ง</label>
+                    <select name="Role_id" value={newEmployee.Role_id} onChange={handleInputChange} required>
+                      <option value="R01">ผู้ดูแลระบบ (Admin)</option>
+                      <option value="R02">แคชเชียร์ (Cashier)</option>
+                      <option value="R03">พนักงานครัว (Kitchen)</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* ยืนยันรหัสผ่าน: show when adding OR when editing with a new password */}
-                {(!editingEmployee || newEmployee.password) && (
+                <div className="form-group-row">
                   <div className="form-group">
-                    <label>ยืนยันรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ผู้เปลี่ยนรหัสผ่าน)</span>}</label>
+                    <label>บันทึกรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ปล่อยว่างไว้หากไม่ต้องการเปลี่ยน)</span>}</label>
+                    <input type="password" name="password" required={!editingEmployee} value={newEmployee.password} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
+                    <label>ยืนยันรหัสผ่าน {editingEmployee && <span style={{fontSize:'12px', color:'#9ca3af'}}>(ยืนยันหากเปลี่ยนรหัส)</span>}</label>
                     <input 
                       type="password" 
                       value={confirmPassword} 
@@ -277,7 +284,7 @@ export default function AdminDashboard() {
                       <span style={{ color: '#22c55e', fontSize: '12px', marginTop: '4px', display: 'block' }}>รหัสผ่านตรงกัน</span>
                     )}
                   </div>
-                )}
+                </div>
 
                 <div className="form-group-row">
                   <div className="form-group">
@@ -298,15 +305,6 @@ export default function AdminDashboard() {
                     <label>อีเมล</label>
                     <input type="email" name="email" value={newEmployee.email} onChange={handleInputChange} placeholder="example@email.com" />
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label>ตำแหน่ง</label>
-                  <select name="Role_id" value={newEmployee.Role_id} onChange={handleInputChange}>
-                    <option value="R01">ผู้ดูแลระบบ (Admin)</option>
-                    <option value="R02">แคชเชียร์ (Cashier)</option>
-                    <option value="R03">พนักงานครัว (Kitchen)</option>
-                  </select>
                 </div>
 
                 <div className="admin-modal-footer">
