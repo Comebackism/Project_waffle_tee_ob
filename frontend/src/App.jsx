@@ -74,7 +74,7 @@ function CustomerApp() {
   const [editingCartItem, setEditingCartItem] = useState(null);
 
   // State for error modal
-  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '', shouldReload: false });
 
   const handleSelectProduct = (productId) => {
     setSelectedProductId(productId);
@@ -230,10 +230,9 @@ function CustomerApp() {
               } catch (err) {
                 console.error(err);
                 if (err.message.includes('QR Code นี้หมดอายุ') || err.message.includes('เซสชัน QR Code ไม่ถูกต้อง') || err.message.includes('ถูกปิดใช้งาน')) {
-                  alert(err.message);
-                  window.location.reload();
+                  setErrorModal({ isOpen: true, message: err.message, shouldReload: true });
                 } else {
-                  setErrorModal({ isOpen: true, message: err.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ' });
+                  setErrorModal({ isOpen: true, message: err.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ', shouldReload: false });
                 }
               }
             }}
@@ -316,7 +315,13 @@ function CustomerApp() {
               {errorModal.message}
             </p>
             <button 
-              onClick={() => setErrorModal({ isOpen: false, message: '' })}
+              onClick={() => {
+                if (errorModal.shouldReload) {
+                  window.location.reload();
+                } else {
+                  setErrorModal({ isOpen: false, message: '', shouldReload: false });
+                }
+              }}
               style={{ background: '#ef4444', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', width: '100%', transition: 'background 0.2s' }}
               onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
               onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
