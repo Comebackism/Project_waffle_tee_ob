@@ -39,6 +39,54 @@ exports.getAllMenus = async (req, res) => {
   }
 };
 
+// Get best selling menus for public facing
+exports.getBestSellers = async (req, res) => {
+  try {
+    const bestSellingRes = await db.query(`
+      WITH monthly_sales AS (
+        -- Live orders from today
+        SELECT 
+          oi.menu_id, 
+          SUM(oi.quantity) as sold
+        FROM "Order_Item" oi
+        JOIN "Order" o ON oi.order_id = o.order_id
+        WHERE o."Status_id" = 'S05' AND o.is_archived = false
+          AND EXTRACT(MONTH FROM o.created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+          AND EXTRACT(YEAR FROM o.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+        GROUP BY oi.menu_id
+
+        UNION ALL
+
+        -- Archived sales for this month
+        SELECT 
+          dms.menu_id, 
+          SUM(dms.quantity_sold) as sold
+        FROM "Daily_Menu_Summary" dms
+        WHERE EXTRACT(MONTH FROM dms.summary_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+          AND EXTRACT(YEAR FROM dms.summary_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+        GROUP BY dms.menu_id
+      )
+      SELECT 
+        m.menu_id,
+        m.name,
+        m.price,
+        m.description,
+        m."Picture" as image,
+        SUM(ms.sold) as sold
+      FROM monthly_sales ms
+      JOIN "Menu" m ON ms.menu_id = m.menu_id
+      WHERE m.is_active = true
+      GROUP BY m.menu_id, m.name, m.price, m.description, m."Picture"
+      ORDER BY sold DESC
+      LIMIT 3
+    `);
+    res.json(bestSellingRes.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 // Get menu details and all available toppings
 exports.getMenuById = async (req, res) => {
   try {

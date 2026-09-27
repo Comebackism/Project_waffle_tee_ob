@@ -6,6 +6,9 @@ const auth = require('../middleware/authMiddleware');
 // GET /api/menus
 router.get('/', menuController.getAllMenus);
 
+// GET /api/menus/bestsellers
+router.get('/bestsellers', menuController.getBestSellers);
+
 // GET /api/menus/:id
 router.get('/:id', menuController.getMenuById);
 
