@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
@@ -445,6 +445,7 @@ export default function CashierDashboard() {
                           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                         />
                         <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={40}>
+                          <LabelList dataKey="count" position="top" style={{ fill: '#6b7280', fontSize: 12, fontWeight: 'bold' }} />
                           {stats.employeeStats.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={ROLE_COLORS[entry.role] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
                           ))}
@@ -478,7 +479,14 @@ export default function CashierDashboard() {
                         strokeWidth={3}
                         dot={{ r: 4, fill: chartType === 'sales' ? '#dc2626' : '#3b82f6', strokeWidth: 0 }}
                         activeDot={{ r: 6, fill: chartType === 'sales' ? '#b91c1c' : '#2563eb' }}
-                      />
+                      >
+                        <LabelList 
+                          dataKey={chartType} 
+                          position="top" 
+                          offset={10}
+                          style={{ fill: chartType === 'sales' ? '#dc2626' : '#3b82f6', fontSize: 12, fontWeight: 'bold' }} 
+                        />
+                      </Line>
                     </LineChart>
                   </ResponsiveContainer>
                 )}
