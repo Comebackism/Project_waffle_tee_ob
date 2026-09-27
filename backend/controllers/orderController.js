@@ -17,14 +17,15 @@ let lastArchiveCheckDate = new Date().toDateString();
 const autoArchivePastOrders = async () => {
   const client = await db.connect();
   try {
-    // Check if there are any unarchived orders from before today
+    // Check if there are any unarchived orders from before today (Thai Time)
     const checkRes = await client.query(`
-      SELECT DATE(created_at) as summary_date,
+      SELECT DATE(created_at AT TIME ZONE 'Asia/Bangkok') as summary_date,
              COUNT(*) as order_count,
              COALESCE(SUM(total_amount), 0) as total_sales
       FROM "Order"
-      WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false AND "Status_id" = 'S05'
-      GROUP BY DATE(created_at)
+      WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') < DATE(NOW() AT TIME ZONE 'Asia/Bangkok') 
+        AND is_archived = false AND "Status_id" = 'S05'
+      GROUP BY DATE(created_at AT TIME ZONE 'Asia/Bangkok')
     `);
 
     if (checkRes.rows.length > 0) {
@@ -47,7 +48,7 @@ const autoArchivePastOrders = async () => {
           SELECT oi.menu_id, SUM(oi.quantity) as sold
           FROM "Order_Item" oi
           JOIN "Order" o ON oi.order_id = o.order_id
-          WHERE DATE(o.created_at) = $1 AND o."Status_id" = 'S05' AND o.is_archived = false
+          WHERE DATE(o.created_at AT TIME ZONE 'Asia/Bangkok') = $1 AND o."Status_id" = 'S05' AND o.is_archived = false
           GROUP BY oi.menu_id
         `, [summaryDate]);
 
@@ -75,7 +76,7 @@ const autoArchivePastOrders = async () => {
       await client.query(`
         UPDATE "Order"
         SET is_archived = true
-        WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false
+        WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') < DATE(NOW() AT TIME ZONE 'Asia/Bangkok') AND is_archived = false
       `);
     }
   } catch (err) {
@@ -153,7 +154,7 @@ exports.createOrder = async (req, res) => {
     // 3. Generate queue_number using MAX to prevent duplicates (even after cancellations)
     const queueMaxResult = await client.query(`
       SELECT queue_number FROM "Order" 
-      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false 
+      WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') = DATE(NOW() AT TIME ZONE 'Asia/Bangkok') AND is_archived = false 
       ORDER BY queue_number DESC LIMIT 1
     `);
     let queueCount = 1;
