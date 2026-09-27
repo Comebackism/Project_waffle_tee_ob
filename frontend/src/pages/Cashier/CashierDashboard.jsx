@@ -115,13 +115,14 @@ export default function CashierDashboard() {
   useEffect(() => {
     if (startDate && endDate) {
       fetchSalesByDateRange(startDate, endDate);
-      // Also fetch chart trend for this date range
+      // Fetch chart trend for the same date range
       const fetchChartData = async () => {
         setChartCustomLoading(true);
         try {
           const res = await apiFetch(`/api/dashboard/sales-trend?startDate=${startDate}&endDate=${endDate}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          setChartCustomData(data);
+          if (Array.isArray(data)) setChartCustomData(data);
         } catch (err) {
           console.error('Error fetching chart trend:', err);
           setChartCustomData(null);
