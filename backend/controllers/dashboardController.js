@@ -48,7 +48,8 @@ exports.getDashboardStats = async (req, res) => {
         SELECT 
           TO_CHAR(h.hour, 'HH24:00') as name,
           h.hour as fullDate,
-          COALESCE(SUM(o.total_amount), 0) as sales
+          COALESCE(SUM(o.total_amount), 0) as sales,
+          COUNT(o.order_id) as orders
         FROM hours h
         LEFT JOIN "Order" o 
           ON DATE_TRUNC('hour', o.created_at) = h.hour 
@@ -60,7 +61,8 @@ exports.getDashboardStats = async (req, res) => {
       trendData = daySalesRes.rows.map(r => ({
         name: r.name,
         fullDate: r.name, // time string
-        sales: parseFloat(r.sales)
+        sales: parseFloat(r.sales),
+        orders: parseInt(r.orders)
       }));
     } else if (range === 'year') {
       const yearSalesRes = await db.query(`
@@ -74,7 +76,8 @@ exports.getDashboardStats = async (req, res) => {
         SELECT 
           TO_CHAR(m.month_date, 'MM/YYYY') as name,
           m.month_date as fullDate,
-          COALESCE(SUM(o.total_amount), 0) + COALESCE(SUM(ds.total_sales), 0) as sales
+          COALESCE(SUM(o.total_amount), 0) + COALESCE(SUM(ds.total_sales), 0) as sales,
+          COUNT(o.order_id) + COALESCE(SUM(ds.total_orders), 0) as orders
         FROM months m
         LEFT JOIN "Order" o 
           ON DATE_TRUNC('month', o.created_at) = m.month_date 
@@ -94,7 +97,8 @@ exports.getDashboardStats = async (req, res) => {
         return {
           name: `${monthName} ${year.toString().slice(-2)}`,
           fullDate: r.name, // MM/YYYY
-          sales: parseFloat(r.sales)
+          sales: parseFloat(r.sales),
+          orders: parseInt(r.orders)
         };
       });
     } else {
@@ -111,11 +115,12 @@ exports.getDashboardStats = async (req, res) => {
         SELECT 
           TO_CHAR(d.date, 'Day') as day_name,
           d.date,
-          COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
+          COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales,
+          COUNT(o.order_id) + COALESCE(ds.total_orders, 0) as orders
         FROM dates d
         LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
         LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
-        GROUP BY d.date, ds.total_sales
+        GROUP BY d.date, ds.total_sales, ds.total_orders
         ORDER BY d.date ASC
       `);
 
@@ -131,7 +136,8 @@ exports.getDashboardStats = async (req, res) => {
         return {
           name: `${dayName} ${shortDate}`,
           fullDate: fullDate,
-          sales: parseFloat(r.sales)
+          sales: parseFloat(r.sales),
+          orders: parseInt(r.orders)
         };
       });
     }
@@ -274,11 +280,12 @@ exports.getSalesTrend = async (req, res) => {
       )
       SELECT 
         d.date,
-        COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales
+        COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales,
+        COUNT(o.order_id) + COALESCE(ds.total_orders, 0) as orders
       FROM dates d
       LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
       LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
-      GROUP BY d.date, ds.total_sales
+      GROUP BY d.date, ds.total_sales, ds.total_orders
       ORDER BY d.date ASC
     `, [startDate, endDate]);
 
@@ -289,7 +296,8 @@ exports.getSalesTrend = async (req, res) => {
       return {
         name: shortDate,
         fullDate: fullDate,
-        sales: parseFloat(r.sales)
+        sales: parseFloat(r.sales),
+        orders: parseInt(r.orders)
       };
     });
 

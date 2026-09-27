@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
@@ -388,7 +388,10 @@ export default function CashierDashboard() {
                     <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
+                      
+                      <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
+                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={10} />
+                      
                       <Tooltip 
                         cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
                         labelFormatter={(value, payload) => {
@@ -399,13 +402,26 @@ export default function CashierDashboard() {
                           return value;
                         }}
                       />
+                      <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', color: '#4b5563' }} />
                       <Line 
+                        yAxisId="left"
+                        name="ยอดขาย (บาท)"
                         type="monotone" 
                         dataKey="sales" 
                         stroke="#dc2626" 
                         strokeWidth={3}
                         dot={{ r: 4, fill: '#dc2626', strokeWidth: 0 }}
                         activeDot={{ r: 6, fill: '#b91c1c' }}
+                      />
+                      <Line 
+                        yAxisId="right"
+                        name="จำนวนออเดอร์ (บิล)"
+                        type="monotone" 
+                        dataKey="orders" 
+                        stroke="#3b82f6" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: '#2563eb' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
