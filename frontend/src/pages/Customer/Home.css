@@ -37,7 +37,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 15px;
+  font-size: 16px;
   color: #1f2937;
   font-family: inherit;
 }
@@ -124,7 +124,7 @@
   }
 
   .home-search-input {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .category-badge {
