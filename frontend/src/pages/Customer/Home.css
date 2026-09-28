@@ -2,8 +2,87 @@
   width: 100%;
 }
 
+/* ============ Search Bar ============ */
+.home-search-container {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 24px;
+  transition: all 0.25s ease;
+  gap: 10px;
+}
+
+.home-search-container.focused {
+  border-color: #B30021;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(179, 0, 33, 0.08);
+}
+
+.home-search-icon {
+  color: #9ca3af;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: color 0.25s;
+}
+
+.home-search-container.focused .home-search-icon {
+  color: #B30021;
+}
+
+.home-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: #1f2937;
+  font-family: inherit;
+}
+
+.home-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.home-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.home-search-clear:hover {
+  background: #d1d5db;
+  color: #374151;
+}
+
+/* ============ No Results ============ */
+.home-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* ============ Category Badge ============ */
 .category-badge-wrapper {
   margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .category-badge {
@@ -14,6 +93,10 @@
   font-size: 16px;
   font-weight: bold;
   display: inline-block;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Desktop Grid Layout: แสดงการ์ด 3 คอลัมน์ */
@@ -34,5 +117,18 @@
   .food-grid {
     grid-template-columns: 1fr; /* จอมือถือเหลือ 1 คอลัมน์ */
     gap: 16px;
+  }
+
+  .home-search-container {
+    padding: 8px 12px;
+  }
+
+  .home-search-input {
+    font-size: 14px;
+  }
+
+  .category-badge {
+    font-size: 14px;
+    padding: 6px 16px;
   }
 }
