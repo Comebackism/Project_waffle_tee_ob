@@ -173,7 +173,7 @@ export default function KitchenKDS() {
                     <div 
                       key={idx} 
                       className={`kds-task-item-container ${isDone && showChecklist ? 'done' : ''}`}
-                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', cursor: showChecklist ? 'pointer' : 'default', opacity: isDone && showChecklist ? 0.5 : 1, transition: 'all 0.2s', padding: '8px 0', borderBottom: '1px dashed #e5e7eb' }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', cursor: showChecklist ? 'pointer' : 'default', opacity: isDone && showChecklist ? 0.75 : 1, transition: 'all 0.2s', padding: '8px', borderRadius: '8px', borderLeft: isDone && showChecklist ? '3px solid #10b981' : '3px solid transparent', background: isDone && showChecklist ? '#f0fdf4' : 'transparent', borderBottom: '1px dashed #e5e7eb' }}
                       onClick={() => showChecklist && toggleCheck(order.order_id, idx, item.quantity)}
                     >
                       <div className="kds-task-item-main" style={{ display: 'flex', alignItems: 'center' }}>
@@ -196,7 +196,7 @@ export default function KitchenKDS() {
                           )}
                           {showChecklist && (
                             <span className={`kds-t-status ${isDone ? 'done' : doneCount > 0 ? 'cooking' : ''}`}>
-                              {isDone ? 'เสิร์ฟแล้ว' : doneCount > 0 ? `กำลังทำ ${doneCount}/${item.quantity}` : 'รอทำ'}
+                              {isDone ? 'พร้อมเสิร์ฟ' : doneCount > 0 ? `กำลังปรุง ${doneCount}/${item.quantity}` : 'รอปรุง'}
                             </span>
                           )}
                         </div>
