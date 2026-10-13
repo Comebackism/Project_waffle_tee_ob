@@ -95,7 +95,7 @@
 .checkout-item-name {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #6b7280;
+    color: #111827;
     line-height: 1.4;
     word-break: break-word;
 }
@@ -116,8 +116,8 @@
 
 .checkout-price-main {
     font-size: 1.15rem;
-    font-weight: 800;
-    color: #c8102e;
+    font-weight: 700;
+    color: #6b7280;
     white-space: nowrap;
 }
 
