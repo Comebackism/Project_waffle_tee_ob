@@ -6,7 +6,7 @@ exports.getDashboardStats = async (req, res) => {
     const todaySalesRes = await db.query(`
       SELECT SUM(total_amount) as total
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05' AND is_archived = false
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND "Status_id" = 'S05' AND is_archived = false
     `);
     const todaySales = parseFloat(todaySalesRes.rows[0].total || 0);
 
@@ -14,7 +14,7 @@ exports.getDashboardStats = async (req, res) => {
     const totalOrdersRes = await db.query(`
       SELECT COUNT(*) as count
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND is_archived = false
     `);
     const totalOrders = parseInt(totalOrdersRes.rows[0].count || 0);
 
@@ -40,8 +40,8 @@ exports.getDashboardStats = async (req, res) => {
       const daySalesRes = await db.query(`
         WITH hours AS (
           SELECT generate_series(
-            CURRENT_DATE::timestamp,
-            CURRENT_DATE::timestamp + '23 hours'::interval,
+            (NOW() AT TIME ZONE 'Asia/Bangkok')::date::timestamp,
+            (NOW() AT TIME ZONE 'Asia/Bangkok')::date::timestamp + '23 hours'::interval,
             '1 hour'::interval
           )::timestamp AS hour
         )
@@ -52,7 +52,7 @@ exports.getDashboardStats = async (req, res) => {
           COUNT(o.order_id) as orders
         FROM hours h
         LEFT JOIN "Order" o 
-          ON DATE_TRUNC('hour', o.created_at) = h.hour 
+          ON DATE_TRUNC('hour', o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = h.hour 
           AND o."Status_id" = 'S05' 
           AND o.is_archived = false
         GROUP BY h.hour
@@ -68,8 +68,8 @@ exports.getDashboardStats = async (req, res) => {
       const yearSalesRes = await db.query(`
         WITH months AS (
           SELECT generate_series(
-            DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '11 months',
-            DATE_TRUNC('month', CURRENT_DATE),
+            DATE_TRUNC('month', (NOW() AT TIME ZONE 'Asia/Bangkok')::date) - INTERVAL '11 months',
+            DATE_TRUNC('month', (NOW() AT TIME ZONE 'Asia/Bangkok')::date),
             '1 month'::interval
           )::date AS month_date
         )
@@ -80,7 +80,7 @@ exports.getDashboardStats = async (req, res) => {
           COUNT(o.order_id) + COALESCE(SUM(ds.total_orders), 0) as orders
         FROM months m
         LEFT JOIN "Order" o 
-          ON DATE_TRUNC('month', o.created_at) = m.month_date 
+          ON DATE_TRUNC('month', o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = m.month_date 
           AND o."Status_id" = 'S05' 
           AND o.is_archived = false
         LEFT JOIN "Daily_Summary" ds 
@@ -107,8 +107,8 @@ exports.getDashboardStats = async (req, res) => {
       const weeklySalesRes = await db.query(`
         WITH dates AS (
           SELECT generate_series(
-            CURRENT_DATE - INTERVAL '${intervalStr}',
-            CURRENT_DATE,
+            (NOW() AT TIME ZONE 'Asia/Bangkok')::date - INTERVAL '${intervalStr}',
+            (NOW() AT TIME ZONE 'Asia/Bangkok')::date,
             '1 day'::interval
           )::date AS date
         )
@@ -118,7 +118,7 @@ exports.getDashboardStats = async (req, res) => {
           COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales,
           COUNT(o.order_id) + COALESCE(ds.total_orders, 0) as orders
         FROM dates d
-        LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
+        LEFT JOIN "Order" o ON (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
         LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
         GROUP BY d.date, ds.total_sales, ds.total_orders
         ORDER BY d.date ASC
@@ -152,8 +152,8 @@ exports.getDashboardStats = async (req, res) => {
         FROM "Order_Item" oi
         JOIN "Order" o ON oi.order_id = o.order_id
         WHERE o."Status_id" = 'S05' AND o.is_archived = false
-          AND EXTRACT(MONTH FROM o.created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
-          AND EXTRACT(YEAR FROM o.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+          AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
+          AND EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
         GROUP BY oi.menu_id
 
         UNION ALL
@@ -163,8 +163,8 @@ exports.getDashboardStats = async (req, res) => {
           dms.menu_id, 
           SUM(dms.quantity_sold) as sold
         FROM "Daily_Menu_Summary" dms
-        WHERE EXTRACT(MONTH FROM dms.summary_date) = EXTRACT(MONTH FROM CURRENT_DATE)
-          AND EXTRACT(YEAR FROM dms.summary_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+        WHERE EXTRACT(MONTH FROM dms.summary_date) = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
+          AND EXTRACT(YEAR FROM dms.summary_date) = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
         GROUP BY dms.menu_id
       )
       SELECT 
@@ -265,7 +265,7 @@ exports.getSalesByDate = async (req, res) => {
         COALESCE(SUM(total_amount), 0) as total_sales,
         COUNT(*) as total_orders
       FROM "Order"
-      WHERE DATE(created_at) >= $1 AND DATE(created_at) <= $2 AND "Status_id" = 'S05' AND is_archived = false
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date >= $1 AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date <= $2 AND "Status_id" = 'S05' AND is_archived = false
     `, [start, end]);
     sales += parseFloat(liveRes.rows[0].total_sales || 0);
     orders += parseInt(liveRes.rows[0].total_orders || 0);
@@ -299,7 +299,7 @@ exports.getSalesTrend = async (req, res) => {
         COALESCE(SUM(o.total_amount), 0) + COALESCE(ds.total_sales, 0) as sales,
         COUNT(o.order_id) + COALESCE(ds.total_orders, 0) as orders
       FROM dates d
-      LEFT JOIN "Order" o ON DATE(o.created_at) = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
+      LEFT JOIN "Order" o ON (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = d.date AND o."Status_id" = 'S05' AND o.is_archived = false
       LEFT JOIN "Daily_Summary" ds ON ds.summary_date = d.date
       GROUP BY d.date, ds.total_sales, ds.total_orders
       ORDER BY d.date ASC

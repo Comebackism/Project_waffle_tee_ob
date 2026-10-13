@@ -19,13 +19,13 @@ const autoArchivePastOrders = async () => {
   try {
     // Check if there are any unarchived orders from before today (Thai Time)
     const checkRes = await client.query(`
-      SELECT DATE(created_at AT TIME ZONE 'Asia/Bangkok') as summary_date,
+      SELECT (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date as summary_date,
              COUNT(*) as order_count,
              COALESCE(SUM(total_amount), 0) as total_sales
       FROM "Order"
-      WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') < DATE(NOW() AT TIME ZONE 'Asia/Bangkok') 
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date < (NOW() AT TIME ZONE 'Asia/Bangkok')::date 
         AND is_archived = false AND "Status_id" = 'S05'
-      GROUP BY DATE(created_at AT TIME ZONE 'Asia/Bangkok')
+      GROUP BY (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date
     `);
 
     if (checkRes.rows.length > 0) {
@@ -48,7 +48,7 @@ const autoArchivePastOrders = async () => {
           SELECT oi.menu_id, SUM(oi.quantity) as sold
           FROM "Order_Item" oi
           JOIN "Order" o ON oi.order_id = o.order_id
-          WHERE DATE(o.created_at AT TIME ZONE 'Asia/Bangkok') = $1 AND o."Status_id" = 'S05' AND o.is_archived = false
+          WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = $1 AND o."Status_id" = 'S05' AND o.is_archived = false
           GROUP BY oi.menu_id
         `, [summaryDate]);
 
@@ -66,7 +66,7 @@ const autoArchivePastOrders = async () => {
       await client.query(`
         UPDATE "Order"
         SET is_archived = true
-        WHERE DATE(created_at) < CURRENT_DATE AND is_archived = false
+        WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date < (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND is_archived = false
       `);
       
       await client.query('COMMIT');
@@ -76,7 +76,7 @@ const autoArchivePastOrders = async () => {
       await client.query(`
         UPDATE "Order"
         SET is_archived = true
-        WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') < DATE(NOW() AT TIME ZONE 'Asia/Bangkok') AND is_archived = false
+        WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date < (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND is_archived = false
       `);
     }
   } catch (err) {
@@ -154,7 +154,7 @@ exports.createOrder = async (req, res) => {
     // 3. Generate queue_number using MAX to prevent duplicates (even after cancellations)
     const queueMaxResult = await client.query(`
       SELECT queue_number FROM "Order" 
-      WHERE DATE(created_at AT TIME ZONE 'Asia/Bangkok') = DATE(NOW() AT TIME ZONE 'Asia/Bangkok') AND is_archived = false 
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND is_archived = false 
       ORDER BY queue_number DESC LIMIT 1
     `);
     let queueCount = 1;
@@ -361,7 +361,7 @@ exports.getOrderById = async (req, res) => {
     const queueAheadResult = await db.query(`
       SELECT COUNT(*) 
       FROM "Order" 
-      WHERE DATE(created_at) = CURRENT_DATE 
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date 
       AND created_at < $1 
       AND "Status_id" IN ('S01', 'S02', 'S03')
       AND is_archived = false
@@ -389,7 +389,7 @@ exports.getOrdersBySession = async (req, res) => {
       JOIN "Status" s ON o."Status_id" = s.status_id
       LEFT JOIN "User" u ON o.user_id = u.user_id
       LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
-      WHERE o.session_id = $1 AND DATE(o.created_at) = CURRENT_DATE AND o.is_archived = false
+      WHERE o.session_id = $1 AND (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND o.is_archived = false
       ORDER BY o.created_at DESC
     `, [sessionId]);
 
@@ -445,7 +445,7 @@ exports.getOrdersToday = async (req, res) => {
       JOIN "Status" s ON o."Status_id" = s.status_id
       LEFT JOIN "User" u ON o.user_id = u.user_id
       LEFT JOIN "Table_Session" ts ON o.session_id = ts.session_id
-      WHERE DATE(o.created_at) = CURRENT_DATE AND o.is_archived = false
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND o.is_archived = false
       ORDER BY o.created_at DESC
     `);
     res.json(result.rows);
@@ -520,7 +520,7 @@ exports.clearAllOrders = async (req, res) => {
         COUNT(*) as order_count,
         COALESCE(SUM(total_amount), 0) as total_sales
       FROM "Order"
-      WHERE DATE(created_at) = CURRENT_DATE AND "Status_id" = 'S05' AND is_archived = false
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND "Status_id" = 'S05' AND is_archived = false
     `);
     const todayOrderCount = parseInt(summaryRes.rows[0].order_count || 0);
     const todaySales = parseFloat(summaryRes.rows[0].total_sales || 0);
@@ -528,7 +528,7 @@ exports.clearAllOrders = async (req, res) => {
     if (todayOrderCount > 0 || todaySales > 0) {
       await db.query(`
         INSERT INTO "Daily_Summary" (summary_date, total_orders, total_sales)
-        VALUES (CURRENT_DATE, $1, $2)
+        VALUES ((NOW() AT TIME ZONE 'Asia/Bangkok')::date, $1, $2)
         ON CONFLICT (summary_date) 
         DO UPDATE SET 
           total_orders = "Daily_Summary".total_orders + $1,
@@ -543,14 +543,14 @@ exports.clearAllOrders = async (req, res) => {
         SUM(oi.quantity) as sold
       FROM "Order_Item" oi
       JOIN "Order" o ON oi.order_id = o.order_id
-      WHERE DATE(o.created_at) = CURRENT_DATE AND o."Status_id" = 'S05' AND o.is_archived = false
+      WHERE (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND o."Status_id" = 'S05' AND o.is_archived = false
       GROUP BY oi.menu_id
     `);
 
     for (let row of menuSummaryRes.rows) {
       await db.query(`
         INSERT INTO "Daily_Menu_Summary" (summary_date, menu_id, quantity_sold)
-        VALUES (CURRENT_DATE, $1, $2)
+        VALUES ((NOW() AT TIME ZONE 'Asia/Bangkok')::date, $1, $2)
         ON CONFLICT (summary_date, menu_id) 
         DO UPDATE SET 
           quantity_sold = "Daily_Menu_Summary".quantity_sold + $2
@@ -561,7 +561,7 @@ exports.clearAllOrders = async (req, res) => {
     const result = await db.query(`
       UPDATE "Order" 
       SET is_archived = true
-      WHERE DATE(created_at) = CURRENT_DATE AND is_archived = false
+      WHERE (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok')::date = (NOW() AT TIME ZONE 'Asia/Bangkok')::date AND is_archived = false
     `);
 
     await db.query('COMMIT');

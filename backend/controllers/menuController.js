@@ -51,8 +51,8 @@ exports.getBestSellers = async (req, res) => {
         FROM "Order_Item" oi
         JOIN "Order" o ON oi.order_id = o.order_id
         WHERE o."Status_id" = 'S05' AND o.is_archived = false
-          AND EXTRACT(MONTH FROM o.created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
-          AND EXTRACT(YEAR FROM o.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+          AND EXTRACT(MONTH FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
+          AND EXTRACT(YEAR FROM o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Bangkok') = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
         GROUP BY oi.menu_id
 
         UNION ALL
@@ -62,8 +62,8 @@ exports.getBestSellers = async (req, res) => {
           dms.menu_id, 
           SUM(dms.quantity_sold) as sold
         FROM "Daily_Menu_Summary" dms
-        WHERE EXTRACT(MONTH FROM dms.summary_date) = EXTRACT(MONTH FROM CURRENT_DATE)
-          AND EXTRACT(YEAR FROM dms.summary_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+        WHERE EXTRACT(MONTH FROM dms.summary_date) = EXTRACT(MONTH FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
+          AND EXTRACT(YEAR FROM dms.summary_date) = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Asia/Bangkok'))
         GROUP BY dms.menu_id
       )
       SELECT 
