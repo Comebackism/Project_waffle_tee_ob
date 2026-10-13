@@ -21,6 +21,29 @@ import MyOrders from './pages/Customer/MyOrders';
 import Login from './pages/Login/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// สร้างคีย์ระบุท็อปปิ้งของรายการ (ชนิด + จำนวน) เพื่อใช้เทียบว่ารายการเหมือนกันหรือไม่
+const toppingsKey = (item) =>
+  (item.toppings || [])
+    .map((t) => `${t.topping_id || t.id}-${t.quantity || 1}`)
+    .sort()
+    .join('|');
+
+// รวมรายการที่เหมือนกัน (เมนู + ท็อปปิ้งชุดเดียวกัน) เข้าด้วยกัน โดยบวกจำนวน
+const mergeCartItems = (cart) => {
+  const result = [];
+  cart.forEach((item) => {
+    const idx = result.findIndex(
+      (r) => r.productId === item.productId && toppingsKey(r) === toppingsKey(item)
+    );
+    if (idx > -1) {
+      result[idx] = { ...result[idx], quantity: result[idx].quantity + item.quantity };
+    } else {
+      result.push(item);
+    }
+  });
+  return result;
+};
+
 // Customer App (with internal navigation)
 function CustomerApp() {
   const location = useLocation();
@@ -77,37 +100,14 @@ function CustomerApp() {
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '', shouldReload: false });
 
   const handleSelectProduct = (productId) => {
+    setEditingCartItem(null);
     setSelectedProductId(productId);
     setCurrentScreen('detail');
   };
 
   const handleAddToCart = (newItem) => {
-    setCart((prevCart) => {
-      const existingIndex = prevCart.findIndex((item) => {
-        if (item.productId !== newItem.productId) return false;
-        
-        // เช็คว่าหน้า/ไส้ (Topping) เหมือนกัน 100% หรือไม่ (เช็คทั้งชนิดและจำนวน)
-        const currentToppings = item.toppings 
-          ? item.toppings.map(t => `${t.topping_id || t.id}-${t.quantity}`).sort().join(',') 
-          : '';
-        const newToppings = newItem.toppings 
-          ? newItem.toppings.map(t => `${t.topping_id || t.id}-${t.quantity}`).sort().join(',') 
-          : '';
-          
-        return currentToppings === newToppings;
-      });
-
-      if (existingIndex > -1) {
-        const updatedCart = [...prevCart];
-        // สร้าง object ใหม่แทนการแก้ค่าเดิม (ป้องกันบั๊กบวกซ้ำ 2 รอบจาก React Strict Mode)
-        updatedCart[existingIndex] = {
-          ...updatedCart[existingIndex],
-          quantity: updatedCart[existingIndex].quantity + newItem.quantity
-        };
-        return updatedCart;
-      }
-      return [...prevCart, newItem];
-    });
+    // เพิ่มรายการใหม่แล้วรวมกับรายการเดิมที่เหมือนกัน (เมนู + ท็อปปิ้งชุดเดียวกัน)
+    setCart((prevCart) => mergeCartItems([...prevCart, newItem]));
 
     // กลับไปหน้าหลักเพื่อให้เลือกซื้อเพิ่มเติมได้
     setCurrentScreen('home');
@@ -122,11 +122,13 @@ function CustomerApp() {
 
   // Handler for updating an edited cart item
   const handleUpdateCartItem = (updatedItem) => {
-    setCart((prevCart) =>
-      prevCart.map((item) =>
+    setCart((prevCart) => {
+      const replaced = prevCart.map((item) =>
         item.cartId === updatedItem.cartId ? updatedItem : item
-      )
-    );
+      );
+      // รวมกับรายการอื่นที่เหมือนกัน (ถ้ามี) ป้องกันได้หลายบรรทัดซ้ำกัน
+      return mergeCartItems(replaced);
+    });
     setEditingCartItem(null);
     setCurrentScreen('cart');
   };
