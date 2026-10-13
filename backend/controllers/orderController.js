@@ -136,6 +136,26 @@ exports.createOrder = async (req, res) => {
       }
     }
 
+    // 0.6 Validate that all requested toppings exist and are still active
+    const toppingIds = [...new Set(items.flatMap(it => (it.toppings || []).map(t => t.topping_id)))];
+    if (toppingIds.length > 0) {
+      const toppingResult = await client.query('SELECT topping_id, name, is_active FROM "Topping" WHERE topping_id = ANY($1::text[])', [toppingIds]);
+
+      for (const item of items) {
+        for (const t of (item.toppings || [])) {
+          const dbTopping = toppingResult.rows.find(x => x.topping_id === t.topping_id);
+          if (!dbTopping) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: `ไม่พบท็อปปิ้งรหัส ${t.topping_id} ในระบบ` });
+          }
+          if (!dbTopping.is_active) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: `ขออภัย ท็อปปิ้ง "${dbTopping.name}" ถูกปิดใช้งานชั่วคราว กรุณารีเฟรชหน้าและทำรายการใหม่` });
+          }
+        }
+      }
+    }
+
     // 1. Advisory lock to prevent concurrent order creation from generating duplicate IDs
     await client.query('SELECT pg_advisory_xact_lock(1)');
 
