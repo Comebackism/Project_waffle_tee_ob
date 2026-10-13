@@ -12,9 +12,6 @@ exports.generateSession = async (req, res) => {
 
     // Generate a unique session ID
     const session_id = crypto.randomUUID();
-    
-    // Set expiration time
-    const expires_at = new Date(Date.now() + Number(duration_hours) * 60 * 60 * 1000);
 
     // Deactivate any existing active sessions for this table (except for takeaway which can have multiple concurrent sessions)
     if (!table_no.startsWith('หน้าร้าน')) {
@@ -24,11 +21,16 @@ exports.generateSession = async (req, res) => {
       );
     }
 
-    // Create new session
+    // expires_at ถูกคำนวณและเก็บเป็นเวลา UTC (timestamp without time zone)
+    // ให้สอดคล้องกับ created_at ที่ default เป็น UTC ป้องกันปัญหาเขตเวลา (เดิมส่ง JS Date
+    // ทำให้ pg serialize เป็นเวลาท้องถิ่น +7 แล้วเทียบกับ CURRENT_TIMESTAMP (UTC) ผิดพลาด)
     const result = await db.query(
       `INSERT INTO "Table_Session" (session_id, table_no, expires_at, is_active) 
-       VALUES ($1, $2, $3, TRUE) RETURNING *`,
-      [session_id, table_no, expires_at]
+       VALUES ($1, $2, (NOW() AT TIME ZONE 'UTC') + make_interval(hours => $3::int), TRUE) 
+       RETURNING session_id, table_no, is_active,
+                 expires_at AT TIME ZONE 'UTC' AS expires_at,
+                 created_at AT TIME ZONE 'UTC' AS created_at`,
+      [session_id, table_no, Number(duration_hours)]
     );
 
     res.status(201).json({
@@ -51,8 +53,12 @@ exports.validateSession = async (req, res) => {
       return res.status(400).json({ message: 'Session ID is required', valid: false });
     }
 
+    // ตรวจสอบสถานะหมดอายุใน SQL เพื่อเลี่ยงปัญหาการตีความ timezone ฝั่ง Node
     const result = await db.query(
-      `SELECT * FROM "Table_Session" WHERE session_id = $1`,
+      `SELECT session_id, table_no, is_active,
+              (expires_at < (NOW() AT TIME ZONE 'UTC')) AS is_expired,
+              expires_at AT TIME ZONE 'UTC' AS expires_at
+       FROM "Table_Session" WHERE session_id = $1`,
       [session_id]
     );
 
@@ -61,7 +67,6 @@ exports.validateSession = async (req, res) => {
     }
 
     const session = result.rows[0];
-    const now = new Date();
 
     // Check if manually deactivated
     if (!session.is_active) {
@@ -69,7 +74,7 @@ exports.validateSession = async (req, res) => {
     }
 
     // Check if expired
-    if (now > new Date(session.expires_at)) {
+    if (session.is_expired) {
       // Auto-deactivate
       await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE session_id = $1`, [session_id]);
       return res.status(403).json({ message: 'QR Code has expired', valid: false, reason: 'expired' });
@@ -90,11 +95,14 @@ exports.validateSession = async (req, res) => {
 // Get all active sessions (for cashier dashboard)
 exports.getActiveSessions = async (req, res) => {
   try {
-    // Auto-deactivate any sessions that have expired
-    await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE is_active = TRUE AND expires_at < CURRENT_TIMESTAMP`);
+    // Auto-deactivate any sessions that have expired (เทียบใน SQL ด้วยเวลา UTC ให้ถูกต้อง)
+    await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE is_active = TRUE AND expires_at < (NOW() AT TIME ZONE 'UTC')`);
 
     const result = await db.query(
-      `SELECT * FROM "Table_Session" WHERE is_active = TRUE ORDER BY created_at DESC`
+      `SELECT session_id, table_no, is_active,
+              expires_at AT TIME ZONE 'UTC' AS expires_at,
+              created_at AT TIME ZONE 'UTC' AS created_at
+       FROM "Table_Session" WHERE is_active = TRUE ORDER BY created_at DESC`
     );
     res.status(200).json(result.rows);
   } catch (err) {
