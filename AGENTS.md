@@ -6,7 +6,7 @@
 
 1. ตรวจสอบการเปลี่ยนแปลงด้วย `git status`
 2. `git add` ไฟล์ที่เกี่ยวข้อง (อย่า `git add .` แบบไม่ตรวจสอบ)
-3. `git commit` พร้อมข้อความอธิบายที่ชัดเจน (ใช้ Conventional Commits เช่น `fix:`, `feat:`, `style:`, `refactor:` และเขียนข้อความเป็นภาษาไทยได้)
+3. `git commit` พร้อมข้อความอธิบายที่ชัดเจน **ต้องเขียนข้อความเป็นภาษาไทยเสมอ** (สามารถขึ้นต้นด้วย Conventional Commits เช่น `fix:`, `feat:`, `style:`, `refactor:` ได้ แต่เนื้อหาหลักให้เป็นภาษาไทย)
 4. `git push` ขึ้น remote ปลายทาง: `https://github.com/Comebackism/Project_waffle_tee_ob`
 
 ### Remote ที่ต้อง Push
