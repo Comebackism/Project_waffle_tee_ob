@@ -137,15 +137,41 @@
   font-weight: 700;
 }
 
+.emp-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .emp-action-btn {
-  background: none;
-  border: none;
-  color: #3b82f6;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 14px;
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
+  transition: all 0.15s ease;
 }
-.emp-action-btn:hover { text-decoration: underline; }
+
+.emp-action-btn.edit {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+.emp-action-btn.edit:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.emp-action-btn.delete {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+.emp-action-btn.delete:hover {
+  background: #fecaca;
+  border-color: #fca5a5;
+}
 
 /* Modal */
 .admin-modal-overlay {

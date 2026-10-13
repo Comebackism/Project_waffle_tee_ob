@@ -216,8 +216,10 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td>
-                      <button className="emp-action-btn edit" onClick={() => handleEditClick(emp)}>แก้ไข</button>
-                      <button className="emp-action-btn delete" onClick={() => handleDeleteClick(emp)} style={{ marginLeft: '8px', backgroundColor: '#fee2e2', color: '#ef4444' }}>ลบ</button>
+                      <div className="emp-actions">
+                        <button className="emp-action-btn edit" onClick={() => handleEditClick(emp)}>แก้ไข</button>
+                        <button className="emp-action-btn delete" onClick={() => handleDeleteClick(emp)}>ลบ</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
