@@ -118,6 +118,18 @@ export default function KitchenKDS() {
 
 
 
+  // เมื่อเช็คครบทุกชิ้นในขั้นตอน "กำลังปรุง" (S03) ให้ย้ายออเดอร์ไป "พร้อมเสิร์ฟ" (S04) อัตโนมัติ
+  useEffect(() => {
+    orders.forEach((order) => {
+      if (order.Status_id !== 'S03' || !order.items || order.items.length === 0) return;
+      const allDone = order.items.every(
+        (item, idx) => (completedCounts[`${order.order_id}-${idx}`] || 0) >= item.quantity
+      );
+      if (allDone) updateStatus(order.order_id, 'S04');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedCounts, orders]);
+
   const getOrdersByStatus = (statusId) => orders.filter(o => o.Status_id === statusId);
 
   const renderColumn = (title, count, statusId, badgeIcon, badgeColor) => {
@@ -154,19 +166,23 @@ export default function KitchenKDS() {
                   const key = `${order.order_id}-${idx}`;
                   const doneCount = completedCounts[key] || 0;
                   const isDone = doneCount === item.quantity;
-                  
+                  // แสดงเช็คลิสเฉพาะขั้นตอน "กำลังปรุง" (S03) และ "พร้อมเสิร์ฟ" (S04) เท่านั้น
+                  const showChecklist = statusId === 'S03' || statusId === 'S04';
+
                   return (
                     <div 
                       key={idx} 
-                      className={`kds-task-item-container ${isDone ? 'done' : ''}`}
-                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', opacity: isDone ? 0.5 : 1, transition: 'all 0.2s', padding: '8px 0', borderBottom: '1px dashed #e5e7eb' }}
-                      onClick={() => toggleCheck(order.order_id, idx, item.quantity)}
+                      className={`kds-task-item-container ${isDone && showChecklist ? 'done' : ''}`}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', cursor: showChecklist ? 'pointer' : 'default', opacity: isDone && showChecklist ? 0.5 : 1, transition: 'all 0.2s', padding: '8px 0', borderBottom: '1px dashed #e5e7eb' }}
+                      onClick={() => showChecklist && toggleCheck(order.order_id, idx, item.quantity)}
                     >
                       <div className="kds-task-item-main" style={{ display: 'flex', alignItems: 'center' }}>
-                        <div className="kds-t-checkbox" style={{ color: isDone ? '#10b981' : '#d1d5db', fontSize: '18px', marginRight: '8px' }}>
-                          {isDone ? <FaCheckSquare /> : <FaRegSquare />}
-                        </div>
-                        <div className="kds-t-details" style={{ flex: 1, textDecoration: isDone ? 'line-through' : 'none' }}>
+                        {showChecklist && (
+                          <div className="kds-t-checkbox" style={{ color: isDone ? '#10b981' : '#d1d5db', fontSize: '18px', marginRight: '8px' }}>
+                            {isDone ? <FaCheckSquare /> : <FaRegSquare />}
+                          </div>
+                        )}
+                        <div className="kds-t-details" style={{ flex: 1, textDecoration: isDone && showChecklist ? 'line-through' : 'none' }}>
                           <span className="kds-t-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="kds-t-qty">{item.quantity}x</span> 
                             {item.menu_name}
@@ -181,7 +197,7 @@ export default function KitchenKDS() {
                         </div>
                       </div>
                       
-                      {item.quantity > 1 && (
+                      {showChecklist && item.quantity > 1 && (
                         <div 
                           className="kds-t-dots-grid" 
                           style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginLeft: '26px' }}
@@ -221,6 +237,14 @@ export default function KitchenKDS() {
               {order.note && (
                 <div className="kds-task-note">
                   หมายเหตุ : {order.note}
+                </div>
+              )}
+
+              {/* ความคืบหน้า (แสดงเฉพาะกำลังปรุง) */}
+              {statusId === 'S03' && order.items && order.items.length > 0 && (
+                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>ทำแล้ว {order.items.reduce((s, it, idx) => s + Math.min(completedCounts[`${order.order_id}-${idx}`] || 0, it.quantity), 0)} / {order.items.reduce((s, it) => s + it.quantity, 0)} ชิ้น</span>
+                  <span style={{ color: '#f97316', fontWeight: 600 }}>กำลังทยอยเสิร์ฟ</span>
                 </div>
               )}
 
