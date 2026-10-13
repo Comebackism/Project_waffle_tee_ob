@@ -1,5 +1,10 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 require('dotenv').config();
+
+// คอลัมน์ชนิด "timestamp without time zone" (OID 1114) ทั้งระบบถูกเก็บเป็นเวลา UTC
+// (สอดคล้องกับค่า default CURRENT_TIMESTAMP ของ PostgreSQL และการที่ session timezone = UTC)
+// ค่าเริ่มต้นของ pg จะตีความเป็นเวลาท้องถิ่นของโปรเซส ทำให้เวลาคลาดเคลื่อน ต้องบังคับเป็น UTC
+types.setTypeParser(1114, (v) => (v === null ? null : new Date(v.replace(' ', 'T') + 'Z')));
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

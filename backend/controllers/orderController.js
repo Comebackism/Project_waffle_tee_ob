@@ -249,8 +249,8 @@ exports.createOrder = async (req, res) => {
     const isPaid = pay_method === 'promptpay' && final_slip_picture;
     const orderResult = await client.query(
       `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref, session_id, order_type) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid ? new Date() : null, slip_trans_ref, session_id, order_type]
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $9 THEN (NOW() AT TIME ZONE 'UTC') ELSE NULL END, $10, $11, $12) RETURNING *`,
+      [order_id, queue_number, 'S01', pay_method, total_amount, final_slip_picture, note, total_calories || 0, isPaid, slip_trans_ref, session_id, order_type]
     );
 
     // 4. Insert Order Items
@@ -468,7 +468,7 @@ exports.updateOrderStatus = async (req, res) => {
           `UPDATE "Order" 
            SET "Status_id" = $1, 
                user_id = COALESCE(user_id, $2),
-               pay_time = COALESCE(pay_time, CURRENT_TIMESTAMP) 
+               pay_time = COALESCE(pay_time, (NOW() AT TIME ZONE 'UTC')) 
            WHERE order_id = $3`,
           [status_id, user_id, id]
         );
@@ -476,7 +476,7 @@ exports.updateOrderStatus = async (req, res) => {
         await db.query(
           `UPDATE "Order" 
            SET "Status_id" = $1, 
-               pay_time = COALESCE(pay_time, CURRENT_TIMESTAMP) 
+               pay_time = COALESCE(pay_time, (NOW() AT TIME ZONE 'UTC')) 
            WHERE order_id = $2`,
           [status_id, id]
         );
