@@ -4,16 +4,20 @@ const crypto = require('crypto');
 // Generate a new QR session for a table
 exports.generateSession = async (req, res) => {
   try {
-    const { table_no, duration_hours = 2 } = req.body;
+    const { table_no, duration_hours } = req.body;
     
     if (!table_no) {
       return res.status(400).json({ message: 'Table number is required' });
     }
 
-    // ระยะเวลารับเป็นชั่วโมงแบบทศนิยมได้ (เช่น 0.5 = 30 นาที)
-    const hours = Number(duration_hours);
-    if (!Number.isFinite(hours) || hours <= 0) {
-      return res.status(400).json({ message: 'ระยะเวลาต้องเป็นตัวเลขมากกว่า 0 ชั่วโมง' });
+    // ระยะเวลาเป็นตัวเลือก: ถ้าไม่ส่งมา/เป็น null => ไม่หมดอายุ (ใช้กับโต๊ะ "ทานที่ร้าน" ที่ปิดเอง)
+    const hasDuration = duration_hours !== undefined && duration_hours !== null && duration_hours !== '';
+    let hours = null;
+    if (hasDuration) {
+      hours = Number(duration_hours);
+      if (!Number.isFinite(hours) || hours <= 0) {
+        return res.status(400).json({ message: 'ระยะเวลาต้องเป็นตัวเลขมากกว่า 0 ชั่วโมง' });
+      }
     }
 
     // Generate a unique session ID
@@ -27,12 +31,10 @@ exports.generateSession = async (req, res) => {
       );
     }
 
-    // expires_at ถูกคำนวณและเก็บเป็นเวลา UTC (timestamp without time zone)
-    // ให้สอดคล้องกับ created_at ที่ default เป็น UTC ป้องกันปัญหาเขตเวลา (เดิมส่ง JS Date
-    // ทำให้ pg serialize เป็นเวลาท้องถิ่น +7 แล้วเทียบกับ CURRENT_TIMESTAMP (UTC) ผิดพลาด)
+    // expires_at: ถ้าไม่ระบุระยะเวลา (hours = null) จะเป็น NULL = ไม่หมดอายุ
     const result = await db.query(
       `INSERT INTO "Table_Session" (session_id, table_no, expires_at, is_active) 
-       VALUES ($1, $2, (NOW() AT TIME ZONE 'UTC') + ($3::numeric * INTERVAL '1 hour'), TRUE) 
+       VALUES ($1, $2, CASE WHEN $3::numeric IS NULL THEN NULL ELSE (NOW() AT TIME ZONE 'UTC') + ($3::numeric * INTERVAL '1 hour') END, TRUE) 
        RETURNING session_id, table_no, is_active,
                  expires_at AT TIME ZONE 'UTC' AS expires_at,
                  created_at AT TIME ZONE 'UTC' AS created_at`,
@@ -62,7 +64,7 @@ exports.validateSession = async (req, res) => {
     // ตรวจสอบสถานะหมดอายุใน SQL เพื่อเลี่ยงปัญหาการตีความ timezone ฝั่ง Node
     const result = await db.query(
       `SELECT session_id, table_no, is_active,
-              (expires_at < (NOW() AT TIME ZONE 'UTC')) AS is_expired,
+              (expires_at IS NOT NULL AND expires_at < (NOW() AT TIME ZONE 'UTC')) AS is_expired,
               expires_at AT TIME ZONE 'UTC' AS expires_at
        FROM "Table_Session" WHERE session_id = $1`,
       [session_id]
@@ -102,7 +104,7 @@ exports.validateSession = async (req, res) => {
 exports.getActiveSessions = async (req, res) => {
   try {
     // Auto-deactivate any sessions that have expired (เทียบใน SQL ด้วยเวลา UTC ให้ถูกต้อง)
-    await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE is_active = TRUE AND expires_at < (NOW() AT TIME ZONE 'UTC')`);
+    await db.query(`UPDATE "Table_Session" SET is_active = FALSE WHERE is_active = TRUE AND expires_at IS NOT NULL AND expires_at < (NOW() AT TIME ZONE 'UTC')`);
 
     const result = await db.query(
       `SELECT session_id, table_no, is_active,

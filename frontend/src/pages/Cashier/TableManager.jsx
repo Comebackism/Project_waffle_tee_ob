@@ -59,21 +59,25 @@ export default function TableManager() {
       return;
     }
     
-    let finalDuration = duration;
-    if (duration === 'custom') {
-      const h = Number(customDuration) || 0;
-      const mRaw = customMinutes === 'custom' ? Number(customMinuteValue) : Number(customMinutes);
-      const m = Number.isFinite(mRaw) ? mRaw : 0;
-      if (customMinutes === 'custom' && (m < 0 || m > 59)) {
-        setError('กรุณาระบุนาทีเป็นตัวเลข 0 - 59');
-        return;
+    // "ทานที่ร้าน" ไม่ตั้งเวลาหมดอายุ (ปิดโต๊ะเอง) / "หน้าร้าน" เลือกระยะเวลาได้
+    let finalDuration = null;
+    if (qrType !== 'dine-in') {
+      finalDuration = duration;
+      if (duration === 'custom') {
+        const h = Number(customDuration) || 0;
+        const mRaw = customMinutes === 'custom' ? Number(customMinuteValue) : Number(customMinutes);
+        const m = Number.isFinite(mRaw) ? mRaw : 0;
+        if (customMinutes === 'custom' && (m < 0 || m > 59)) {
+          setError('กรุณาระบุนาทีเป็นตัวเลข 0 - 59');
+          return;
+        }
+        const totalHours = h + m / 60;
+        if (!(totalHours > 0)) {
+          setError('กรุณาระบุระยะเวลาให้ถูกต้อง (อย่างน้อย 1 นาที)');
+          return;
+        }
+        finalDuration = totalHours;
       }
-      const totalHours = h + m / 60;
-      if (!(totalHours > 0)) {
-        setError('กรุณาระบุระยะเวลาให้ถูกต้อง (อย่างน้อย 1 นาที)');
-        return;
-      }
-      finalDuration = totalHours;
     }
     
     setLoading(true);
@@ -126,7 +130,7 @@ export default function TableManager() {
     // Open a new window for printing the QR
     const printWindow = window.open('', '_blank');
     const qrUrl = `${window.location.origin}/?session=${sessionId}`;
-    const formattedTime = formatTime(expiresAt);
+    const expiryLabel = expiresAt ? `หมดเวลา: ${formatTime(expiresAt)}` : 'ไม่หมดอายุ (ปิดโต๊ะเมื่อใช้เสร็จ)';
     
     printWindow.document.write(`
       <html>
@@ -236,7 +240,7 @@ export default function TableManager() {
             <div class="qr-container" id="qr-code"></div>
             
             <div style="text-align: center; width: 100%;">
-              <div class="expiry">หมดเวลา: ${formattedTime}</div>
+              <div class="expiry">${expiryLabel}</div>
             </div>
             
             <p class="url">${qrUrl}</p>
@@ -260,6 +264,7 @@ export default function TableManager() {
   };
 
   const formatTime = (dateString) => {
+    if (!dateString) return 'ไม่หมดอายุ';
     const d = new Date(dateString);
     return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   };
@@ -344,6 +349,7 @@ export default function TableManager() {
                   />
                 </div>
               )}
+              {qrType !== 'dine-in' && (
               <div className="form-group">
                 <label>ระยะเวลา (ชั่วโมง)</label>
                 <select value={duration} onChange={(e) => setDuration(e.target.value)}>
@@ -393,6 +399,7 @@ export default function TableManager() {
                   </div>
                 )}
               </div>
+              )}
               <button type="submit" className="tm-btn-primary" disabled={loading}>
                 {loading ? 'กำลังสร้าง...' : <><FaPlus /> สร้าง QR Code</>}
               </button>
@@ -411,12 +418,12 @@ export default function TableManager() {
             ) : (
               <div className="tm-sessions-grid">
                 {sessions.filter(s => !s.table_no.startsWith('หน้าร้าน')).map(session => {
-                  const isExpiringSoon = (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
+                  const isExpiringSoon = session.expires_at && (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
                   return (
                     <div key={session.session_id} className={`tm-session-item ${isExpiringSoon ? 'expiring' : ''}`}>
                       <div className="session-header">
                         <h3>โต๊ะ {session.table_no}</h3>
-                        <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
+                        <span className="time-badge">{session.expires_at ? `หมดเวลา ${formatTime(session.expires_at)}` : 'ไม่หมดอายุ (จนกว่าจะปิดโต๊ะ)'}</span>
                       </div>
                       <div className="qr-preview">
                         <QRCodeSVG value={`${window.location.origin}/?session=${session.session_id}`} size={120} />
@@ -446,12 +453,12 @@ export default function TableManager() {
             ) : (
               <div className="tm-sessions-grid">
                 {sessions.filter(s => s.table_no.startsWith('หน้าร้าน')).map(session => {
-                  const isExpiringSoon = (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
+                  const isExpiringSoon = session.expires_at && (new Date(session.expires_at) - new Date()) < 30 * 60 * 1000;
                   return (
                     <div key={session.session_id} className={`tm-session-item ${isExpiringSoon ? 'expiring' : ''}`}>
                       <div className="session-header">
                         <h3>{session.table_no}</h3>
-                        <span className="time-badge">หมดเวลา {formatTime(session.expires_at)}</span>
+                        <span className="time-badge">{session.expires_at ? `หมดเวลา ${formatTime(session.expires_at)}` : 'ไม่หมดอายุ (จนกว่าจะปิดโต๊ะ)'}</span>
                       </div>
                       <div className="qr-preview">
                         <QRCodeSVG value={`${window.location.origin}/?session=${session.session_id}`} size={120} />
@@ -485,7 +492,7 @@ export default function TableManager() {
             </div>
             <div className="tm-modal-body">
               <QRCodeSVG value={`${window.location.origin}/?session=${viewSession.session_id}`} size={300} level="H" />
-              <p className="tm-modal-url">หมดเวลา: {formatTime(viewSession.expires_at)}</p>
+              <p className="tm-modal-url">{viewSession.expires_at ? `หมดเวลา: ${formatTime(viewSession.expires_at)}` : 'ไม่หมดอายุ (จนกว่าจะปิดโต๊ะ)'}</p>
             </div>
             <div className="tm-modal-footer">
               <button className="tm-btn-primary" onClick={() => {
