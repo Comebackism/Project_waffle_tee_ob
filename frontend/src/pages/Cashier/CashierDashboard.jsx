@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList
 } from 'recharts';
-import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCalendarAlt, FaCaretDown, FaUsers } from 'react-icons/fa';
+import { FaMoneyBillWave, FaShoppingBag, FaChartBar, FaBell, FaExclamationTriangle, FaChartLine, FaCheckCircle, FaCaretDown, FaUsers } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import Flatpickr from 'react-flatpickr';
 import 'flatpickr/dist/themes/light.css';
@@ -33,9 +33,9 @@ export default function CashierDashboard() {
 
   // Sales period dropdown
   const [salesPeriod, setSalesPeriod] = useState('today');
-  const [salesPeriodCustomDate, setSalesPeriodCustomDate] = useState('');
   const [salesPeriodData, setSalesPeriodData] = useState(null);
   const [salesPeriodLoading, setSalesPeriodLoading] = useState(false);
+  const [periodTrend, setPeriodTrend] = useState(null);
 
   // Chart custom data (synced with startDate/endDate)
   const [chartCustomData, setChartCustomData] = useState(null);
@@ -75,7 +75,7 @@ export default function CashierDashboard() {
     return () => clearInterval(interval);
   }, [timeRange]);
 
-  // Fetch sales for selected period
+  // Fetch sales for selected period (card values)
   useEffect(() => {
     const fetchSalesPeriod = async () => {
       if (salesPeriod === 'today') {
@@ -96,17 +96,6 @@ export default function CashierDashboard() {
         } else if (salesPeriod === 'this_year') {
           start = `${now.getFullYear()}-01-01`;
           end = now.toISOString().split('T')[0];
-        } else if (salesPeriod === 'custom_date' && salesPeriodCustomDate) {
-          start = end = salesPeriodCustomDate;
-        } else if (salesPeriod === 'custom_month' && salesPeriodCustomDate) {
-          // salesPeriodCustomDate = 'YYYY-MM'
-          const [y, m] = salesPeriodCustomDate.split('-');
-          start = `${y}-${m}-01`;
-          const lastDay = new Date(Number(y), Number(m), 0).getDate();
-          end = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
-        } else if (salesPeriod === 'custom_year' && salesPeriodCustomDate) {
-          start = `${salesPeriodCustomDate}-01-01`;
-          end = `${salesPeriodCustomDate}-12-31`;
         } else {
           setSalesPeriodLoading(false);
           return;
@@ -121,7 +110,36 @@ export default function CashierDashboard() {
       }
     };
     fetchSalesPeriod();
-  }, [salesPeriod, salesPeriodCustomDate]);
+  }, [salesPeriod]);
+
+  // ให้การเลือกช่วงเวลา (วันนี้/เมื่อวาน/เดือนนี้/ปีนี้) ขับเคลื่อนกราฟ Trend ด้านล่างด้วย
+  useEffect(() => {
+    if (salesPeriod === 'yesterday') {
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      const d = yesterday.toISOString().split('T')[0];
+      setChartCustomLoading(true);
+      apiFetch(`/api/dashboard/sales-trend?startDate=${d}&endDate=${d}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => setPeriodTrend(Array.isArray(data) ? data : null))
+        .catch(() => setPeriodTrend(null))
+        .finally(() => setChartCustomLoading(false));
+    } else {
+      // today => รายชั่วโมง, this_month => รายวัน, this_year => รายเดือน
+      setPeriodTrend(null);
+      setTimeRange(salesPeriod === 'today' ? 'day' : salesPeriod === 'this_month' ? 'month' : 'year');
+    }
+  }, [salesPeriod]);
+
+  const handleSalesPeriodChange = (value) => {
+    setSalesPeriod(value);
+    setSalesPeriodData(null);
+    // ล้างช่วงวันที่กำหนดเองของ "ยอดขายทั้งหมด" เพื่อให้กราฟสะท้อนช่วงเวลาที่เลือก
+    setStartDate('');
+    setEndDate('');
+    setChartCustomData(null);
+  };
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -164,69 +182,19 @@ export default function CashierDashboard() {
                   <select
                     className="cd-sales-period-select"
                     value={salesPeriod}
-                    onChange={(e) => {
-                      setSalesPeriod(e.target.value);
-                      setSalesPeriodCustomDate('');
-                      setSalesPeriodData(null);
-                    }}
+                    onChange={(e) => handleSalesPeriodChange(e.target.value)}
                   >
                     <option value="today">ยอดขายวันนี้</option>
                     <option value="yesterday">ยอดขายเมื่อวาน</option>
-                    <option value="custom_date">เลือกวัน...</option>
                     <option value="this_month">ยอดขายเดือนนี้</option>
-                    <option value="custom_month">เลือกเดือน...</option>
                     <option value="this_year">ยอดขายปีนี้</option>
-                    <option value="custom_year">เลือกปี...</option>
                   </select>
                 </div>
               </div>
 
-              {/* Custom date inputs */}
-              {salesPeriod === 'custom_date' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <input
-                    type="date"
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    max={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  />
-                </div>
-              )}
-              {salesPeriod === 'custom_month' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <input
-                    type="month"
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  />
-                </div>
-              )}
-              {salesPeriod === 'custom_year' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <select
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  >
-                    <option value="">เลือกปี</option>
-                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
-                      <option key={y} value={y}>{y + 543} ({y})</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               <div className="cd-summary-value highlight">
                 {salesPeriodLoading ? (
                   <span style={{ fontSize: '16px', color: '#9ca3af' }}>กำลังโหลด...</span>
-                ) : (['custom_date', 'custom_month', 'custom_year'].includes(salesPeriod) && !salesPeriodCustomDate) ? (
-                  <span style={{ fontSize: '20px', color: '#9ca3af' }}>-</span>
                 ) : salesPeriod === 'today' || !salesPeriodData ? (
                   stats.todaySales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 ) : (
@@ -242,69 +210,19 @@ export default function CashierDashboard() {
                   <select
                     className="cd-sales-period-select"
                     value={salesPeriod}
-                    onChange={(e) => {
-                      setSalesPeriod(e.target.value);
-                      setSalesPeriodCustomDate('');
-                      setSalesPeriodData(null);
-                    }}
+                    onChange={(e) => handleSalesPeriodChange(e.target.value)}
                   >
                     <option value="today">ออเดอร์วันนี้</option>
                     <option value="yesterday">ออเดอร์เมื่อวาน</option>
-                    <option value="custom_date">เลือกวัน...</option>
                     <option value="this_month">ออเดอร์เดือนนี้</option>
-                    <option value="custom_month">เลือกเดือน...</option>
                     <option value="this_year">ออเดอร์ปีนี้</option>
-                    <option value="custom_year">เลือกปี...</option>
                   </select>
                 </div>
               </div>
 
-              {/* Custom date inputs - synced with sales */}
-              {salesPeriod === 'custom_date' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <input
-                    type="date"
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    max={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  />
-                </div>
-              )}
-              {salesPeriod === 'custom_month' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <input
-                    type="month"
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  />
-                </div>
-              )}
-              {salesPeriod === 'custom_year' && (
-                <div className="cd-sales-period-input-row">
-                  <FaCalendarAlt style={{ color: '#9ca3af', flexShrink: 0 }} />
-                  <select
-                    className="cd-sales-period-input"
-                    value={salesPeriodCustomDate}
-                    onChange={(e) => setSalesPeriodCustomDate(e.target.value)}
-                  >
-                    <option value="">เลือกปี</option>
-                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
-                      <option key={y} value={y}>{y + 543} ({y})</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               <div className="cd-summary-value">
                 {salesPeriodLoading ? (
                   <span style={{ fontSize: '16px', color: '#9ca3af' }}>กำลังโหลด...</span>
-                ) : (['custom_date', 'custom_month', 'custom_year'].includes(salesPeriod) && !salesPeriodCustomDate) ? (
-                  <span style={{ fontSize: '20px', color: '#9ca3af' }}>-</span>
                 ) : salesPeriod === 'today' || !salesPeriodData ? (
                   stats.todayOrders
                 ) : (
@@ -411,10 +329,12 @@ export default function CashierDashboard() {
                   <span className="cd-subtitle">
                     {chartType === 'employees' ? `พนักงานทั้งหมด ${stats.totalEmployees || 0} คน` : (chartCustomData && startDate && endDate
                       ? `${new Date(startDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+                      : periodTrend
+                      ? (salesPeriod === 'yesterday' ? 'แนวโน้มเมื่อวานนี้' : 'แนวโน้มตามช่วงเวลาที่เลือก')
                       : (chartType === 'sales' ? 'แนวโน้มยอดขาย' : 'แนวโน้มจำนวนออเดอร์'))}
                   </span>
                 </div>
-                {!chartCustomData && (
+                {!chartCustomData && !periodTrend && (
                   <select 
                     className="cd-filter-btn" 
                     value={timeRange} 
@@ -457,7 +377,7 @@ export default function CashierDashboard() {
                   </ResponsiveContainer>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartCustomData || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                    <LineChart data={chartCustomData || periodTrend || stats.weeklySales} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dx={-10} />
@@ -465,7 +385,7 @@ export default function CashierDashboard() {
                         cursor={{ stroke: '#fef2f2', strokeWidth: 2 }} 
                         labelFormatter={(value, payload) => {
                           if (payload && payload.length > 0) {
-                            const prefix = chartCustomData ? 'วันที่:' : (timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:'));
+                            const prefix = (chartCustomData || periodTrend) ? 'วันที่:' : (timeRange === 'day' ? 'เวลา:' : (timeRange === 'year' ? 'เดือน:' : 'วันที่:'));
                             return `${prefix} ${payload[0].payload.fullDate || value}`;
                           }
                           return value;
