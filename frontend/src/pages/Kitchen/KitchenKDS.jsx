@@ -107,13 +107,17 @@ export default function KitchenKDS() {
     }));
   };
 
-  const setExactCount = (e, orderId, idx, count) => {
-    e.stopPropagation();
+  // ปรับจำนวนชิ้นที่ทำเสร็จ (+1 ติ๊ก / -1 ยกเลิก) ให้ชิ้นนั้นย้ายไป "พร้อมเสิร์ฟ" ทีละชิ้น
+  const adjustCount = (e, orderId, idx, delta, max) => {
+    if (e) e.stopPropagation();
     const key = `${orderId}-${idx}`;
-    setCompletedCounts(prev => ({
-      ...prev,
-      [key]: prev[key] === count ? count - 1 : count
-    }));
+    setCompletedCounts(prev => {
+      const cur = prev[key] || 0;
+      let next = cur + delta;
+      if (next < 0) next = 0;
+      if (next > max) next = max;
+      return { ...prev, [key]: next };
+    });
   };
 
 
@@ -204,34 +208,51 @@ export default function KitchenKDS() {
                       
                       {showChecklist && item.quantity > 1 && (
                         <div 
-                          className="kds-t-dots-grid" 
-                          style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginLeft: '26px' }}
+                          className="kds-t-unit-rows"
+                          style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginLeft: '26px' }}
                           onClick={e => e.stopPropagation()}
                         >
-                          {Array.from({ length: item.quantity }).map((_, i) => {
-                            const isBoxDone = i < doneCount;
-                            return (
-                              <div 
-                                key={i}
-                                onClick={(e) => setExactCount(e, order.order_id, idx, i + 1)}
-                                style={{
-                                  width: '24px',
-                                  height: '24px',
-                                  borderRadius: '6px',
-                                  border: `2px solid ${isBoxDone ? '#10b981' : '#e5e7eb'}`,
-                                  background: isBoxDone ? '#10b981' : '#f9fafb',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s'
-                                }}
-                              >
-                                {isBoxDone && <FaCheck size={12} />}
+                          {item.quantity - doneCount > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#ea580c', minWidth: '78px' }}>กำลังปรุง {item.quantity - doneCount}</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {Array.from({ length: item.quantity - doneCount }).map((_, i) => (
+                                  <div
+                                    key={`todo-${i}`}
+                                    title="ติ๊กว่าทำเสร็จแล้ว (ย้ายไปพร้อมเสิร์ฟ)"
+                                    onClick={(e) => adjustCount(e, order.order_id, idx, 1, item.quantity)}
+                                    style={{
+                                      width: '24px', height: '24px', borderRadius: '6px',
+                                      border: '2px solid #e5e7eb', background: '#f9fafb',
+                                      cursor: 'pointer', transition: 'all 0.15s'
+                                    }}
+                                  />
+                                ))}
                               </div>
-                            );
-                          })}
+                            </div>
+                          )}
+                          {doneCount > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', minWidth: '78px' }}>พร้อมเสิร์ฟ {doneCount}</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {Array.from({ length: doneCount }).map((_, i) => (
+                                  <div
+                                    key={`done-${i}`}
+                                    title="คลิกเพื่อยกเลิก"
+                                    onClick={(e) => adjustCount(e, order.order_id, idx, -1, item.quantity)}
+                                    style={{
+                                      width: '24px', height: '24px', borderRadius: '6px',
+                                      border: '2px solid #10b981', background: '#10b981',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      color: 'white', cursor: 'pointer', transition: 'all 0.15s'
+                                    }}
+                                  >
+                                    <FaCheck size={12} />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
