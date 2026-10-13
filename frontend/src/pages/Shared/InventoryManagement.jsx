@@ -883,7 +883,7 @@ export default function InventoryManagement() {
           <div className="im-modal-overlay" onClick={() => setShowWithdrawModal(false)}>
             <div className="im-modal" onClick={e => e.stopPropagation()}>
               <div className="im-modal-header">
-                <h2>เบิกวัตถุดิบ (บันทึก Invoice)</h2>
+                <h2>เบิกวัตถุดิบ</h2>
                 <button className="im-modal-close" onClick={() => setShowWithdrawModal(false)}><FaTimes /></button>
               </div>
               <form onSubmit={handleWithdraw}>
@@ -976,7 +976,7 @@ export default function InventoryManagement() {
           <div className="im-modal-overlay" onClick={() => setShowInvoiceModal(false)}>
             <div className="im-modal im-modal-wide" onClick={e => e.stopPropagation()}>
               <div className="im-modal-header">
-                <h2>ประวัติการเบิกและรับวัตถุดิบ (ตาราง Invoice)</h2>
+                <h2>ประวัติการเบิกและรับวัตถุดิบ</h2>
                 <button className="im-modal-close" onClick={() => setShowInvoiceModal(false)}><FaTimes /></button>
               </div>
               <div className="im-modal-body">
