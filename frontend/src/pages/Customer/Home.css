@@ -111,20 +111,7 @@
 .bs-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 14px;
-  gap: 12px;
-}
-
-.bs-title-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.bs-fire {
-  font-size: 22px;
-  line-height: 1;
 }
 
 .bs-title {
@@ -132,18 +119,6 @@
   font-size: 18px;
   font-weight: 800;
   color: var(--primary-red, #B30021);
-}
-
-.bs-subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.bs-hint {
-  font-size: 12px;
-  color: #b08c8c;
-  white-space: nowrap;
 }
 
 .bs-strip {

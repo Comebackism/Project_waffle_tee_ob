@@ -75,14 +75,7 @@ export default function Home({ onSelectProduct }) {
       {!searchQuery && bestSellers && bestSellers.length > 0 && (
         <div className="bs-section">
           <div className="bs-header">
-            <div className="bs-title-group">
-              <span className="bs-fire">🔥</span>
-              <div>
-                <h2 className="bs-title">สินค้าขายดี</h2>
-                <p className="bs-subtitle">ยอดนิยมประจำเดือนนี้</p>
-              </div>
-            </div>
-            <span className="bs-hint">เลื่อนดูเพิ่ม →</span>
+            <h2 className="bs-title">สินค้าขายดี</h2>
           </div>
 
           <div className="bs-strip">
