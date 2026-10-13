@@ -991,14 +991,22 @@ export default function InventoryManagement() {
                     </div>
                     <div className="im-invoice-table-wrapper">
                     <table className="im-invoice-table">
+                      <colgroup>
+                        <col style={{ width: '26%' }} />
+                        <col style={{ width: '13%' }} />
+                        <col style={{ width: '10%' }} />
+                        <col style={{ width: '22%' }} />
+                        <col style={{ width: '15%' }} />
+                        <col style={{ width: '14%' }} />
+                      </colgroup>
                       <thead>
                         <tr>
-                          <th>เลขที่ใบสำคัญ (InvoiceNo)</th>
-                          <th>วันที่ (InvDate)</th>
-                          <th>รหัสวัตถุดิบ (ProductId)</th>
-                          <th>ชื่อวัตถุดิบ (ProductName)</th>
-                          <th style={{textAlign: 'right'}}>ปริมาณน้ำหนัก (Weight)</th>
-                          <th style={{textAlign: 'center'}}>ผู้ทำรายการ (By)</th>
+                          <th title="InvoiceNo">เลขที่ใบสำคัญ</th>
+                          <th title="InvDate">วันที่</th>
+                          <th title="ProductId" style={{textAlign: 'center'}}>รหัส</th>
+                          <th title="ProductName">ชื่อวัตถุดิบ</th>
+                          <th title="Weight" style={{textAlign: 'right'}}>ปริมาณ</th>
+                          <th title="By" style={{textAlign: 'center'}}>ผู้ทำรายการ</th>
                         </tr>
                       </thead>
                       <tbody>

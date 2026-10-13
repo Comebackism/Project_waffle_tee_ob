@@ -718,8 +718,9 @@
 }
 
 .im-invoice-table-wrapper {
-  overflow: auto;
-  max-height: 64vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 68vh;
   margin-top: 8px;
   border: 1px solid #eef0f3;
   border-radius: 10px;
@@ -727,35 +728,34 @@
 
 .im-invoice-table {
   width: 100%;
-  min-width: 820px;
+  table-layout: fixed;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 12.5px;
   text-align: left;
 }
 
 .im-invoice-table th {
   background: #f9fafb;
-  padding: 12px 14px;
+  padding: 10px 8px;
   font-weight: 700;
   color: #374151;
   border-bottom: 2px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 2;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .im-invoice-table td {
-  padding: 12px 14px;
+  padding: 10px 8px;
   border-bottom: 1px solid #f3f4f6;
   color: #4b5563;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.im-invoice-table td.im-inv-name {
   white-space: normal;
-  min-width: 180px;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
 .im-invoice-table tr:hover td {
@@ -766,6 +766,7 @@
   font-family: monospace;
   font-weight: 700;
   color: #1f2937;
+  font-size: 11.5px;
 }
 
 .im-inv-badge {
