@@ -111,6 +111,7 @@
 .bs-header {
   display: flex;
   align-items: center;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
@@ -119,6 +120,16 @@
   font-size: 18px;
   font-weight: 800;
   color: var(--primary-red, #B30021);
+}
+
+.bs-period {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-red, #B30021);
+  background: #ffe4e4;
+  padding: 3px 10px;
+  border-radius: 999px;
+  line-height: 1;
 }
 
 .bs-strip {

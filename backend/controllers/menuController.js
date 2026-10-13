@@ -78,7 +78,7 @@ exports.getBestSellers = async (req, res) => {
       WHERE m.is_active = true
       GROUP BY m.menu_id, m.name, m.price, m.description, m."Picture"
       ORDER BY sold DESC
-      LIMIT 3
+      LIMIT 8
     `);
     res.json(bestSellingRes.rows);
   } catch (err) {

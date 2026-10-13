@@ -76,6 +76,7 @@ export default function Home({ onSelectProduct }) {
         <div className="bs-section">
           <div className="bs-header">
             <h2 className="bs-title">สินค้าขายดี</h2>
+            <span className="bs-period">ประจำเดือน</span>
           </div>
 
           <div className="bs-strip">
