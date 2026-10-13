@@ -10,6 +10,12 @@ exports.generateSession = async (req, res) => {
       return res.status(400).json({ message: 'Table number is required' });
     }
 
+    // ระยะเวลารับเป็นชั่วโมงแบบทศนิยมได้ (เช่น 0.5 = 30 นาที)
+    const hours = Number(duration_hours);
+    if (!Number.isFinite(hours) || hours <= 0) {
+      return res.status(400).json({ message: 'ระยะเวลาต้องเป็นตัวเลขมากกว่า 0 ชั่วโมง' });
+    }
+
     // Generate a unique session ID
     const session_id = crypto.randomUUID();
 
@@ -26,11 +32,11 @@ exports.generateSession = async (req, res) => {
     // ทำให้ pg serialize เป็นเวลาท้องถิ่น +7 แล้วเทียบกับ CURRENT_TIMESTAMP (UTC) ผิดพลาด)
     const result = await db.query(
       `INSERT INTO "Table_Session" (session_id, table_no, expires_at, is_active) 
-       VALUES ($1, $2, (NOW() AT TIME ZONE 'UTC') + make_interval(hours => $3::int), TRUE) 
+       VALUES ($1, $2, (NOW() AT TIME ZONE 'UTC') + ($3::numeric * INTERVAL '1 hour'), TRUE) 
        RETURNING session_id, table_no, is_active,
                  expires_at AT TIME ZONE 'UTC' AS expires_at,
                  created_at AT TIME ZONE 'UTC' AS created_at`,
-      [session_id, table_no, Number(duration_hours)]
+      [session_id, table_no, hours]
     );
 
     res.status(201).json({

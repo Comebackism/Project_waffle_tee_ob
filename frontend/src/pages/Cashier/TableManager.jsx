@@ -11,6 +11,7 @@ export default function TableManager() {
   const [tableNo, setTableNo] = useState('');
   const [duration, setDuration] = useState('2');
   const [customDuration, setCustomDuration] = useState('');
+  const [customMinutes, setCustomMinutes] = useState('0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -59,11 +60,14 @@ export default function TableManager() {
     
     let finalDuration = duration;
     if (duration === 'custom') {
-      if (!customDuration || isNaN(customDuration) || Number(customDuration) <= 0) {
-        setError('กรุณาระบุระยะเวลาให้ถูกต้อง (ชั่วโมง)');
+      const h = Number(customDuration) || 0;
+      const m = Number(customMinutes) || 0;
+      const totalHours = h + m / 60;
+      if (!(totalHours > 0)) {
+        setError('กรุณาระบุระยะเวลาให้ถูกต้อง (อย่างน้อย 1 นาที)');
         return;
       }
-      finalDuration = customDuration;
+      finalDuration = totalHours;
     }
     
     setLoading(true);
@@ -337,22 +341,38 @@ export default function TableManager() {
               <div className="form-group">
                 <label>ระยะเวลา (ชั่วโมง)</label>
                 <select value={duration} onChange={(e) => setDuration(e.target.value)}>
+                  <option value="0.5">30 นาที</option>
+                  <option value="0.75">45 นาที</option>
                   <option value="1">1 ชั่วโมง</option>
+                  <option value="1.5">1 ชั่วโมง 30 นาที</option>
                   <option value="2">2 ชั่วโมง</option>
                   <option value="3">3 ชั่วโมง</option>
                   <option value="4">4 ชั่วโมง</option>
                   <option value="custom">กำหนดเอง...</option>
                 </select>
                 {duration === 'custom' && (
-                  <input 
-                    type="number" 
-                    step="0.1" 
-                    min="0.1" 
-                    value={customDuration}
-                    onChange={(e) => setCustomDuration(e.target.value)}
-                    placeholder="เช่น 1.5 หรือ 0.5"
-                    style={{ marginTop: '10px' }}
-                  />
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', display: 'block' }}>ชั่วโมง</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={customDuration}
+                        onChange={(e) => setCustomDuration(e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', display: 'block' }}>นาที</label>
+                      <select value={customMinutes} onChange={(e) => setCustomMinutes(e.target.value)}>
+                        <option value="0">0 นาที</option>
+                        <option value="15">15 นาที</option>
+                        <option value="30">30 นาที</option>
+                        <option value="45">45 นาที</option>
+                      </select>
+                    </div>
+                  </div>
                 )}
               </div>
               <button type="submit" className="tm-btn-primary" disabled={loading}>
