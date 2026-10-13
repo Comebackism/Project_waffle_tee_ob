@@ -985,7 +985,11 @@ export default function InventoryManagement() {
                 ) : invoices.length === 0 ? (
                   <div className="im-loading">ยังไม่มีประวัติการเบิกวัตถุดิบ</div>
                 ) : (
-                  <div className="im-invoice-table-wrapper">
+                  <>
+                    <div style={{ marginBottom: '10px', color: '#6b7280', fontSize: '13px' }}>
+                      ทั้งหมด {invoices.length} รายการ
+                    </div>
+                    <div className="im-invoice-table-wrapper">
                     <table className="im-invoice-table">
                       <thead>
                         <tr>
@@ -1013,8 +1017,9 @@ export default function InventoryManagement() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
-                  </div>
+                      </table>
+                    </div>
+                  </>
                 )}
               </div>
               <div className="im-modal-footer">
