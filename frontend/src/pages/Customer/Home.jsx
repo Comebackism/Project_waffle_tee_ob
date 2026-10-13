@@ -73,25 +73,40 @@ export default function Home({ onSelectProduct }) {
 
       {/* Best Sellers - hide when searching */}
       {!searchQuery && bestSellers && bestSellers.length > 0 && (
-        <div className="best-sellers-section" style={{ marginBottom: '32px' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>สินค้าขายดี</h2>
-            <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>ยอดจำหน่ายสะสมประจำเดือนนี้</p>
+        <div className="bs-section">
+          <div className="bs-header">
+            <div className="bs-title-group">
+              <span className="bs-fire">🔥</span>
+              <div>
+                <h2 className="bs-title">สินค้าขายดี</h2>
+                <p className="bs-subtitle">ยอดนิยมประจำเดือนนี้</p>
+              </div>
+            </div>
+            <span className="bs-hint">เลื่อนดูเพิ่ม →</span>
           </div>
-          
-          <div className="food-grid">
+
+          <div className="bs-strip">
             {bestSellers.map((item, index) => (
-              <FoodCard
+              <div
                 key={`best-${item.menu_id}`}
-                name={item.name}
-                description={item.description}
-                price={Number(item.price)}
-                image={resolveImage(item.image)}
-                isActive={true}
-                rank={index + 1}
-                soldCount={item.sold}
-                FoodcardClick={() => onSelectProduct(item.menu_id)}
-              />
+                className="bs-card"
+                onClick={() => onSelectProduct(item.menu_id)}
+              >
+                <div className="bs-card-img-wrap">
+                  <img
+                    src={resolveImage(item.image)}
+                    alt={item.name}
+                    className="bs-card-img"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/200'; }}
+                  />
+                  <span className={`bs-rank bs-rank-${index + 1}`}>{index + 1}</span>
+                </div>
+                <div className="bs-card-body">
+                  <span className="bs-card-name">{item.name}</span>
+                  <span className="bs-card-sold">ขายแล้ว {item.sold} ชิ้น</span>
+                  <span className="bs-card-price">{Number(item.price)} บาท</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
