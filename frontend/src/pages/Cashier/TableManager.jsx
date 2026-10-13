@@ -12,6 +12,7 @@ export default function TableManager() {
   const [duration, setDuration] = useState('2');
   const [customDuration, setCustomDuration] = useState('');
   const [customMinutes, setCustomMinutes] = useState('0');
+  const [customMinuteValue, setCustomMinuteValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -61,7 +62,12 @@ export default function TableManager() {
     let finalDuration = duration;
     if (duration === 'custom') {
       const h = Number(customDuration) || 0;
-      const m = Number(customMinutes) || 0;
+      const mRaw = customMinutes === 'custom' ? Number(customMinuteValue) : Number(customMinutes);
+      const m = Number.isFinite(mRaw) ? mRaw : 0;
+      if (customMinutes === 'custom' && (m < 0 || m > 59)) {
+        setError('กรุณาระบุนาทีเป็นตัวเลข 0 - 59');
+        return;
+      }
       const totalHours = h + m / 60;
       if (!(totalHours > 0)) {
         setError('กรุณาระบุระยะเวลาให้ถูกต้อง (อย่างน้อย 1 นาที)');
@@ -370,7 +376,19 @@ export default function TableManager() {
                         <option value="15">15 นาที</option>
                         <option value="30">30 นาที</option>
                         <option value="45">45 นาที</option>
+                        <option value="custom">กำหนดเอง...</option>
                       </select>
+                      {customMinutes === 'custom' && (
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={customMinuteValue}
+                          onChange={(e) => setCustomMinuteValue(e.target.value)}
+                          placeholder="0 - 59"
+                          style={{ marginTop: '8px' }}
+                        />
+                      )}
                     </div>
                   </div>
                 )}
