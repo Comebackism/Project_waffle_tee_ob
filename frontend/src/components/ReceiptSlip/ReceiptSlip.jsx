@@ -91,10 +91,12 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
               <span className="receipt-meta-key">วันที่สร้าง:</span>
               <span className="receipt-meta-val">{formatDate(order.created_at)}</span>
             </div>
-            <div className="receipt-meta-row">
-              <span className="receipt-meta-key">วันที่ชำระ:</span>
-              <span className="receipt-meta-val">{formatDate(order.pay_time || order.created_at)}</span>
-            </div>
+            {order.Status_id !== 'S01' && order.Status_id !== 'S06' && (
+              <div className="receipt-meta-row">
+                <span className="receipt-meta-key">วันที่ชำระ:</span>
+                <span className="receipt-meta-val">{formatDate(order.pay_time || order.created_at)}</span>
+              </div>
+            )}
             <div className="receipt-meta-row">
               <span className="receipt-meta-key">พนักงาน:</span>
               <span className="receipt-meta-val">{staffName}</span>
