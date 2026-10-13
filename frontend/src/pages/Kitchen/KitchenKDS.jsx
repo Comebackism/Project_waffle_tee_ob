@@ -194,6 +194,11 @@ export default function KitchenKDS() {
                               ))}
                             </div>
                           )}
+                          {showChecklist && (
+                            <span className={`kds-t-status ${isDone ? 'done' : doneCount > 0 ? 'cooking' : ''}`}>
+                              {isDone ? 'เสิร์ฟแล้ว' : doneCount > 0 ? `กำลังทำ ${doneCount}/${item.quantity}` : 'รอทำ'}
+                            </span>
+                          )}
                         </div>
                       </div>
                       

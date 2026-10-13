@@ -254,3 +254,26 @@
   }
 }
 
+/* ป้ายสถานะต่อรายการ (ทยอยเปลี่ยนตอนติ๊ก) */
+.kds-t-status {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #9ca3af;
+  width: fit-content;
+}
+
+.kds-t-status.cooking {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.kds-t-status.done {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
