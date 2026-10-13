@@ -137,6 +137,11 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
 
   const navItems = getNavItems();
 
+  // แอดมินสลับได้ทุกคน / บทบาทอื่นเห็นเฉพาะบทบาทเดียวกัน
+  const switchableUsers = currentUser?.Role_id === 'R01'
+    ? users
+    : users.filter((u) => u.Role_id === currentUser?.Role_id);
+
   return (
     <div className="backoffice-layout">
       {/* Mobile Header (Hidden on Desktop) */}
@@ -203,7 +208,7 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
           {showUserMenu && (
             <div className="bo-user-menu">
               <div className="bo-user-menu-title">สลับผู้ใช้งาน</div>
-              {users.map(u => (
+              {switchableUsers.map(u => (
                 <div 
                   key={u.user_id} 
                   className={`bo-user-menu-item ${currentUser?.user_id === u.user_id ? 'active' : ''}`}

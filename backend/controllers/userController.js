@@ -5,12 +5,24 @@ const jwt = require('jsonwebtoken');
 // Get all users
 exports.getUsers = async (req, res) => {
   try {
-    const result = await db.query(`
+    const isAdmin = req.user && req.user.Role_id === 'R01';
+
+    let query = `
       SELECT u.user_id, u.firstname, u.lastname, u.username, u.phone, u.email, u."Role_id", r."RoleName" as rolename
       FROM "User" u
       LEFT JOIN "Role" r ON u."Role_id" = r."Role_id"
-      ORDER BY u.user_id ASC
-    `);
+    `;
+    const params = [];
+
+    // ผู้ดูแลระบบ (R01) เห็นพนักงานทุกคน / บทบาทอื่นเห็นเฉพาะบทบาทเดียวกัน (ใช้กับเมนูสลับผู้ใช้)
+    if (!isAdmin) {
+      query += ' WHERE u."Role_id" = $1';
+      params.push(req.user.Role_id);
+    }
+
+    query += ' ORDER BY u.user_id ASC';
+
+    const result = await db.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error(err.message);
