@@ -160,38 +160,45 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                 {/* รายการสินค้าสั่งซื้อ */}
                 <div className="checkout-items-section">
                     {cartItems.map((item, index) => {
-                        const baseTotal = Number(item.basePrice || 0) * item.quantity;
-                        const toppingsTotal = item.toppings
-                            ? item.toppings.reduce((sum, top) => sum + (Number(top.price || 0) * (top.quantity || 1)), 0)
-                            : 0;
+                        const qty = item.quantity || 1;
+                        const baseUnit = Number(item.basePrice || 0);
+                        const toppings = item.toppings || [];
+                        const toppingUnitTotal = toppings.reduce((s, t) => s + Number(t.price || 0) * (t.quantity || 1), 0);
+                        const unitTotal = baseUnit + toppingUnitTotal;
+                        const lineTotal = unitTotal * qty;
+                        const lineCalories = (Number(item.baseCalories || 0) + toppings.reduce((s, t) => s + (Number(t.Calories || t.calories || 0) * (t.quantity || 1)), 0)) * qty;
 
                         return (
                             <div key={item.cartId || index} className="checkout-item-card">
                                 <div className="checkout-item-header">
                                     <div className="checkout-item-title-group">
                                         <span className="checkout-item-name">{item.name}</span>
-                                        <span className="checkout-item-qty">x{item.quantity}</span>
-                                    </div>
-                                    <div className="checkout-item-price-group">
-                                        <span className="checkout-price-main">
-                                            {baseTotal} บาท <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginLeft: '4px' }}>{Number(item.baseCalories || 0) * item.quantity} kcal</span>
-                                        </span>
-                                        {toppingsTotal > 0 && (
-                                            <span className="checkout-price-sub">+ {toppingsTotal * item.quantity} บาท</span>
-                                        )}
+                                        <span className="checkout-item-qty">x{qty}</span>
                                     </div>
                                 </div>
 
-                                {/* แสดงท็อปปิ้ง */}
-                                {item.toppings && item.toppings.length > 0 && (
-                                    <div className="checkout-item-toppings">
-                                        {item.toppings.map((top, idx) => (
-                                            <div key={idx} className="checkout-topping-line">
-                                                • {top.name} {top.quantity > 1 ? `x${top.quantity}` : ''} {Number(top.price) > 0 ? `+ ${Number(top.price) * (top.quantity || 1)} บาท` : ''} <span style={{ color: '#9ca3af', fontSize: '12px', marginLeft: '4px' }}>({(top.Calories || top.calories || 0) * (top.quantity || 1)} kcal)</span>
-                                            </div>
-                                        ))}
+                                {/* บิลย่อยของรายการนี้ */}
+                                <div className="checkout-item-breakdown">
+                                    <div className="co-breakdown-row">
+                                        <span>ราคาเมนู {qty > 1 ? `(${baseUnit} × ${qty})` : ''}</span>
+                                        <span>{baseUnit * qty} บาท</span>
                                     </div>
-                                )}
+
+                                    {toppings.map((top, idx) => {
+                                        const topUnit = Number(top.price || 0) * (top.quantity || 1);
+                                        return (
+                                            <div key={idx} className="co-breakdown-row topping">
+                                                <span>+ {top.name}{top.quantity > 1 ? ` x${top.quantity}` : ''} {qty > 1 ? `(${topUnit} × ${qty})` : ''}</span>
+                                                <span>+ {topUnit * qty} บาท</span>
+                                            </div>
+                                        );
+                                    })}
+
+                                    <div className="co-breakdown-total">
+                                        <span>รวมรายการนี้</span>
+                                        <span>{lineTotal} บาท <span className="co-kcal">· {lineCalories} kcal</span></span>
+                                    </div>
+                                </div>
                             </div>
                         );
                     })}

@@ -126,6 +126,49 @@
     color: #6b7280;
 }
 
+/* บิลย่อยของแต่ละรายการ */
+.checkout-item-breakdown {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.co-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.co-breakdown-row.topping {
+    color: #9ca3af;
+    padding-left: 10px;
+}
+
+.co-breakdown-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.co-kcal {
+    font-weight: 500;
+    font-size: 0.78rem;
+    color: #9ca3af;
+}
+
 .checkout-item-toppings {
     display: flex;
     flex-direction: column;
