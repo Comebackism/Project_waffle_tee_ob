@@ -455,9 +455,6 @@ export default function CashierDashboard() {
                   <div className="cd-bs-info">
                     <span className="cd-bs-name">{product.name}</span>
                     <span className="cd-bs-sold"><FaChartLine style={{marginRight:'4px', color:'#10b981'}}/> ขายแล้ว {product.sold} ชิ้น</span>
-                    <div className="cd-bs-bar-container">
-                      <div className="cd-bs-bar-fill" style={{ width: index === 0 ? '80%' : index === 1 ? '50%' : '30%', backgroundColor: index === 0 ? '#dc2626' : '#4b5563' }}></div>
-                    </div>
                   </div>
                 </div>
               ))}
