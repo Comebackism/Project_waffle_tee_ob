@@ -122,18 +122,6 @@ export default function KitchenKDS() {
 
 
 
-  // เมื่อเช็คครบทุกชิ้นในขั้นตอน "กำลังปรุง" (S03) ให้ย้ายออเดอร์ไป "พร้อมเสิร์ฟ" (S04) อัตโนมัติ
-  useEffect(() => {
-    orders.forEach((order) => {
-      if (order.Status_id !== 'S03' || !order.items || order.items.length === 0) return;
-      const allDone = order.items.every(
-        (item, idx) => (completedCounts[`${order.order_id}-${idx}`] || 0) >= item.quantity
-      );
-      if (allDone) updateStatus(order.order_id, 'S04');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completedCounts, orders]);
-
   const getOrdersByStatus = (statusId) => orders.filter(o => o.Status_id === statusId);
 
   const renderColumn = (title, count, statusId, badgeIcon, badgeColor) => {
