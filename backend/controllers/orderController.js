@@ -95,7 +95,9 @@ autoArchivePastOrders();
 exports.createOrder = async (req, res) => {
   const client = await db.connect();
   try {
-    const { items, pay_method, total_amount, slip_picture, note, total_calories, session_id, order_type = 'takeaway' } = req.body;
+    const { items, pay_method, total_amount, slip_picture, note, total_calories, session_id } = req.body;
+    // ประเภทออเดอร์เริ่มต้น (กรณีไม่มี session) — ค่าจริงจะถูกล็อกตาม QR Code ด้านล่าง
+    let order_type = req.body.order_type === 'dine_in' ? 'dine_in' : 'takeaway';
     
     // items = [{ menu_id, quantity, toppings: [{topping_id, quantity}] }]
 
@@ -104,7 +106,7 @@ exports.createOrder = async (req, res) => {
 
     // 0. Validate session if provided (to prevent ordering on expired QR codes)
     if (session_id) {
-      const sessionResult = await client.query('SELECT is_active FROM "Table_Session" WHERE session_id = $1', [session_id]);
+      const sessionResult = await client.query('SELECT is_active, table_no FROM "Table_Session" WHERE session_id = $1', [session_id]);
       if (sessionResult.rows.length === 0) {
         await client.query('ROLLBACK');
         return res.status(400).json({ message: 'เซสชัน QR Code ไม่ถูกต้อง' });
@@ -113,6 +115,8 @@ exports.createOrder = async (req, res) => {
         await client.query('ROLLBACK');
         return res.status(403).json({ message: 'QR Code นี้หมดอายุหรือถูกปิดไปแล้ว กรุณาสแกนใหม่' });
       }
+      // ล็อกประเภทออเดอร์ตาม QR Code ที่ร้านออกให้: คิวหน้าร้าน = กลับบ้าน, โต๊ะ = ทานที่ร้าน
+      order_type = String(sessionResult.rows[0].table_no || '').startsWith('หน้าร้าน') ? 'takeaway' : 'dine_in';
     }
 
     // 0.5 Validate that all requested menus are active

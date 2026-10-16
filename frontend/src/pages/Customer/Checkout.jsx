@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag, FaDownload } from 'react-icons/fa';
+import { FaArrowLeft, FaMoneyBillWave, FaQrcode, FaUpload, FaCheckCircle, FaExclamationCircle, FaUtensils, FaShoppingBag, FaDownload, FaLock } from 'react-icons/fa';
 import { QRCodeCanvas } from 'qrcode.react';
 import './Checkout.css';
 
@@ -37,9 +37,9 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
     // State เลือกวิธีชำระเงิน ('promptpay' หรือ 'cash')
     const [paymentMethod, setPaymentMethod] = useState('promptpay');
     
-    // State เลือกประเภทออเดอร์
+    // ประเภทออเดอร์ - ล็อกตาม QR Code ที่ร้านออกให้ (ไม่ให้ลูกค้าเลือกเอง)
     const isTakeawayOnly = tableNo && tableNo.startsWith('หน้าร้าน');
-    const [orderType, setOrderType] = useState(isTakeawayOnly ? 'takeaway' : 'dine_in');
+    const orderType = isTakeawayOnly ? 'takeaway' : 'dine_in';
 
     // State สำหรับอัปโหลดสลิป
     const [slipFile, setSlipFile] = useState(null);
@@ -212,79 +212,52 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                     </div>
                 )}
 
-                {/* ตัวเลือกทานที่ร้าน / กลับบ้าน (ซ่อนถ้าเป็นคิวหน้าร้าน) */}
-                {!isTakeawayOnly && (
-                    <div className="checkout-order-type-section" style={{ background: '#fff', padding: '20px', borderRadius: '12px', marginTop: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#374151' }}>รูปแบบการรับประทาน</h3>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <label 
-                                style={{ 
-                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
-                                    border: `2px solid ${orderType === 'dine_in' ? '#ef4444' : '#e5e7eb'}`, 
-                                    borderRadius: '8px', 
-                                    background: orderType === 'dine_in' ? '#fef2f2' : '#fff', 
-                                    cursor: 'pointer', 
-                                    transition: 'all 0.2s', 
-                                    fontWeight: orderType === 'dine_in' ? 'bold' : 'normal', 
-                                    color: orderType === 'dine_in' ? '#ef4444' : '#4b5563' 
-                                }}
-                            >
-                                <input 
-                                    type="radio" 
-                                    name="orderType" 
-                                    value="dine_in" 
-                                    checked={orderType === 'dine_in'} 
-                                    onChange={() => setOrderType('dine_in')} 
-                                    style={{ display: 'none' }} 
-                                />
-                                <FaUtensils style={{ marginRight: '8px' }} /> ทานที่ร้าน
-                            </label>
-                            <label 
-                                style={{ 
-                                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', 
-                                    border: `2px solid ${orderType === 'takeaway' ? '#ef4444' : '#e5e7eb'}`, 
-                                    borderRadius: '8px', 
-                                    background: orderType === 'takeaway' ? '#fef2f2' : '#fff', 
-                                    cursor: 'pointer', 
-                                    transition: 'all 0.2s', 
-                                    fontWeight: orderType === 'takeaway' ? 'bold' : 'normal', 
-                                    color: orderType === 'takeaway' ? '#ef4444' : '#4b5563' 
-                                }}
-                            >
-                                <input 
-                                    type="radio" 
-                                    name="orderType" 
-                                    value="takeaway" 
-                                    checked={orderType === 'takeaway'} 
-                                    onChange={() => setOrderType('takeaway')} 
-                                    style={{ display: 'none' }} 
-                                />
-                                <FaShoppingBag style={{ marginRight: '8px' }} /> กลับบ้าน
-                            </label>
-                        </div>
-                        
-                        {/* แจ้งเตือนเมื่อเลือกทานกลับบ้าน */}
-                        {orderType === 'takeaway' && (
-                            <div style={{ 
-                                marginTop: '16px', 
-                                padding: '12px', 
-                                backgroundColor: '#fff7ed', 
-                                border: '1px solid #ffedd5', 
-                                borderRadius: '8px',
-                                color: '#c2410c',
-                                fontSize: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}>
-                                <FaExclamationCircle style={{ fontSize: '18px', color: '#ea580c' }} />
-                                <span style={{ lineHeight: '1.4' }}>
-                                    <strong>ข้อควรระวัง:</strong> ถ้าสั่งกลับบ้าน โปรดสั่งให้เรียบร้อยในบิลเดียว เนื่องจากหลังจากสั่งเสร็จ QR Code ของโต๊ะนี้จะถูกปิดลง
-                                </span>
-                            </div>
-                        )}
+                {/* รูปแบบการรับประทาน (ล็อกตาม QR Code ที่ร้านออกให้ ไม่ให้ลูกค้าเลือกเอง) */}
+                <div className="checkout-order-type-section" style={{ background: '#fff', padding: '20px', borderRadius: '12px', marginTop: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#374151' }}>รูปแบบการรับประทาน</h3>
+
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        flexWrap: 'wrap',
+                        padding: '14px 16px',
+                        borderRadius: '8px',
+                        border: `2px solid ${orderType === 'dine_in' ? '#3b82f6' : '#f97316'}`,
+                        background: orderType === 'dine_in' ? '#eff6ff' : '#fff7ed',
+                        color: orderType === 'dine_in' ? '#1d4ed8' : '#c2410c',
+                        fontWeight: 'bold'
+                    }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            {orderType === 'dine_in' ? <FaUtensils /> : <FaShoppingBag />}
+                            {orderType === 'dine_in' ? `ทานที่ร้าน${tableNo ? ` (โต๊ะ ${tableNo})` : ''}` : 'กลับบ้าน (Takeaway)'}
+                        </span>
+                        <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 'normal', fontSize: '12px', color: '#6b7280' }}>
+                            <FaLock /> ล็อกตาม QR Code ที่ร้านออกให้
+                        </span>
                     </div>
-                )}
+
+                    {/* แจ้งเตือนเมื่อเป็นออเดอร์กลับบ้าน */}
+                    {orderType === 'takeaway' && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px',
+                            backgroundColor: '#fff7ed',
+                            border: '1px solid #ffedd5',
+                            borderRadius: '8px',
+                            color: '#c2410c',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <FaExclamationCircle style={{ fontSize: '18px', color: '#ea580c', flexShrink: 0 }} />
+                            <span style={{ lineHeight: '1.4' }}>
+                                <strong>ข้อควรระวัง:</strong> ออเดอร์นี้เป็นแบบกลับบ้าน โปรดสั่งให้เรียบร้อยในบิลเดียว เนื่องจากเมื่อออเดอร์เสร็จสิ้น QR Code นี้จะถูกปิดลง
+                            </span>
+                        </div>
+                    )}
+                </div>
 
                 {/* การ์ดสรุปราคารวม & ภาษี */}
                 <div className="checkout-summary-card">
