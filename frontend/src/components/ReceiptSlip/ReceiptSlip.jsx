@@ -32,6 +32,14 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
     calculatedSubtotal += (base + tops);
   });
 
+  // แคลอรีรวมของออเดอร์นี้ (คิดแยกตามแต่ละรายการ) — ถ้าเมนูไม่มีข้อมูลแคลอรี ให้ใช้ค่าที่บันทึกไว้ในออเดอร์
+  const calculatedCalories = items.reduce((sum, item) => {
+    const menuCal = Number(item.menu_calories || 0);
+    const toppingCal = (item.toppings || []).reduce((s, t) => s + (Number(t.topping_calories || 0) * (t.quantity || 1)), 0);
+    return sum + (Math.round(menuCal + toppingCal) * (item.quantity || 1));
+  }, 0);
+  const totalCalories = calculatedCalories > 0 ? calculatedCalories : Number(order.total_calories || 0);
+
   const grandTotal = Number(order.total_amount || calculatedSubtotal);
   const paymentMethodText = order.pay_method === 'cash' ? 'เงินสด (Cash)' : 'โอนเงิน (PromptPay)';
   const staffName = order.firstname ? `${order.firstname} ${order.lastname || ''}` : (order.user_id ? `แคชเชียร์ #${order.user_id}` : 'แคชเชียร์');
@@ -112,6 +120,12 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
           {/* Items List */}
           <div className="receipt-items-list">
             {items.map((item, idx) => {
+              const itemQty = item.quantity || 1;
+              const menuCal = Number(item.menu_calories || 0);
+              const toppingCalUnit = (item.toppings || []).reduce((sum, t) => sum + (Number(t.topping_calories || 0) * (t.quantity || 1)), 0);
+              const unitCal = Math.round(menuCal + toppingCalUnit);
+              const lineCal = unitCal * itemQty;
+
               return (
                 <div key={idx} className="receipt-item-block">
                   <div className="receipt-item-main">
@@ -130,6 +144,14 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
                       <span className="receipt-topping-price">+ {(Number(top.topping_price || top.price || 0) * (top.quantity || 1) * (item.quantity || 1)).toFixed(0)} บาท</span>
                     </div>
                   ))}
+
+                  {/* แคลอรีของรายการนี้ (แยกตามรายการ) */}
+                  {unitCal > 0 && (
+                    <div className="receipt-item-calorie">
+                      <span>แคลอรี {itemQty > 1 ? `(${unitCal} × ${itemQty})` : ''}</span>
+                      <span className="receipt-item-calorie-val">{lineCal} kcal</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -150,6 +172,13 @@ export default function ReceiptSlip({ order, onClose, autoShow = false, hidePrin
               <span>จำนวนรวมทั้งหมด</span>
               <span>{items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0)} ชิ้น</span>
             </div>
+
+            {totalCalories > 0 && (
+              <div className="receipt-price-row">
+                <span>แคลอรีรวมทั้งหมด</span>
+                <span>{totalCalories} kcal</span>
+              </div>
+            )}
 
             <div className="receipt-solid-line"></div>
 

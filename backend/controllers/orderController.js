@@ -363,7 +363,7 @@ exports.getOrderById = async (req, res) => {
 
     // 2. Get order items with menu info
     const itemsResult = await db.query(`
-      SELECT oi.*, m.name as menu_name, m.price as menu_price, m."Picture" as menu_picture
+      SELECT oi.*, m.name as menu_name, m.price as menu_price, m."Picture" as menu_picture, m."Calories" as menu_calories
       FROM "Order_Item" oi
       JOIN "Menu" m ON oi.menu_id = m.menu_id
       WHERE oi.order_id = $1
@@ -373,7 +373,7 @@ exports.getOrderById = async (req, res) => {
     // 3. Get toppings for each item
     for (let item of itemsResult.rows) {
       const toppingsResult = await db.query(`
-        SELECT oit.*, t.name as topping_name, t.price as topping_price
+        SELECT oit.*, t.name as topping_name, t.price as topping_price, t."Calories" as topping_calories
         FROM "Order_Item_Topping" oit
         JOIN "Topping" t ON oit.topping_id = t.topping_id
         WHERE oit.order_item_id = $1
@@ -426,7 +426,7 @@ exports.getOrdersBySession = async (req, res) => {
     // 2. Fetch items and toppings for each order
     for (let order of orders) {
       const itemsResult = await db.query(`
-        SELECT oi.*, m.name as menu_name, m.price as menu_price, m."Picture" as menu_picture
+        SELECT oi.*, m.name as menu_name, m.price as menu_price, m."Picture" as menu_picture, m."Calories" as menu_calories
         FROM "Order_Item" oi
         JOIN "Menu" m ON oi.menu_id = m.menu_id
         WHERE oi.order_id = $1
@@ -435,7 +435,7 @@ exports.getOrdersBySession = async (req, res) => {
 
       for (let item of itemsResult.rows) {
         const toppingsResult = await db.query(`
-          SELECT oit.*, t.name as topping_name, t.price as topping_price
+          SELECT oit.*, t.name as topping_name, t.price as topping_price, t."Calories" as topping_calories
           FROM "Order_Item_Topping" oit
           JOIN "Topping" t ON oit.topping_id = t.topping_id
           WHERE oit.order_item_id = $1
