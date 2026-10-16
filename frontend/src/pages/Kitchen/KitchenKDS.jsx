@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag } from 'react-icons/fa';
+import { FaFire, FaCheck, FaSyncAlt, FaClock, FaCircle, FaCheckCircle, FaRegSquare, FaCheckSquare, FaPlus, FaMinus, FaUtensils, FaShoppingBag, FaExclamationTriangle } from 'react-icons/fa';
 import BackofficeLayout from '../../layouts/BackofficeLayout';
 import './KitchenKDS.css';
 import { apiFetch, API_BASE } from '../../utils/api';
@@ -8,6 +8,7 @@ export default function KitchenKDS() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [completedCounts, setCompletedCounts] = useState({});
+  const [confirmServe, setConfirmServe] = useState(null); // ออเดอร์ที่กำลังรอยืนยัน "พร้อมเสิร์ฟ"
 
   const ordersRef = useRef([]);
   useEffect(() => {
@@ -257,7 +258,7 @@ export default function KitchenKDS() {
           </button>
         )}
         {mode === 'cooking' && (
-          <button className="kds-task-btn filled" onClick={() => updateStatus(order.order_id, 'S04')}>
+          <button className="kds-task-btn filled" onClick={() => setConfirmServe(order)}>
             <FaCheck /> พร้อมเสิร์ฟ
           </button>
         )}
@@ -372,6 +373,42 @@ export default function KitchenKDS() {
                 </div>
               );
             })()}
+          </div>
+        )}
+
+        {/* การ์ดยืนยันก่อนกด พร้อมเสิร์ฟ (กันกดพลาด) */}
+        {confirmServe && (
+          <div className="kds-modal-overlay" onClick={() => setConfirmServe(null)}>
+            <div className="kds-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="kds-modal-icon"><FaCheckCircle /></div>
+              <h3 className="kds-modal-title">ยืนยันพร้อมเสิร์ฟ?</h3>
+              <p className="kds-modal-text">
+                ออเดอร์ <strong>{confirmServe.queue_number}</strong> จะถูกย้ายทั้งออเดอร์ไปคอลัมน์ "พร้อมเสิร์ฟ"
+              </p>
+
+              <div className="kds-modal-info">
+                ทำแล้ว {orderDoneTotal(confirmServe)} / {orderTotalQty(confirmServe)} ชิ้น
+              </div>
+
+              {orderDoneTotal(confirmServe) < orderTotalQty(confirmServe) && (
+                <div className="kds-modal-warn">
+                  <FaExclamationTriangle style={{ flexShrink: 0 }} />
+                  <span>ยังติ๊กชิ้นที่ทำเสร็จไม่ครบทั้งหมด — ถ้ายืนยัน จะย้ายทั้งออเดอร์ไปพร้อมเสิร์ฟ</span>
+                </div>
+              )}
+
+              <div className="kds-modal-actions">
+                <button className="kds-modal-btn cancel" onClick={() => setConfirmServe(null)}>
+                  ยกเลิก
+                </button>
+                <button
+                  className="kds-modal-btn confirm"
+                  onClick={() => { const id = confirmServe.order_id; setConfirmServe(null); updateStatus(id, 'S04'); }}
+                >
+                  <FaCheck /> ยืนยัน พร้อมเสิร์ฟ
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
