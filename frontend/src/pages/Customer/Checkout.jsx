@@ -233,7 +233,6 @@ export default function Checkout({ tableNo, cartItems = [], cartNote = '', onBac
                             {orderType === 'dine_in' ? `ทานที่ร้าน${tableNo ? ` (โต๊ะ ${tableNo})` : ''}` : 'กลับบ้าน (Takeaway)'}
                         </span>
                         <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 'normal', fontSize: '12px', color: '#6b7280' }}>
-                            <FaLock /> ล็อกตาม QR Code ที่ร้านออกให้
                         </span>
                     </div>
 
