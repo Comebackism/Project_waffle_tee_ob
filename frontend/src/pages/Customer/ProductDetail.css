@@ -71,6 +71,7 @@
   border-radius: 20px;
   width: 100%;
   height: auto;
+  max-height: 460px;
   object-fit: cover;
 }
 
@@ -93,7 +94,8 @@
 .product-title-price {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: baseline;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
@@ -102,12 +104,17 @@
   font-weight: 700;
   color: var(--text-dark, #1a1a1a);
   margin: 0;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
 }
 
 .product-price {
   font-size: 24px;
   font-weight: 800;
   color: var(--primary-red, #B30021);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .product-description {
@@ -117,6 +124,9 @@
   margin: 0;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
 }
 
 /* การ์ดเลือกท็อปปิ้ง */
@@ -305,15 +315,52 @@
     gap: 16px;
   }
 
+  /* รูปสินค้า: จำกัดความสูงไม่ให้กินพื้นที่ทั้งจอ (สไตล์การ์ดแบนเนอร์โค้งมน) */
   .product-image-container {
-    padding: 12px;
-    box-shadow: none;
-    background: transparent;
+    padding: 0;
+    max-height: 240px;
+    overflow: hidden;
+    border-radius: 16px;
+    background-color: var(--white, #ffffff);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   }
 
-  /* .product-image {
-    max-width: 280px;
-  } */
+  .product-image {
+    width: 100%;
+    height: 240px;
+    border-radius: 16px;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* การ์ดข้อมูลกระชับขึ้น อ่านง่ายบนจอเล็ก */
+  .product-main-card,
+  .topping-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .product-title {
+    font-size: 18px;
+  }
+
+  .product-price {
+    font-size: 20px;
+  }
+
+  .topping-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .topping-title {
+    font-size: 16px;
+  }
+
+  .topping-item {
+    padding: 10px 12px;
+  }
 
   /* ย้าย Action Bar ไปตรึงลอยอยู่ล่างสุดของจอมือถือ */
   .action-bar-container {
