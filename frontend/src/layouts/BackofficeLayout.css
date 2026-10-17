@@ -95,17 +95,25 @@
 .bo-user-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .bo-user-name {
   font-size: 14px;
   font-weight: 700;
   color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-user-role {
   font-size: 12px;
   color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-user-menu {
@@ -113,9 +121,10 @@
   bottom: calc(100% + 10px);
   left: 0;
   width: 100%;
+  min-width: 240px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.14);
   padding: 8px;
   z-index: 50;
   border: 1px solid #e5e7eb;
@@ -124,19 +133,27 @@
 .bo-user-menu-title {
   font-size: 11px;
   color: #9ca3af;
-  padding: 8px;
-  text-transform: uppercase;
+  padding: 6px 8px 8px;
   letter-spacing: 0.5px;
   font-weight: 700;
 }
 
-.bo-user-menu-item {
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
+.bo-user-menu-list {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+.bo-user-menu-item {
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .bo-user-menu-item:hover {
@@ -147,15 +164,68 @@
   background: #fef2f2;
 }
 
+.bo-user-menu-item.active:hover {
+  background: #fee2e2;
+}
+
+.bo-umi-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bo-user-menu-item.active .bo-umi-avatar {
+  background: #b91c1c;
+  color: #ffffff;
+}
+
+.bo-umi-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
 .bo-umi-name {
   font-size: 14px;
   font-weight: 600;
   color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-user-menu-item.active .bo-umi-name {
+  color: #b91c1c;
 }
 
 .bo-umi-role {
   font-size: 11px;
   color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-umi-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #b91c1c;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
 /* Main Content Area */

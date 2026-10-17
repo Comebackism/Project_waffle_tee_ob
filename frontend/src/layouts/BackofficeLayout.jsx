@@ -208,16 +208,25 @@ export default function BackofficeLayout({ children, role = 'cashier' }) {
           {showUserMenu && (
             <div className="bo-user-menu">
               <div className="bo-user-menu-title">สลับผู้ใช้งาน</div>
-              {switchableUsers.map(u => (
-                <div 
-                  key={u.user_id} 
-                  className={`bo-user-menu-item ${currentUser?.user_id === u.user_id ? 'active' : ''}`}
-                  onClick={() => initiateSwitchUser(u)}
-                >
-                  <div className="bo-umi-name">{u.firstname} {u.lastname}</div>
-                  <div className="bo-umi-role">{u.rolename}</div>
-                </div>
-              ))}
+              <div className="bo-user-menu-list">
+                {switchableUsers.map(u => {
+                  const isCurrent = currentUser?.user_id === u.user_id;
+                  return (
+                    <div
+                      key={u.user_id}
+                      className={`bo-user-menu-item ${isCurrent ? 'active' : ''}`}
+                      onClick={() => initiateSwitchUser(u)}
+                    >
+                      <div className="bo-umi-avatar">{(u.firstname || 'U').substring(0, 1)}</div>
+                      <div className="bo-umi-info">
+                        <div className="bo-umi-name">{u.firstname} {u.lastname}</div>
+                        <div className="bo-umi-role">{u.rolename}</div>
+                      </div>
+                      {isCurrent && <span className="bo-umi-badge">ใช้งานอยู่</span>}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
