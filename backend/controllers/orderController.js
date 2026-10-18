@@ -270,7 +270,9 @@ exports.createOrder = async (req, res) => {
     }
 
     // 3. Insert Order (Status: S01 = รอชำระเงิน, or set pay_time if paid)
-    const isPaid = pay_method === 'promptpay' && final_slip_picture;
+    // ต้องแปลงเป็น boolean จริง ๆ เพราะถ้าใช้ && ตรง ๆ ค่าที่ได้จะเป็น URL รูปสลิป (string)
+    // แล้ว PostgreSQL จะฟ้อง invalid input syntax for type boolean
+    const isPaid = pay_method === 'promptpay' && Boolean(final_slip_picture);
     const orderResult = await client.query(
       `INSERT INTO "Order" (order_id, queue_number, "Status_id", pay_method, total_amount, slip_picture, note, total_calories, pay_time, slip_trans_ref, session_id, order_type) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $9 THEN (NOW() AT TIME ZONE 'UTC') ELSE NULL END, $10, $11, $12) RETURNING *`,
@@ -303,9 +305,16 @@ exports.createOrder = async (req, res) => {
     res.status(201).json({ message: 'Order created', order_id, queue_number });
 
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackErr) {
+      console.error('Rollback error:', rollbackErr.message);
+    }
+    console.error('Create order error:', err.message);
+    // ตอบเป็น JSON เสมอ เพื่อให้หน้าบ้านแสดงสาเหตุจริงได้ (เดิมตอบ text ทำให้ขึ้นแค่ "Order failed")
+    if (!res.headersSent) {
+      res.status(500).json({ message: `ไม่สามารถสร้างออเดอร์ได้: ${err.message}` });
+    }
   } finally {
     client.release();
   }
